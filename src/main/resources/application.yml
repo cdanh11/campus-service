@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: campus-service
+  profiles:
+    default: local
+
+server:
+  port: ${SERVER_PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

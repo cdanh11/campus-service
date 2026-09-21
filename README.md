@@ -1,10 +1,10 @@
-# CampusOne
+# Campus Service
 
-CampusOne is a production-oriented Intelligent Smart Campus Platform. It is being prepared as a Java backend that gives university operations a consistent, secure foundation rather than a collection of disconnected systems.
+Campus Service is a production-oriented Intelligent Smart Campus Platform. It is being prepared as a Java backend that gives university operations a consistent, secure foundation rather than a collection of disconnected systems.
 
 ## Problem Statement
 
-University operations commonly span separate processes for identity, academic records, accommodation, finance, communications, and reporting. CampusOne aims to provide a coherent backend platform for those capabilities while preserving clear domain ownership and operational reliability.
+University operations commonly span separate processes for identity, academic records, accommodation, finance, communications, and reporting. Campus Service aims to provide a coherent backend platform for those capabilities while preserving clear domain ownership and operational reliability.
 
 ## Product Vision
 
@@ -12,7 +12,7 @@ Build an extensible, maintainable platform that can support campus operations to
 
 ## Initial Scope
 
-Phase 1 will bootstrap the backend and establish Identity and Access: user and role management, authentication, authorization, PostgreSQL persistence, Flyway migrations, and foundational tests. No business-domain modules are implemented yet.
+Phase 1A provides the backend bootstrap: Maven, Java 21, PostgreSQL integration, Flyway, Actuator health, and Testcontainers integration tests. Identity and Access, user and role management, authentication, authorization, and all business-domain modules remain out of scope.
 
 ## Domain Roadmap
 
@@ -40,11 +40,11 @@ Phase 1 will bootstrap the backend and establish Identity and Access: user and r
 - RAG
 - GraphRAG
 
-## Proposed Technology Baseline
+## Technology Baseline
 
-The following technologies are proposed for the initial backend. Exact versions will be selected and verified during Spring Boot bootstrap.
+The initial backend uses the following baseline. Dependency versions are managed by Spring Boot unless stated otherwise.
 
-- Java 21 and Spring Boot 3.x
+- Java 21 and Spring Boot 3.5.16
 - Maven
 - PostgreSQL, Spring Data JPA, and Flyway
 - Spring Security with JWT-based authentication
@@ -57,11 +57,11 @@ Redis is not a baseline dependency. It will be introduced only for a concrete ca
 
 ## Architecture
 
-CampusOne will begin as a modular monolith: one deployable application with explicit module boundaries and controlled dependencies. This keeps the first release straightforward to develop and operate while allowing proven modules to be extracted later if required. See [Architecture](docs/architecture.md) and [ADR 0001](docs/decisions/0001-modular-monolith-first.md).
+Campus Service will begin as a modular monolith: one deployable application with explicit module boundaries and controlled dependencies. This keeps the first release straightforward to develop and operate while allowing proven modules to be extracted later if required. See [Architecture](docs/architecture.md) and [ADR 0001](docs/decisions/0001-modular-monolith-first.md).
 
 ## Status
 
-**Phase 0: repository foundation.** This repository currently contains documentation and AI-agent configuration only. No Spring Boot application, database schema, local infrastructure, or production deployment configuration has been generated.
+**Phase 1A: Spring Boot bootstrap.** The repository contains a Maven-based Spring Boot application, a non-business Flyway baseline migration, an Actuator health endpoint, Testcontainers PostgreSQL integration tests, and local PostgreSQL Compose configuration. No business-domain, Identity and Access, authentication, or production deployment capability is implemented.
 
 ## Planned Phases
 
@@ -77,4 +77,10 @@ CampusOne will begin as a modular monolith: one deployable application with expl
 - [Architecture Decision Records](docs/decisions/README.md): durable technical decisions.
 - [Agent Instructions](AGENTS.md): concise operating rules for coding agents.
 
-Setup commands will be added after the Spring Boot application and its Maven build are generated. Until then, no build or run command is valid for this repository.
+The verified Windows build command is:
+
+```powershell
+.\mvnw.cmd clean verify
+```
+
+It compiles with Java 21 and runs PostgreSQL Testcontainers integration tests. The Docker Compose configuration was created for local development but was not started during this change.

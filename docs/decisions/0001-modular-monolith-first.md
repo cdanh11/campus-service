@@ -6,11 +6,11 @@ Accepted
 
 ## Context
 
-CampusOne spans several university domains, but the initial release has no demonstrated need for independently deployable services. Starting with microservices would add network contracts, distributed data consistency, deployment, observability, and operational burdens before the first business capability is proven.
+Campus Service spans several university domains, but the initial release has no demonstrated need for independently deployable services. Starting with microservices would add network contracts, distributed data consistency, deployment, observability, and operational burdens before the first business capability is proven.
 
 ## Decision
 
-CampusOne will begin as one Spring Boot deployable organized as a modular monolith. Modules will align to business domains, own their internal persistence and implementation details, and communicate through explicit application-level contracts. The first implementation module is Identity and Access.
+Campus Service will begin as one Spring Boot deployable organized as a modular monolith. Modules will align to business domains, own their internal persistence and implementation details, and communicate through explicit application-level contracts. The first implementation module is Identity and Access.
 
 Message brokers, service discovery, Kubernetes, and other distributed-system infrastructure are excluded from the initial source structure.
 

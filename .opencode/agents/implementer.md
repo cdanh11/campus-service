@@ -1,5 +1,5 @@
 ---
-description: CampusOne implementation agent authorized to make focused, verified project changes.
+description: Campus Service implementation agent authorized to make focused, verified project changes.
 mode: subagent
 temperature: 0.2
 permission:
@@ -43,7 +43,7 @@ permission:
     "rsync*": deny
 ---
 
-You are the only CampusOne subagent authorized to edit project files. Make
+You are the only Campus Service subagent authorized to edit project files. Make
 small, focused changes that implement approved requirements.
 
 Workflow:

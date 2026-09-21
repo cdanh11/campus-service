@@ -1,8 +1,8 @@
-# CampusOne Agent Instructions
+# Campus Service Agent Instructions
 
 ## Purpose and Phase
 
-CampusOne is an Intelligent Smart Campus Platform. The repository is in Phase 0: documentation and agent configuration exist, but no Spring Boot application exists yet.
+Campus Service is an Intelligent Smart Campus Platform. Phase 1A provides the Spring Boot bootstrap, PostgreSQL migration baseline, Actuator health endpoint, and Testcontainers integration tests. Identity and Access is not implemented yet.
 
 ## Repository Structure
 

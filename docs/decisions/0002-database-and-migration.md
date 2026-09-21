@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-CampusOne requires a reliable relational data store for identity and future university operational records, plus a reproducible way to evolve schemas across local, test, and deployed environments. Unmanaged ORM schema generation does not provide an adequate audit trail or controlled upgrade path.
+Campus Service requires a reliable relational data store for identity and future university operational records, plus a reproducible way to evolve schemas across local, test, and deployed environments. Unmanaged ORM schema generation does not provide an adequate audit trail or controlled upgrade path.
 
 ## Decision
 
