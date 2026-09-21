@@ -2,7 +2,7 @@
 
 ## Purpose and Phase
 
-Campus Service is an Intelligent Smart Campus Platform. Phase 1A provides the Spring Boot bootstrap, PostgreSQL migration baseline, Actuator health endpoint, and Testcontainers integration tests. Identity and Access is not implemented yet.
+Campus Service is an Intelligent Smart Campus Platform. Phase 1A bootstrap is complete. Phase 1B is in progress: the Identity domain, Flyway schema, and persistence foundation are implemented. Authentication, Spring Security, JWT, HTTP endpoints, and administrator user management are not implemented yet.
 
 ## Repository Structure
 

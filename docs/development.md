@@ -2,7 +2,7 @@
 
 ## Current State
 
-Campus Service is in Phase 1A. The repository contains a Java 21 Spring Boot 3.5.16 Maven project, Maven Wrapper, Flyway baseline migration, Testcontainers integration tests, and PostgreSQL Compose configuration.
+Phase 1A bootstrap is complete and Phase 1B is in progress. The repository contains a Java 21 Spring Boot 3.5.16 Maven project, Maven Wrapper, the Identity domain, Flyway schema and persistence foundation, Testcontainers integration tests, and PostgreSQL Compose configuration. Authentication, Spring Security, JWT, HTTP endpoints, and administrator user management are not implemented yet.
 
 ## Prerequisites
 
