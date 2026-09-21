@@ -10,4 +10,6 @@ public interface RefreshTokenRepository {
     Optional<RefreshToken> findById(UUID id);
 
     Optional<RefreshToken> findByTokenHash(byte[] tokenHash);
+
+    Optional<RefreshToken> findByTokenHashForUpdate(byte[] tokenHash);
 }

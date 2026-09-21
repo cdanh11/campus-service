@@ -53,4 +53,10 @@ class RefreshTokenPersistenceAdapter implements RefreshTokenRepository {
     public Optional<RefreshToken> findByTokenHash(byte[] tokenHash) {
         return refreshTokenJpaRepository.findByTokenHash(tokenHash).map(mapper::toDomain);
     }
+
+    @Override
+    @Transactional
+    public Optional<RefreshToken> findByTokenHashForUpdate(byte[] tokenHash) {
+        return refreshTokenJpaRepository.findByTokenHashForUpdate(tokenHash).map(mapper::toDomain);
+    }
 }
