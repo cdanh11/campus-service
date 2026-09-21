@@ -1,0 +1,32 @@
+* text=auto
+
+# Source and documentation use LF consistently.
+*.java text eol=lf
+*.xml text eol=lf
+*.properties text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Windows-native scripts retain CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Images and archives are binary.
+*.bmp binary
+*.gif binary
+*.ico binary
+*.jpeg binary
+*.jpg binary
+*.png binary
+*.webp binary
+*.zip binary
+*.7z binary
+*.gz binary
+*.bz2 binary
+*.rar binary
+*.tar binary
