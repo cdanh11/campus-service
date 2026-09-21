@@ -2,24 +2,24 @@
 
 ## Status of This Document
 
-**Confirmed:** CampusOne will begin as a Spring Boot modular monolith, with PostgreSQL and Flyway as the persistence and migration direction.
+**Confirmed:** Campus Service is a Spring Boot 3.5.16 modular monolith with base package `com.campus`, PostgreSQL, and Flyway.
 
-**Proposed:** package names, exact library versions, API versioning details, JWT token lifecycle, and observability implementation will be selected during or after Phase 1 bootstrap.
+**Proposed:** API versioning details, JWT token lifecycle, and observability implementation will be selected in later phases.
 
 ## System Context
 
-CampusOne will provide a backend platform for university operations. The first implemented capability will be Identity and Access; later modules will cover student, faculty and staff, academic, dormitory, finance, and selected supporting capabilities.
+Campus Service will provide a backend platform for university operations. The first implemented capability will be Identity and Access; later modules will cover student, faculty and staff, academic, dormitory, finance, and selected supporting capabilities.
 
 ```mermaid
 flowchart LR
-    Client[Campus clients and integrations] --> API[CampusOne API]
+    Client[Campus clients and integrations] --> API[Campus Service API]
     API --> IAM[Identity and Access]
     API --> Future[Future domain modules]
     IAM --> DB[(PostgreSQL)]
     Future --> DB
 ```
 
-The diagram describes the intended direction, not deployed components. There is no running application in Phase 0.
+The diagram describes the intended modular direction. Phase 1A provides only the application bootstrap, database migration baseline, and health endpoint; no business module is implemented.
 
 ## Modular Monolith
 

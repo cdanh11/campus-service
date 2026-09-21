@@ -2,7 +2,7 @@
 
 ## Principles
 
-Tests provide evidence that behavior, security boundaries, and schema changes work as intended. CampusOne will favor fast tests close to the business rule, with fewer broader tests for framework and infrastructure behavior. No coverage percentage is claimed or required before a measurement tool and threshold are deliberately adopted.
+Tests provide evidence that behavior, security boundaries, and schema changes work as intended. Campus Service will favor fast tests close to the business rule, with fewer broader tests for framework and infrastructure behavior. No coverage percentage is claimed or required before a measurement tool and threshold are deliberately adopted.
 
 ## Testing Pyramid
 
@@ -22,9 +22,11 @@ flowchart BT
 - **Integration tests:** validate modules working with real infrastructure behavior, especially PostgreSQL, migrations, persistence, and authorization boundaries.
 - **End-to-end tests:** cover a small set of critical externally visible journeys once the application and stable API exist; they are not a Phase 0 deliverable.
 
-## Proposed Tooling
+## Current Tooling
 
-Phase 1 is expected to use JUnit 5 for test execution, Mockito for focused collaborator tests, Spring Boot Test for application context testing, and Testcontainers with PostgreSQL for integration tests. Exact dependency versions and test commands will be established with the Maven bootstrap.
+Phase 1A uses JUnit 5, Spring Boot Test, Testcontainers PostgreSQL, and Flyway. The verified Windows command is `./mvnw.cmd clean verify` when run from PowerShell as `.\mvnw.cmd clean verify`.
+
+The bootstrap includes an application-context integration test that verifies Flyway applied version `V1__baseline.sql` and a random-port health endpoint integration test that verifies `GET /actuator/health` returns HTTP 200 with `UP`. Both tests run against PostgreSQL Testcontainers and do not connect to a developer's local database.
 
 ## Authentication and Authorization
 
