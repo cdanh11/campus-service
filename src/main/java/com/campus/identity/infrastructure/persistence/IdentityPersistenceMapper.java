@@ -20,13 +20,14 @@ class IdentityPersistenceMapper {
         return UserAccount.rehydrate(
                 entity.getId(),
                 entity.getEmail(),
+                entity.getDisplayName(),
                 entity.getPasswordHash(),
                 entity.getStatus(),
                 roles,
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
                 entity.getLastLoginAt(),
-                entity.getSecurityVersion());
+                entity.getSecurityVersion(), entity.getRowVersion());
     }
 
     Role toDomain(RoleEntity entity) {

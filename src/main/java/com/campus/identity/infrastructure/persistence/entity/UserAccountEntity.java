@@ -18,6 +18,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -32,6 +33,8 @@ public class UserAccountEntity {
 
     @Column(nullable = false, length = 320)
     private String email;
+    @Column(name = "display_name", nullable = false, length = 100)
+    private String displayName;
 
     @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
@@ -42,6 +45,8 @@ public class UserAccountEntity {
 
     @Column(name = "security_version", nullable = false)
     private long securityVersion;
+    @Version @Column(name = "row_version", nullable = false)
+    private long rowVersion;
 
     @Column(name = "last_login_at")
     private Instant lastLoginAt;
@@ -75,6 +80,8 @@ public class UserAccountEntity {
     public String getEmail() {
         return email;
     }
+    public String getDisplayName() { return displayName; }
+    public long getRowVersion() { return rowVersion; }
 
     public String getPasswordHash() {
         return passwordHash;
@@ -106,12 +113,13 @@ public class UserAccountEntity {
 
     public void update(
             String email,
-            String passwordHash,
+            String displayName, String passwordHash,
             AccountStatus status,
             long securityVersion,
             Instant lastLoginAt,
             Set<RoleEntity> roles) {
         this.email = email;
+        this.displayName = displayName;
         this.passwordHash = passwordHash;
         this.status = status;
         this.securityVersion = securityVersion;

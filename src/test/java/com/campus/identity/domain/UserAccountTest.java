@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 class UserAccountTest {
 
@@ -79,7 +80,7 @@ class UserAccountTest {
     }
 
     @Test
-    void rejectsDuplicateRoleCodesAndAllowsAnyStatusTransition() {
+    void rejectsDuplicateRoleCodesAndEnforcesStatusTransitions() {
         UserAccount account = UserAccount.create(UUID.randomUUID(), "admin@campus.example", PASSWORD_HASH, Instant.now());
         Role user = new Role(UUID.randomUUID(), RoleCode.USER);
         Role duplicateUser = new Role(UUID.randomUUID(), RoleCode.USER);
@@ -89,7 +90,11 @@ class UserAccountTest {
         account.changeStatus(AccountStatus.DISABLED);
         account.changeStatus(AccountStatus.ACTIVE);
 
+        assertThatIllegalArgumentException().isThrownBy(() -> account.replaceRoles(Set.of()));
+        account.changeStatus(AccountStatus.DISABLED);
+        assertThatIllegalStateException().isThrownBy(() -> account.changeStatus(AccountStatus.SUSPENDED));
+
         assertThat(account.roles()).isEmpty();
-        assertThat(account.status()).isEqualTo(AccountStatus.ACTIVE);
+        assertThat(account.status()).isEqualTo(AccountStatus.DISABLED);
     }
 }

@@ -34,6 +34,20 @@ class UserAccountPersistenceAdapter implements UserAccountRepository {
     public UserAccount save(UserAccount userAccount) {
         UserAccountEntity entity = userAccountJpaRepository.findById(userAccount.id())
                 .orElseGet(() -> new UserAccountEntity(userAccount.id()));
+        return saveManaged(entity, userAccount);
+    }
+
+    @Override
+    @Transactional
+    public UserAccount saveAdminMutation(UserAccount userAccount, long expectedVersion) {
+        UserAccountEntity entity = userAccountJpaRepository.findByIdForUpdate(userAccount.id()).orElseThrow();
+        if (entity.getRowVersion() != expectedVersion) {
+            throw new com.campus.identity.application.ConcurrentModificationException();
+        }
+        return saveManaged(entity, userAccount);
+    }
+
+    private UserAccount saveManaged(UserAccountEntity entity, UserAccount userAccount) {
         Set<RoleCode> roleCodes = userAccount.roles().stream().map(role -> role.code()).collect(Collectors.toSet());
         Set<RoleEntity> roles = roleJpaRepository.findAllByCodeIn(roleCodes).stream().collect(Collectors.toSet());
         if (roles.size() != roleCodes.size()) {
@@ -42,6 +56,7 @@ class UserAccountPersistenceAdapter implements UserAccountRepository {
 
         entity.update(
                 userAccount.email(),
+                userAccount.displayName(),
                 userAccount.passwordHash(),
                 userAccount.status(),
                 userAccount.securityVersion(),
@@ -57,8 +72,20 @@ class UserAccountPersistenceAdapter implements UserAccountRepository {
     }
 
     @Override
+    @Transactional
+    public Optional<UserAccount> findByIdForUpdate(java.util.UUID id) {
+        return userAccountJpaRepository.findByIdForUpdate(id).map(mapper::toDomain);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Optional<UserAccount> findByEmail(String email) {
         return userAccountJpaRepository.findByEmailIgnoreCase(email.trim().toLowerCase(Locale.ROOT)).map(mapper::toDomain);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countActiveAdministrators() {
+        return userAccountJpaRepository.countActiveAdministrators();
     }
 }

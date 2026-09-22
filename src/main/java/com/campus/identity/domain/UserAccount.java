@@ -14,26 +14,29 @@ public final class UserAccount {
 
     private final UUID id;
     private final String email;
-    private final String passwordHash;
+    private final String displayName;
+    private String passwordHash;
     private AccountStatus status;
     private Set<Role> roles;
     private final Instant createdAt;
     private Instant updatedAt;
     private Instant lastLoginAt;
     private long securityVersion;
+    private long rowVersion;
 
     private UserAccount(
             UUID id,
             String email,
-            String passwordHash,
+            String displayName, String passwordHash,
             AccountStatus status,
             Set<Role> roles,
             Instant createdAt,
             Instant updatedAt,
             Instant lastLoginAt,
-            long securityVersion) {
+            long securityVersion, long rowVersion) {
         this.id = Objects.requireNonNull(id, "id must not be null");
         this.email = normalizeEmail(email);
+        this.displayName = normalizeDisplayName(displayName);
         this.passwordHash = requirePasswordHash(passwordHash);
         this.status = Objects.requireNonNull(status, "status must not be null");
         this.roles = copyRoles(roles);
@@ -45,24 +48,32 @@ public final class UserAccount {
             throw new IllegalArgumentException("securityVersion must not be negative");
         }
         this.securityVersion = securityVersion;
+        if (rowVersion < 0) throw new IllegalArgumentException("rowVersion must not be negative");
+        this.rowVersion = rowVersion;
     }
 
     public static UserAccount create(UUID id, String email, String passwordHash, Instant now) {
-        return new UserAccount(id, email, passwordHash, AccountStatus.ACTIVE, Set.of(), now, now, null, 0);
+        return new UserAccount(id, email, email, passwordHash, AccountStatus.ACTIVE, Set.of(), now, now, null, 0, 0);
+    }
+    public static UserAccount create(UUID id, String email, String displayName, String passwordHash, AccountStatus status, Set<Role> roles, Instant now) {
+        if (Objects.requireNonNull(roles, "roles must not be null").isEmpty()) {
+            throw new IllegalArgumentException("roles must not be empty");
+        }
+        return new UserAccount(id, email, displayName, passwordHash, status, roles, now, now, null, 0, 0);
     }
 
     public static UserAccount rehydrate(
             UUID id,
             String email,
-            String passwordHash,
+            String displayName, String passwordHash,
             AccountStatus status,
             Set<Role> roles,
             Instant createdAt,
             Instant updatedAt,
             Instant lastLoginAt,
-            long securityVersion) {
+            long securityVersion, long rowVersion) {
         return new UserAccount(
-                id, email, passwordHash, status, roles, createdAt, updatedAt, lastLoginAt, securityVersion);
+                id, email, displayName, passwordHash, status, roles, createdAt, updatedAt, lastLoginAt, securityVersion, rowVersion);
     }
 
     public UUID id() {
@@ -72,6 +83,7 @@ public final class UserAccount {
     public String email() {
         return email;
     }
+    public String displayName() { return displayName; }
 
     public String passwordHash() {
         return passwordHash;
@@ -100,14 +112,28 @@ public final class UserAccount {
     public long securityVersion() {
         return securityVersion;
     }
+    public long rowVersion() { return rowVersion; }
 
     public void changeStatus(AccountStatus status) {
-        this.status = Objects.requireNonNull(status, "status must not be null");
+        AccountStatus target = Objects.requireNonNull(status, "status must not be null");
+        if (this.status == target) {
+            return;
+        }
+        if ((this.status == AccountStatus.ACTIVE && target != AccountStatus.SUSPENDED && target != AccountStatus.DISABLED)
+                || (this.status == AccountStatus.SUSPENDED && target != AccountStatus.ACTIVE && target != AccountStatus.DISABLED)
+                || (this.status == AccountStatus.DISABLED && target != AccountStatus.ACTIVE)) {
+            throw new IllegalStateException("account status transition is not allowed");
+        }
+        this.status = target;
+        incrementSecurityVersion();
     }
 
     public void replaceRoles(Set<Role> roles) {
+        if (roles.isEmpty()) throw new IllegalArgumentException("roles must not be empty");
         this.roles = copyRoles(roles);
+        incrementSecurityVersion();
     }
+    public void replacePasswordHash(String passwordHash) { this.passwordHash = requirePasswordHash(passwordHash); incrementSecurityVersion(); }
 
     public void recordLogin(Instant loggedInAt) {
         this.lastLoginAt = Objects.requireNonNull(loggedInAt, "loggedInAt must not be null");
@@ -124,6 +150,7 @@ public final class UserAccount {
         }
         return normalized;
     }
+    private static String normalizeDisplayName(String displayName) { String normalized = Objects.requireNonNull(displayName, "displayName must not be null").trim(); if (normalized.length() < 2 || normalized.length() > 100) throw new IllegalArgumentException("displayName length must be between 2 and 100"); return normalized; }
 
     private static String requirePasswordHash(String passwordHash) {
         if (passwordHash == null || !BCRYPT_PASSWORD_HASH.matcher(passwordHash).matches()) {
