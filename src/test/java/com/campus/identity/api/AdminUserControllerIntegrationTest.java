@@ -349,6 +349,27 @@ class AdminUserControllerIntegrationTest {
     }
 
     @Test
+    void statusRoleAndPasswordMutationsRevokeEveryTargetSessionOverHttp() throws Exception {
+        UserAccount admin = user("multi-session-admin@campus.example", RoleCode.ADMIN);
+        String token = tokens.accessToken(admin);
+
+        UserAccount statusTarget = user("multi-session-status@campus.example", RoleCode.USER);
+        assertAllSessionsRevoked(statusTarget, login(statusTarget.email()), login(statusTarget.email()), () -> mockMvc.perform(
+                patch("/api/v1/admin/users/" + statusTarget.id() + "/status").header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"status\":\"SUSPENDED\",\"expectedVersion\":" + users.findById(statusTarget.id()).orElseThrow().rowVersion() + "}")));
+
+        UserAccount rolesTarget = user("multi-session-roles@campus.example", RoleCode.USER);
+        assertAllSessionsRevoked(rolesTarget, login(rolesTarget.email()), login(rolesTarget.email()), () -> mockMvc.perform(
+                put("/api/v1/admin/users/" + rolesTarget.id() + "/roles").header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"roles\":[\"ADMIN\"],\"expectedVersion\":" + users.findById(rolesTarget.id()).orElseThrow().rowVersion() + "}")));
+
+        UserAccount passwordTarget = user("multi-session-password@campus.example", RoleCode.USER);
+        assertAllSessionsRevoked(passwordTarget, login(passwordTarget.email()), login(passwordTarget.email()), () -> mockMvc.perform(
+                post("/api/v1/admin/users/" + passwordTarget.id() + "/password-reset").header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"newPassword\":\"replacement-password\",\"expectedVersion\":" + users.findById(passwordTarget.id()).orElseThrow().rowVersion() + "}")));
+    }
+
+    @Test
     void failedStatusAndPasswordResetPreserveTargetStateIndependently() throws Exception {
         UserAccount admin = user("failed-mutation-admin@campus.example", RoleCode.ADMIN);
         UserAccount target = user("failed-mutation-target@campus.example", RoleCode.USER);
@@ -448,6 +469,16 @@ class AdminUserControllerIntegrationTest {
         assertThat(actual.updatedAt()).isEqualTo(expected.updatedAt());
     }
 
+    private void assertAllSessionsRevoked(UserAccount target, Cookie first, Cookie second, ThrowingRequest mutation) throws Exception {
+        assertThat(activeSessions(target.id())).isEqualTo(2);
+        mutation.perform().andExpect(status().is2xxSuccessful());
+        assertThat(activeSessions(target.id())).isZero();
+        for (Cookie refresh : List.of(first, second)) {
+            mockMvc.perform(post("/api/v1/auth/refresh").header("Origin", "http://localhost:3000").cookie(refresh))
+                    .andExpect(status().isUnauthorized()).andExpect(jsonPath("$.code").value("REFRESH_TOKEN_REVOKED"));
+        }
+    }
+
     private UserAccount user(String email, RoleCode code) {
         return user(UUID.randomUUID(), email, email, AccountStatus.ACTIVE, Set.of(code), Instant.now());
     }
@@ -482,4 +513,7 @@ class AdminUserControllerIntegrationTest {
         return mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content("{\"email\":\"" + email + "\",\"password\":\"valid-password\"}"))
                 .andExpect(status().isOk()).andReturn().getResponse().getCookie("CAMPUS_REFRESH");
     }
+
+    @FunctionalInterface
+    private interface ThrowingRequest { org.springframework.test.web.servlet.ResultActions perform() throws Exception; }
 }

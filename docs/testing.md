@@ -26,7 +26,7 @@ flowchart BT
 
 Phase 1B uses JUnit 5, Spring Boot Test, MockMvc, Testcontainers PostgreSQL, and Flyway. The verified Windows command is `./mvnw.cmd clean verify` when run from PowerShell as `.\mvnw.cmd clean verify`.
 
-Integration coverage verifies the health endpoint, Flyway migrations through V5, authentication and authorization boundaries, and administrator user-management flows. These tests run against PostgreSQL Testcontainers and do not connect to a developer's local database.
+The 58 tests verified by `./mvnw.cmd clean verify` cover the health endpoint, Flyway migrations through V5, authentication and authorization boundaries, administrator user-management flows, multi-session HTTP revocation, and audit-failure rollback. Integration tests run against PostgreSQL Testcontainers and do not connect to a developer's local database.
 
 ## Authentication and Authorization
 

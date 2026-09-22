@@ -74,6 +74,7 @@ Campus Service will begin as a modular monolith: one deployable application with
 - [Architecture](docs/architecture.md): system boundaries and technical direction.
 - [Development](docs/development.md): local workflow and repository conventions.
 - [Testing](docs/testing.md): test strategy and evidence expectations.
+- [Initial Administrator Provisioning](docs/runbooks/initial-admin-provisioning.md): safe operational handoff for the first administrator.
 - [Architecture Decision Records](docs/decisions/README.md): durable technical decisions.
 - [Agent Instructions](AGENTS.md): concise operating rules for coding agents.
 
