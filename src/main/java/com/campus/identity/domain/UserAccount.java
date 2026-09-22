@@ -45,10 +45,10 @@ public final class UserAccount {
         this.lastLoginAt = lastLoginAt;
 
         if (securityVersion < 0) {
-            throw new IllegalArgumentException("securityVersion must not be negative");
+            throw new InvalidUserAccountException("securityVersion must not be negative");
         }
         this.securityVersion = securityVersion;
-        if (rowVersion < 0) throw new IllegalArgumentException("rowVersion must not be negative");
+        if (rowVersion < 0) throw new InvalidUserAccountException("rowVersion must not be negative");
         this.rowVersion = rowVersion;
     }
 
@@ -57,7 +57,7 @@ public final class UserAccount {
     }
     public static UserAccount create(UUID id, String email, String displayName, String passwordHash, AccountStatus status, Set<Role> roles, Instant now) {
         if (Objects.requireNonNull(roles, "roles must not be null").isEmpty()) {
-            throw new IllegalArgumentException("roles must not be empty");
+            throw new InvalidUserAccountException("roles must not be empty");
         }
         return new UserAccount(id, email, displayName, passwordHash, status, roles, now, now, null, 0, 0);
     }
@@ -122,14 +122,14 @@ public final class UserAccount {
         if ((this.status == AccountStatus.ACTIVE && target != AccountStatus.SUSPENDED && target != AccountStatus.DISABLED)
                 || (this.status == AccountStatus.SUSPENDED && target != AccountStatus.ACTIVE && target != AccountStatus.DISABLED)
                 || (this.status == AccountStatus.DISABLED && target != AccountStatus.ACTIVE)) {
-            throw new IllegalStateException("account status transition is not allowed");
+            throw new InvalidAccountStatusTransitionException();
         }
         this.status = target;
         incrementSecurityVersion();
     }
 
     public void replaceRoles(Set<Role> roles) {
-        if (roles.isEmpty()) throw new IllegalArgumentException("roles must not be empty");
+        if (roles.isEmpty()) throw new InvalidUserAccountException("roles must not be empty");
         this.roles = copyRoles(roles);
         incrementSecurityVersion();
     }
@@ -146,15 +146,22 @@ public final class UserAccount {
     private static String normalizeEmail(String email) {
         String normalized = Objects.requireNonNull(email, "email must not be null").trim().toLowerCase(java.util.Locale.ROOT);
         if (normalized.isBlank() || normalized.length() > 320 || !normalized.contains("@")) {
-            throw new IllegalArgumentException("email must be a valid institutional email address");
+            throw new InvalidUserAccountException("email must be a valid institutional email address");
         }
         return normalized;
     }
-    private static String normalizeDisplayName(String displayName) { String normalized = Objects.requireNonNull(displayName, "displayName must not be null").trim(); if (normalized.length() < 2 || normalized.length() > 100) throw new IllegalArgumentException("displayName length must be between 2 and 100"); return normalized; }
+    private static String normalizeDisplayName(String displayName) {
+        String normalized = Objects.requireNonNull(displayName, "displayName must not be null").trim();
+        int length = normalized.codePointCount(0, normalized.length());
+        if (length < 2 || length > 100) {
+            throw new InvalidUserAccountException("displayName length must be between 2 and 100 Unicode characters");
+        }
+        return normalized;
+    }
 
     private static String requirePasswordHash(String passwordHash) {
         if (passwordHash == null || !BCRYPT_PASSWORD_HASH.matcher(passwordHash).matches()) {
-            throw new IllegalArgumentException("passwordHash must be a BCrypt encoded value");
+            throw new InvalidUserAccountException("passwordHash must be a BCrypt encoded value");
         }
         return passwordHash;
     }
@@ -164,8 +171,13 @@ public final class UserAccount {
         Set<Role> copiedRoles = new LinkedHashSet<>(roles);
         long distinctCodes = copiedRoles.stream().map(Role::code).distinct().count();
         if (distinctCodes != copiedRoles.size()) {
-            throw new IllegalArgumentException("roles must not contain duplicate role codes");
+            throw new InvalidUserAccountException("roles must not contain duplicate role codes");
         }
         return copiedRoles;
+    }
+
+    public static final class InvalidAccountStatusTransitionException extends IllegalStateException { }
+    public static final class InvalidUserAccountException extends IllegalArgumentException {
+        public InvalidUserAccountException(String message) { super(message); }
     }
 }

@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 import com.campus.identity.domain.RoleCode;
 import com.campus.identity.domain.UserAccount;
 import com.campus.identity.domain.UserAccountRepository;
+import com.campus.identity.domain.UserAccountPage;
+import com.campus.identity.domain.UserAccountSearch;
 import com.campus.identity.infrastructure.persistence.entity.RoleEntity;
 import com.campus.identity.infrastructure.persistence.entity.UserAccountEntity;
 import org.springframework.stereotype.Repository;
@@ -87,5 +89,24 @@ class UserAccountPersistenceAdapter implements UserAccountRepository {
     @Transactional(readOnly = true)
     public long countActiveAdministrators() {
         return userAccountJpaRepository.countActiveAdministrators();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserAccountPage search(UserAccountSearch search) {
+        org.springframework.data.jpa.domain.Specification<UserAccountEntity> specification = (root, query, builder) -> {
+            java.util.List<jakarta.persistence.criteria.Predicate> predicates = new java.util.ArrayList<>();
+            if (search.query() != null) {
+                String value = "%" + search.query().toLowerCase(Locale.ROOT) + "%";
+                predicates.add(builder.or(builder.like(builder.lower(root.get("email")), value), builder.like(builder.lower(root.get("displayName")), value)));
+            }
+            if (search.status() != null) predicates.add(builder.equal(root.get("status"), search.status()));
+            if (search.role() != null) predicates.add(builder.equal(root.join("roles").get("code"), search.role()));
+            return builder.and(predicates.toArray(jakarta.persistence.criteria.Predicate[]::new));
+        };
+        org.springframework.data.domain.Sort sort = org.springframework.data.domain.Sort.by(search.ascending() ? org.springframework.data.domain.Sort.Direction.ASC : org.springframework.data.domain.Sort.Direction.DESC, search.sortField())
+                .and(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.ASC, "id"));
+        var result = userAccountJpaRepository.findAll(specification, org.springframework.data.domain.PageRequest.of(search.page(), search.size(), sort));
+        return new UserAccountPage(result.getContent().stream().map(mapper::toDomain).toList(), result.getTotalElements());
     }
 }

@@ -40,25 +40,26 @@ public class SecurityMutationCoordinator {
     @Transactional
     public UserAccount changeStatus(UUID actorId, UUID targetId, AccountStatus status, long expectedVersion) {
         return mutate(actorId, targetId, expectedVersion, status != AccountStatus.ACTIVE, AdminAuditAction.STATUS_CHANGED, target -> target.changeStatus(status),
-                target -> target.status() == AccountStatus.ACTIVE && status != AccountStatus.ACTIVE, "STATUS_CHANGED");
+                target -> target.status() == AccountStatus.ACTIVE && status != AccountStatus.ACTIVE, target -> target.status() == status, "STATUS_CHANGED");
     }
 
     @Transactional
     public UserAccount replaceRoles(UUID actorId, UUID targetId, Set<Role> roles, long expectedVersion) {
         return mutate(actorId, targetId, expectedVersion, !hasAdmin(roles), AdminAuditAction.ROLES_REPLACED, target -> target.replaceRoles(roles),
-                target -> hasAdmin(target) && !hasAdmin(roles), "ROLES_REPLACED");
+                target -> hasAdmin(target) && !hasAdmin(roles), target -> false, "ROLES_REPLACED");
     }
 
     @Transactional
     public UserAccount resetPassword(UUID actorId, UUID targetId, String passwordHash, long expectedVersion) {
         return mutate(actorId, targetId, expectedVersion, false, AdminAuditAction.PASSWORD_RESET, target -> target.replacePasswordHash(passwordHash),
-                target -> false, "PASSWORD_RESET");
+                target -> false, target -> false, "PASSWORD_RESET");
     }
 
     private UserAccount mutate(UUID actorId, UUID targetId, long expectedVersion, boolean mayReduceAdministrators, AdminAuditAction action,
-            java.util.function.Consumer<UserAccount> mutation, java.util.function.Predicate<UserAccount> reducesAdmins, String reason) {
+            java.util.function.Consumer<UserAccount> mutation, java.util.function.Predicate<UserAccount> reducesAdmins,
+            java.util.function.Predicate<UserAccount> noOp, String reason) {
         if (expectedVersion < 0) {
-            throw new IllegalArgumentException("expectedVersion must not be negative");
+            throw new InvalidExpectedVersionException();
         }
         if (mayReduceAdministrators) {
             guardRepository.lock();
@@ -66,6 +67,9 @@ public class SecurityMutationCoordinator {
         UserAccount target = userAccountRepository.findByIdForUpdate(targetId).orElseThrow();
         if (target.rowVersion() != expectedVersion) {
             throw new ConcurrentModificationException();
+        }
+        if (noOp.test(target)) {
+            return target;
         }
         if (reducesAdmins.test(target) && userAccountRepository.countActiveAdministrators() <= 1) {
             throw new LastActiveAdministratorRequiredException();
@@ -85,4 +89,6 @@ public class SecurityMutationCoordinator {
 
     private static boolean hasAdmin(UserAccount account) { return hasAdmin(account.roles()); }
     private static boolean hasAdmin(Set<Role> roles) { return roles.stream().anyMatch(role -> role.code() == RoleCode.ADMIN); }
+
+    public static final class InvalidExpectedVersionException extends RuntimeException { }
 }

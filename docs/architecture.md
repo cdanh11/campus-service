@@ -4,7 +4,7 @@
 
 **Confirmed:** Campus Service is a Spring Boot 3.5.16 modular monolith with base package `com.campus`, PostgreSQL, and Flyway.
 
-**Proposed:** API versioning details, JWT token lifecycle, and observability implementation will be selected in later phases.
+**Confirmed:** JWT authentication and the token lifecycle are implemented for Identity. Administrator user management follows accepted [ADR 0004](decisions/0004-admin-user-management-policy.md).
 
 ## System Context
 
@@ -19,7 +19,7 @@ flowchart LR
     Future --> DB
 ```
 
-The diagram describes the intended modular direction. Phase 1A provides only the application bootstrap, database migration baseline, and health endpoint; no business module is implemented.
+The diagram describes the implemented modular direction. Phase 1B includes the Identity module with authentication and administrator user management.
 
 ## Modular Monolith
 
@@ -60,7 +60,7 @@ The exact source layout is proposed and will be validated during Phase 1. It mus
 
 ## Security Direction
 
-Spring Security with JWT-based authentication is proposed for the initial backend. Identity will own authentication and role-based authorization foundations. Authorization must be enforced at the application boundary as well as configured at the API boundary where appropriate. Token signing, expiry, refresh, revocation, and key handling are unresolved design details and must be decided before production use.
+Spring Security with JWT-based authentication is implemented for Identity. `/api/v1/admin/**` requires `ROLE_ADMIN`, while the application layer uses the validated JWT subject UUID as the mutation actor. Authorization is enforced at both boundaries. Token signing, expiry, refresh, and revocation follow accepted ADR 0003; administrator management follows ADR 0004.
 
 ## Database Ownership
 

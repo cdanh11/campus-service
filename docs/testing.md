@@ -24,9 +24,9 @@ flowchart BT
 
 ## Current Tooling
 
-Phase 1A uses JUnit 5, Spring Boot Test, Testcontainers PostgreSQL, and Flyway. The verified Windows command is `./mvnw.cmd clean verify` when run from PowerShell as `.\mvnw.cmd clean verify`.
+Phase 1B uses JUnit 5, Spring Boot Test, MockMvc, Testcontainers PostgreSQL, and Flyway. The verified Windows command is `./mvnw.cmd clean verify` when run from PowerShell as `.\mvnw.cmd clean verify`.
 
-The bootstrap includes an application-context integration test that verifies Flyway applied version `V1__baseline.sql` and a random-port health endpoint integration test that verifies `GET /actuator/health` returns HTTP 200 with `UP`. Both tests run against PostgreSQL Testcontainers and do not connect to a developer's local database.
+Integration coverage verifies the health endpoint, Flyway migrations through V5, authentication and authorization boundaries, and administrator user-management flows. These tests run against PostgreSQL Testcontainers and do not connect to a developer's local database.
 
 ## Authentication and Authorization
 

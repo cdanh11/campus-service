@@ -16,4 +16,6 @@ public interface UserAccountRepository {
     Optional<UserAccount> findByEmail(String email);
 
     long countActiveAdministrators();
+
+    UserAccountPage search(UserAccountSearch search);
 }

@@ -22,6 +22,7 @@ import jakarta.persistence.Version;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "identity_users")
@@ -60,6 +61,7 @@ public class UserAccountEntity {
     private Instant updatedAt;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @BatchSize(size = 100)
     @JoinTable(
             name = "identity_user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
