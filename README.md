@@ -61,7 +61,7 @@ Campus Service will begin as a modular monolith: one deployable application with
 
 ## Status
 
-**Phase 1A: Spring Boot bootstrap.** The repository contains a Maven-based Spring Boot application, a non-business Flyway baseline migration, an Actuator health endpoint, Testcontainers PostgreSQL integration tests, and local PostgreSQL Compose configuration. No business-domain, Identity and Access, authentication, or production deployment capability is implemented.
+**Phase 1B: Identity and Access.** Identity persistence, JWT authentication, and administrator user-management endpoints are implemented. Administrator endpoints require `ROLE_ADMIN`; create, list, get, status change, role replacement, and password reset are available under `/api/v1/admin/users`. Production deployment capability remains out of scope.
 
 ## Planned Phases
 
@@ -74,6 +74,7 @@ Campus Service will begin as a modular monolith: one deployable application with
 - [Architecture](docs/architecture.md): system boundaries and technical direction.
 - [Development](docs/development.md): local workflow and repository conventions.
 - [Testing](docs/testing.md): test strategy and evidence expectations.
+- [Initial Administrator Provisioning](docs/runbooks/initial-admin-provisioning.md): safe operational handoff for the first administrator.
 - [Architecture Decision Records](docs/decisions/README.md): durable technical decisions.
 - [Agent Instructions](AGENTS.md): concise operating rules for coding agents.
 

@@ -11,3 +11,8 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
+
+campus:
+  security:
+    refresh-cookie:
+      secure: ${REFRESH_COOKIE_SECURE:false}

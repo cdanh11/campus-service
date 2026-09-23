@@ -7,3 +7,18 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
+
+campus:
+  security:
+    jwt:
+      issuer: campus-service
+      audience: campus-service-clients
+      secret: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
+      access-token-ttl: PT15M
+    refresh-token-ttl: P30D
+    refresh-cookie:
+      name: CAMPUS_REFRESH
+      secure: true
+      same-site: Lax
+      path: /api/v1/auth
+    allowed-origins: http://localhost:3000

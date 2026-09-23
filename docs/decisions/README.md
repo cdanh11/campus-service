@@ -29,3 +29,5 @@ Create an ADR when a decision changes module boundaries, persistence strategy, s
 
 - [0001: Modular Monolith First](0001-modular-monolith-first.md)
 - [0002: PostgreSQL and Flyway](0002-database-and-migration.md)
+- [0003: Stateless Access Tokens and Rotating Refresh Cookies](0003-authentication-token-strategy.md)
+- [0004: Administrator User Management Policy](0004-admin-user-management-policy.md)

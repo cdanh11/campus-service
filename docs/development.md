@@ -2,7 +2,7 @@
 
 ## Current State
 
-Campus Service is in Phase 1A. The repository contains a Java 21 Spring Boot 3.5.16 Maven project, Maven Wrapper, Flyway baseline migration, Testcontainers integration tests, and PostgreSQL Compose configuration.
+Phase 1A bootstrap is complete and Phase 1B Identity and Access is implemented. The repository contains JWT authentication, Spring Security authorization, Identity persistence, and administrator user-management endpoints backed by PostgreSQL and Flyway. Production deployment remains out of scope.
 
 ## Prerequisites
 
@@ -35,7 +35,7 @@ Expected variables cover the application profile, server port, PostgreSQL connec
 5. Start local PostgreSQL with `docker compose --env-file .env up -d postgres`, then configure the same variables in the IDE or shell before running the application.
 6. Review migrations, logs, and the diff before opening a change for review.
 
-The Maven Wrapper command above was verified on Windows. Docker Compose and a long-running local application were not started during the Phase 1A bootstrap change.
+The Maven Wrapper command above is the required verification command on Windows. Testcontainers starts an isolated PostgreSQL instance; Docker Compose and a long-running local application are optional local-development workflows.
 
 ## Branch and Commit Workflow
 
@@ -50,6 +50,8 @@ The Maven Wrapper command above was verified on Windows. Docker Compose and a lo
 `mvnw clean verify` is the current validation command. Formatting and static-analysis tooling has not been selected yet and must not be represented as configured.
 
 Flyway will own schema evolution. New migrations must be ordered, reviewed, and tested against a clean PostgreSQL database. Do not alter a migration after it has been applied outside disposable local development; create a corrective migration instead.
+
+Warning: V5 is pre-release and its checksum can change before release. If V5 has already run against a disposable local database, do not use `flyway repair`; stop the local stack, remove that disposable database volume, recreate it, and rerun migrations. Once V5 is released or has run outside disposable local development, do not edit it; add a corrective migration.
 
 ## Windows and WSL
 
