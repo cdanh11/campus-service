@@ -1,6 +1,19 @@
 ALTER TABLE identity_users ADD COLUMN display_name VARCHAR(100);
-UPDATE identity_users SET display_name = SUBSTRING(email FROM 1 FOR 100) WHERE display_name IS NULL;
-ALTER TABLE identity_users ADD CONSTRAINT ck_identity_users_display_name_not_blank CHECK (LENGTH(BTRIM(display_name)) >= 2);
+-- Normalize with exactly space, tab, newline, carriage return, vertical tab, and form feed.
+WITH legacy_names AS (
+    SELECT id, btrim(left(btrim(email, chr(32)||chr(9)||chr(10)||chr(13)||chr(11)||chr(12)), 100),
+                     chr(32)||chr(9)||chr(10)||chr(13)||chr(11)||chr(12)) AS candidate
+    FROM identity_users
+)
+UPDATE identity_users AS users
+SET display_name = CASE
+    WHEN char_length(legacy_names.candidate) >= 2 THEN legacy_names.candidate
+    ELSE 'User ' || users.id::text
+END
+FROM legacy_names
+WHERE users.id = legacy_names.id AND users.display_name IS NULL;
+ALTER TABLE identity_users ADD CONSTRAINT ck_identity_users_display_name_not_blank
+    CHECK (char_length(btrim(display_name, chr(32)||chr(9)||chr(10)||chr(13)||chr(11)||chr(12))) >= 2);
 ALTER TABLE identity_users ALTER COLUMN display_name SET NOT NULL;
 ALTER TABLE identity_users ADD COLUMN row_version BIGINT NOT NULL DEFAULT 0;
 
