@@ -51,6 +51,8 @@ The Maven Wrapper command above is the required verification command on Windows.
 
 Flyway will own schema evolution. New migrations must be ordered, reviewed, and tested against a clean PostgreSQL database. Do not alter a migration after it has been applied outside disposable local development; create a corrective migration instead.
 
+Warning: V5 is pre-release and its checksum can change before release. If V5 has already run against a disposable local database, do not use `flyway repair`; stop the local stack, remove that disposable database volume, recreate it, and rerun migrations. Once V5 is released or has run outside disposable local development, do not edit it; add a corrective migration.
+
 ## Windows and WSL
 
 Campus Service supports native Windows development and WSL-based development. WSL is optional. Use paths, line endings, Docker access, and shell commands consistently within the chosen environment. If Maven or Docker runs in WSL, avoid mixing its generated files with tools configured against a different Windows path unless that workflow has been verified.
