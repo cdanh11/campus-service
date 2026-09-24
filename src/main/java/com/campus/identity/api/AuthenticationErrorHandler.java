@@ -9,6 +9,7 @@ import com.campus.identity.application.LastActiveAdministratorRequiredException;
 import com.campus.identity.application.SecurityMutationCoordinator.InvalidExpectedVersionException;
 import com.campus.identity.domain.UserAccount.InvalidAccountStatusTransitionException;
 import com.campus.organization.application.OrganizationUnitManagementService;
+import com.campus.student.application.StudentManagementService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -71,6 +72,16 @@ public class AuthenticationErrorHandler {
     public org.springframework.http.ResponseEntity<ErrorResponse> organizationDuplicate(HttpServletRequest request) { return error(HttpStatus.CONFLICT, "ORGANIZATION_UNIT_CODE_ALREADY_EXISTS", "Organization unit code is already in use", request); }
     @ExceptionHandler(OrganizationUnitManagementService.ConcurrentOrganizationUnitModificationException.class)
     public org.springframework.http.ResponseEntity<ErrorResponse> organizationConcurrent(HttpServletRequest request) { return error(HttpStatus.CONFLICT, "CONCURRENT_MODIFICATION", "Organization unit was modified concurrently", request); }
+    @ExceptionHandler(StudentManagementService.RequestValidationException.class)
+    public org.springframework.http.ResponseEntity<ErrorResponse> studentValidation(HttpServletRequest request) { return error(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", "Request validation failed", request); }
+    @ExceptionHandler(StudentManagementService.StudentNotFoundException.class)
+    public org.springframework.http.ResponseEntity<ErrorResponse> studentNotFound(HttpServletRequest request) { return error(HttpStatus.NOT_FOUND, "STUDENT_NOT_FOUND", "Student was not found", request); }
+    @ExceptionHandler(StudentManagementService.StudentNumberAlreadyExistsException.class)
+    public org.springframework.http.ResponseEntity<ErrorResponse> studentDuplicate(HttpServletRequest request) { return error(HttpStatus.CONFLICT, "STUDENT_NUMBER_ALREADY_EXISTS", "Student number is already in use", request); }
+    @ExceptionHandler(StudentManagementService.OrganizationUnitUnavailableException.class)
+    public org.springframework.http.ResponseEntity<ErrorResponse> studentOrganization(HttpServletRequest request) { return error(HttpStatus.CONFLICT, "ORGANIZATION_UNIT_UNAVAILABLE", "Organization unit is unavailable", request); }
+    @ExceptionHandler(StudentManagementService.ConcurrentStudentModificationException.class)
+    public org.springframework.http.ResponseEntity<ErrorResponse> studentConcurrent(HttpServletRequest request) { return error(HttpStatus.CONFLICT, "CONCURRENT_MODIFICATION", "Student was modified concurrently", request); }
     @ExceptionHandler(Exception.class)
     public org.springframework.http.ResponseEntity<ErrorResponse> internal(HttpServletRequest request) { return error(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "An unexpected error occurred", request); }
     private org.springframework.http.ResponseEntity<ErrorResponse> error(HttpStatus status, String code, String message, HttpServletRequest request) { return org.springframework.http.ResponseEntity.status(status).body(new ErrorResponse(Instant.now(), status.value(), code, message, request.getRequestURI(), null)); }
