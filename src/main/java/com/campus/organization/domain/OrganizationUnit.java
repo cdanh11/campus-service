@@ -8,7 +8,7 @@ public record OrganizationUnit(UUID id, String code, String name, OrganizationUn
                                OrganizationUnitStatus status, long rowVersion, Instant createdAt, Instant updatedAt) {
     public OrganizationUnit {
         Objects.requireNonNull(id, "id must not be null");
-        code = normalize(code, 32, "code");
+        code = normalize(code, 32, "code").toUpperCase(java.util.Locale.ROOT);
         name = normalize(name, 160, "name");
         Objects.requireNonNull(unitType, "unitType must not be null");
         Objects.requireNonNull(status, "status must not be null");

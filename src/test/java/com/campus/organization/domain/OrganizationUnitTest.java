@@ -23,4 +23,9 @@ class OrganizationUnitTest {
         assertThatThrownBy(() -> OrganizationUnit.create(UUID.randomUUID(), "EN", " A ", OrganizationUnitType.FACULTY, OrganizationUnitStatus.ACTIVE, Instant.now()))
                 .isInstanceOf(OrganizationUnit.InvalidOrganizationUnitException.class);
     }
+
+    @Test
+    void canonicalizesCodes() {
+        assertThat(OrganizationUnit.create(UUID.randomUUID(), " eng ", "Engineering", OrganizationUnitType.FACULTY, OrganizationUnitStatus.ACTIVE, Instant.now()).code()).isEqualTo("ENG");
+    }
 }

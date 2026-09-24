@@ -4,7 +4,7 @@
 
 **Confirmed:** Campus Service is a Spring Boot 3.5.16 modular monolith with base package `com.campus`, PostgreSQL, and Flyway.
 
-**Confirmed:** JWT authentication and the token lifecycle are implemented for Identity. Administrator user management follows accepted [ADR 0004](decisions/0004-admin-user-management-policy.md).
+**Confirmed:** JWT authentication and the token lifecycle are implemented for Identity. Administrator user management follows accepted [ADR 0004](decisions/0004-admin-user-management-policy.md). Phase 2 adds Organization Unit, Student Registry, and Faculty/Staff Registry modules with optional Identity links, audited administrative mutations, and consistent administrative search APIs.
 
 ## System Context
 
@@ -14,12 +14,12 @@ Campus Service will provide a backend platform for university operations. The fi
 flowchart LR
     Client[Campus clients and integrations] --> API[Campus Service API]
     API --> IAM[Identity and Access]
-    API --> Future[Future domain modules]
+    API --> Registry[Organization and people registries]
     IAM --> DB[(PostgreSQL)]
-    Future --> DB
+    Registry --> DB
 ```
 
-The diagram describes the implemented modular direction. Phase 1B includes the Identity module with authentication and administrator user management.
+The diagram describes the implemented modular direction. Phase 1B includes the Identity module with authentication and administrator user management; Phase 2 includes the organization and people registry foundations.
 
 ## Modular Monolith
 
@@ -29,7 +29,10 @@ The initial system is one deployable application with modules organized by busin
 
 - `shared`: narrowly scoped cross-cutting primitives, error conventions, and shared technical support; it must not become a dumping ground for domain logic.
 - `identity`: users, roles, credentials, authentication, and authorization.
-- Future modules: `student`, `faculty`, `academic`, `dormitory`, `finance`, and supporting modules when their scope is approved.
+- `organization`: reference organization units used by approved registry modules.
+- `student`: student profiles and their optional Identity link.
+- `personnel`: faculty and staff profiles and their optional Identity link.
+- Future modules: `academic`, `dormitory`, `finance`, and supporting modules when their scope is approved.
 
 A module owns its application logic, domain model, persistence mapping, and external API adapters. Cross-module access goes through explicit application-facing contracts, not repositories, entities, or database tables from another module.
 

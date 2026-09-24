@@ -1,3 +1,3 @@
 package com.campus.personnel.infrastructure.persistence;
 import java.util.*; import com.campus.personnel.infrastructure.persistence.entity.FacultyStaffEntity; import jakarta.persistence.LockModeType; import org.springframework.data.jpa.repository.*;
-interface FacultyStaffJpaRepository extends JpaRepository<FacultyStaffEntity,UUID>{ boolean existsByPersonnelNumber(String personnelNumber); @Lock(LockModeType.PESSIMISTIC_WRITE) @Query("select member from FacultyStaffEntity member where member.id=:id") Optional<FacultyStaffEntity> findByIdForUpdate(UUID id); }
+interface FacultyStaffJpaRepository extends JpaRepository<FacultyStaffEntity,UUID>, JpaSpecificationExecutor<FacultyStaffEntity>{ boolean existsByPersonnelNumber(String personnelNumber); @Lock(LockModeType.PESSIMISTIC_WRITE) @Query("select member from FacultyStaffEntity member where member.id=:id") Optional<FacultyStaffEntity> findByIdForUpdate(UUID id); }
