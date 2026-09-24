@@ -58,8 +58,10 @@ class AdminOrganizationUnitControllerIntegrationTest {
                 .andExpect(jsonPath("$.code").value("ENG")).andExpect(jsonPath("$.name").value("Engineering"))
                 .andExpect(jsonPath("$.status").value("ACTIVE")).andReturn().getResponse().getContentAsString();
         String id = created.replaceFirst(".*\\\"id\\\":\\\"([^\\\"]+).*", "$1");
+        assertThat(jdbcTemplate.queryForObject("select count(*) from people_registry_audit_events where actor_user_id = ? and target_id = ? and action = 'CREATED'", Long.class,
+                users.findByEmail("organization-admin@campus.example").orElseThrow().id(), java.util.UUID.fromString(id))).isEqualTo(1L);
         mockMvc.perform(get("/api/v1/admin/organization-units").header("Authorization", "Bearer " + admin))
-                .andExpect(status().isOk()).andExpect(jsonPath("$[?(@.id == '" + id + "')].code").value("ENG"));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content[?(@.id == '" + id + "')].code").value("ENG"));
         mockMvc.perform(put("/api/v1/admin/organization-units/" + id).header("Authorization", "Bearer " + admin).contentType(MediaType.APPLICATION_JSON)
                         .content("{\"code\":\"ENG\",\"name\":\"Engineering and Technology\",\"unitType\":\"FACULTY\",\"status\":\"INACTIVE\",\"expectedVersion\":0}"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("INACTIVE")).andExpect(jsonPath("$.rowVersion").value(1));
@@ -95,6 +97,19 @@ class AdminOrganizationUnitControllerIntegrationTest {
                 .hasMessageContaining("ck_organization_units_code_not_blank");
         assertThatThrownBy(() -> jdbcTemplate.update("insert into organization_units (id, code, name, unit_type) values (?, ?, ?, ?)", java.util.UUID.randomUUID(), "BAD", "Invalid", "SCHOOL"))
                 .hasMessageContaining("ck_organization_units_unit_type");
+    }
+
+    @Test
+    void searchesPaginatesAndValidatesOrganizationQueries() throws Exception {
+        String admin = tokens.accessToken(user("organization-query-admin@campus.example", RoleCode.ADMIN));
+        for (String[] unit : java.util.List.of(new String[]{"ART", "Arts"}, new String[]{"BIO", "Biology"}, new String[]{"CHE", "Chemistry"})) {
+            mockMvc.perform(post("/api/v1/admin/organization-units").header("Authorization", "Bearer " + admin).contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"code\":\"" + unit[0] + "\",\"name\":\"" + unit[1] + "\",\"unitType\":\"FACULTY\"}" )).andExpect(status().isCreated());
+        }
+        mockMvc.perform(get("/api/v1/admin/organization-units?page=0&size=1&q=art&sort=name,desc").header("Authorization", "Bearer " + admin))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content.length()").value(1)).andExpect(jsonPath("$.content[0].code").value("ART")).andExpect(jsonPath("$.totalElements").value(1));
+        mockMvc.perform(get("/api/v1/admin/organization-units?size=101").header("Authorization", "Bearer " + admin))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("INVALID_QUERY_PARAMETER"));
     }
 
     private UserAccount user(String email, RoleCode roleCode) {
