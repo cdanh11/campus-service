@@ -2,7 +2,7 @@
 
 ## Current State
 
-Phase 1A bootstrap is complete and Phase 1B Identity and Access is implemented. The repository contains JWT authentication, Spring Security authorization, Identity persistence, and administrator user-management endpoints backed by PostgreSQL and Flyway. Production deployment remains out of scope.
+Phase 1A bootstrap and Phase 1B Identity and Access are complete. The repository contains JWT authentication, Spring Security authorization, Identity persistence, and administrator user-management endpoints backed by PostgreSQL and Flyway. Phase 1 release readiness adds CI, a production profile, health probes, a container build, and a release runbook. Selecting production infrastructure and running the release remain environment-owner responsibilities.
 
 ## Prerequisites
 
@@ -36,6 +36,12 @@ Expected variables cover the application profile, server port, PostgreSQL connec
 6. Review migrations, logs, and the diff before opening a change for review.
 
 The Maven Wrapper command above is the required verification command on Windows. Testcontainers starts an isolated PostgreSQL instance; Docker Compose and a long-running local application are optional local-development workflows.
+
+## Production Profile And Container Build
+
+Use `SPRING_PROFILES_ACTIVE=production` only when the deployment platform supplies the PostgreSQL connection values, `JWT_SECRET`, and exact `ALLOWED_ORIGINS`. The production profile has no local datasource fallback, keeps Hibernate at `validate`, enables Flyway, and forces Secure refresh cookies.
+
+Build the neutral deployment artifact with `docker build --tag campus-service:<version> .`. The image runs the Spring Boot jar as a non-root user. Complete release steps, deployment checks, and recovery guidance are in [Phase 1 Release](runbooks/phase-1-release.md).
 
 ## Branch and Commit Workflow
 

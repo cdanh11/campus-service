@@ -61,7 +61,7 @@ Campus Service will begin as a modular monolith: one deployable application with
 
 ## Status
 
-**Phase 1B: Identity and Access.** Identity persistence, JWT authentication, and administrator user-management endpoints are implemented. Administrator endpoints require `ROLE_ADMIN`; create, list, get, status change, role replacement, and password reset are available under `/api/v1/admin/users`. Production deployment capability remains out of scope.
+**Phase 1: Release readiness.** Phase 1B Identity and Access is merged to `main`: identity persistence, JWT authentication, and administrator user-management endpoints are implemented. Administrator endpoints require `ROLE_ADMIN`; create, list, get, status change, role replacement, and password reset are available under `/api/v1/admin/users`. The repository now includes production-profile configuration, health probes, CI, a container build, and a release runbook. Selecting infrastructure and performing production deployment remain environment-owner responsibilities.
 
 ## Planned Phases
 
@@ -75,6 +75,7 @@ Campus Service will begin as a modular monolith: one deployable application with
 - [Development](docs/development.md): local workflow and repository conventions.
 - [Testing](docs/testing.md): test strategy and evidence expectations.
 - [Initial Administrator Provisioning](docs/runbooks/initial-admin-provisioning.md): safe operational handoff for the first administrator.
+- [Phase 1 Release](docs/runbooks/phase-1-release.md): release gate, runtime configuration, deployment verification, and recovery guidance.
 - [Architecture Decision Records](docs/decisions/README.md): durable technical decisions.
 - [Agent Instructions](AGENTS.md): concise operating rules for coding agents.
 
