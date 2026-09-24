@@ -26,7 +26,7 @@ flowchart BT
 
 Phase 1B uses JUnit 5, Spring Boot Test, MockMvc, Testcontainers PostgreSQL, and Flyway. The verified Windows command is `./mvnw.cmd clean verify` when run from PowerShell as `.\mvnw.cmd clean verify`.
 
-The 68 tests verified by `./mvnw.cmd clean verify` cover the health endpoint, Flyway migrations through V5 including a V4-to-V5 upgrade, authentication and authorization boundaries, administrator user-management flows, multi-session HTTP revocation, and audit-failure rollback. Integration tests run against PostgreSQL Testcontainers and do not connect to a developer's local database.
+The 70 tests verified by `./mvnw.cmd clean verify` cover health and readiness probes, production-profile configuration, Flyway migrations through V5 including a V4-to-V5 upgrade, authentication and authorization boundaries, administrator user-management flows, multi-session HTTP revocation, and audit-failure rollback. Integration tests run against PostgreSQL Testcontainers and do not connect to a developer's local database.
 
 ## Authentication and Authorization
 
@@ -38,10 +38,10 @@ Every persistence change must include migration verification. Integration tests 
 
 `FlywayV4ToV5UpgradeIntegrationTest` first migrates to V4, inserts legacy users and role assignments, and then applies only V5. Its six tests verify explicit space/tab/newline/carriage-return/vertical-tab/form-feed normalization, short/blank fallbacks, truncation and Unicode boundaries, preservation of identity fields and roles, display-name constraints, row-version defaults and nullability, guard seed/constraints and the production lock query across commit and rollback, and audit columns/defaults/foreign keys/index and valid/invalid inserts. A minimal JPA context validates all production entities against that same upgraded schema with Flyway disabled and confirms migration history is unchanged.
 
-Verified on 2026-09-23:
+Verified on 2026-09-24:
 
 - `.\mvnw.cmd "-Dtest=FlywayV4ToV5UpgradeIntegrationTest,IdentityPersistenceIntegrationTest" test`: BUILD SUCCESS; 15 tests, no failures/errors/skips; 36.025 seconds.
-- `.\mvnw.cmd clean verify`: BUILD SUCCESS; 68 tests, no failures/errors/skips; 1 minute 40 seconds.
+- `.\mvnw.cmd clean verify`: BUILD SUCCESS; 70 tests, no failures/errors/skips; 1 minute 43 seconds.
 
 These successful runs required Docker named-pipe access outside the agent sandbox; the initial sandboxed focused run failed during Docker discovery before migration assertions ran.
 

@@ -39,6 +39,20 @@ class HealthEndpointIntegrationTest {
                 "http://localhost:" + port + "/actuator/health", String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEqualTo("{\"status\":\"UP\"}");
+        assertThat(response.getBody())
+                .contains("\"status\":\"UP\"")
+                .contains("\"liveness\"", "\"readiness\"")
+                .doesNotContain("components", "details");
+    }
+
+    @Test
+    void exposesLivenessAndReadinessWithoutAuthentication() {
+        for (String probe : new String[] {"liveness", "readiness"}) {
+            ResponseEntity<String> response = restTemplate.getForEntity(
+                    "http://localhost:" + port + "/actuator/health/" + probe, String.class);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).contains("\"status\":\"UP\"");
+        }
     }
 }
