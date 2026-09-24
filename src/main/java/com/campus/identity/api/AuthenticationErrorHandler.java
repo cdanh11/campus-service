@@ -10,6 +10,7 @@ import com.campus.identity.application.SecurityMutationCoordinator.InvalidExpect
 import com.campus.identity.domain.UserAccount.InvalidAccountStatusTransitionException;
 import com.campus.organization.application.OrganizationUnitManagementService;
 import com.campus.student.application.StudentManagementService;
+import com.campus.personnel.application.FacultyStaffManagementService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -82,6 +83,16 @@ public class AuthenticationErrorHandler {
     public org.springframework.http.ResponseEntity<ErrorResponse> studentOrganization(HttpServletRequest request) { return error(HttpStatus.CONFLICT, "ORGANIZATION_UNIT_UNAVAILABLE", "Organization unit is unavailable", request); }
     @ExceptionHandler(StudentManagementService.ConcurrentStudentModificationException.class)
     public org.springframework.http.ResponseEntity<ErrorResponse> studentConcurrent(HttpServletRequest request) { return error(HttpStatus.CONFLICT, "CONCURRENT_MODIFICATION", "Student was modified concurrently", request); }
+    @ExceptionHandler(FacultyStaffManagementService.RequestValidationException.class)
+    public org.springframework.http.ResponseEntity<ErrorResponse> personnelValidation(HttpServletRequest request) { return error(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", "Request validation failed", request); }
+    @ExceptionHandler(FacultyStaffManagementService.FacultyStaffNotFoundException.class)
+    public org.springframework.http.ResponseEntity<ErrorResponse> personnelNotFound(HttpServletRequest request) { return error(HttpStatus.NOT_FOUND, "FACULTY_STAFF_NOT_FOUND", "Faculty or staff member was not found", request); }
+    @ExceptionHandler(FacultyStaffManagementService.PersonnelNumberAlreadyExistsException.class)
+    public org.springframework.http.ResponseEntity<ErrorResponse> personnelDuplicate(HttpServletRequest request) { return error(HttpStatus.CONFLICT, "PERSONNEL_NUMBER_ALREADY_EXISTS", "Personnel number is already in use", request); }
+    @ExceptionHandler(FacultyStaffManagementService.OrganizationUnitUnavailableException.class)
+    public org.springframework.http.ResponseEntity<ErrorResponse> personnelOrganization(HttpServletRequest request) { return error(HttpStatus.CONFLICT, "ORGANIZATION_UNIT_UNAVAILABLE", "Organization unit is unavailable", request); }
+    @ExceptionHandler(FacultyStaffManagementService.ConcurrentFacultyStaffModificationException.class)
+    public org.springframework.http.ResponseEntity<ErrorResponse> personnelConcurrent(HttpServletRequest request) { return error(HttpStatus.CONFLICT, "CONCURRENT_MODIFICATION", "Faculty or staff member was modified concurrently", request); }
     @ExceptionHandler(Exception.class)
     public org.springframework.http.ResponseEntity<ErrorResponse> internal(HttpServletRequest request) { return error(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "An unexpected error occurred", request); }
     private org.springframework.http.ResponseEntity<ErrorResponse> error(HttpStatus status, String code, String message, HttpServletRequest request) { return org.springframework.http.ResponseEntity.status(status).body(new ErrorResponse(Instant.now(), status.value(), code, message, request.getRequestURI(), null)); }
