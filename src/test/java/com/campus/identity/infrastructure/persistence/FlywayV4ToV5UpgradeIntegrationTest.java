@@ -64,7 +64,7 @@ class FlywayV4ToV5UpgradeIntegrationTest {
         legacy("ab" + " ".repeat(98) + "z", "ab");
         legacy("q" + " ".repeat(99) + "z", null);
 
-        Flyway v5 = flyway(null);
+        Flyway v5 = flyway("5");
         assertThat(v5.migrate().migrationsExecuted).isEqualTo(1);
         v5.validate();
         assertThat(v5.info().applied()).extracting(info -> info.getVersion().getVersion())
