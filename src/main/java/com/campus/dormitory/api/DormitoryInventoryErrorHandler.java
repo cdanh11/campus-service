@@ -13,6 +13,12 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 @RestControllerAdvice(basePackageClasses = AdminDormitoryInventoryController.class)
 public class DormitoryInventoryErrorHandler {
+    @ExceptionHandler(AccommodationAssignmentService.AlreadyAssignedException.class)
+    ResponseEntity<Error> assigned(HttpServletRequest request) { return error(409, "ACCOMMODATION_ALREADY_ASSIGNED", request); }
+    @ExceptionHandler(AccommodationAssignmentService.StudentUnavailableException.class)
+    ResponseEntity<Error> student(HttpServletRequest request) { return error(409, "STUDENT_UNAVAILABLE", request); }
+    @ExceptionHandler(AccommodationAssignmentService.InvalidAssignmentStateException.class)
+    ResponseEntity<Error> assignmentState(HttpServletRequest request) { return error(409, "INVALID_ASSIGNMENT_STATE", request); }
     @ExceptionHandler({MethodArgumentNotValidException.class, IllegalArgumentException.class})
     ResponseEntity<Error> validation(HttpServletRequest request) { return error(400, "VALIDATION_FAILED", request); }
     @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
