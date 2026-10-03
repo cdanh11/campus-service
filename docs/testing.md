@@ -26,7 +26,7 @@ flowchart BT
 
 Phase 1, the Phase 2 registries and Phase 3 Academic foundations use JUnit 5, Spring Boot Test, MockMvc, Testcontainers PostgreSQL, and Flyway. The verified Windows command is `./mvnw.cmd clean verify` when run from PowerShell as `.\mvnw.cmd clean verify`.
 
-The 154 tests verified by `./mvnw.cmd clean verify` on 2026-10-03 cover health and readiness probes, production-profile configuration, Flyway migrations through V16 including V4-to-V5, V8-to-V10, V10-to-V11, V11-to-V13 and V13-to-V16 upgrades, authentication and authorization boundaries, administrator user-management flows, multi-session HTTP revocation, audit-failure rollback, the organization, student, and faculty/staff registries, Program/Course catalog validation, authorization, concurrent updates and paginated queries, and term/offering/section lifecycle and faculty-assignment rules. Integration tests run against PostgreSQL Testcontainers and do not connect to a developer's local database.
+The 176 tests verified by `./mvnw.cmd clean verify` on 2026-10-04 cover health and readiness probes, production-profile configuration, Flyway migrations through V17 including V4-to-V5, V8-to-V10, V10-to-V11, V11-to-V13, V13-to-V16 and V16-to-V17 upgrades, authentication and authorization boundaries, administrator user-management flows, multi-session HTTP revocation, audit-failure rollback, the organization, student, and faculty/staff registries, Program/Course catalog validation, authorization, concurrent updates and paginated queries, term/offering/section lifecycle and faculty-assignment rules, and administrative enrollment with capacity, withdrawal/re-enrollment and competing transaction protection. Integration tests run against PostgreSQL Testcontainers and do not connect to a developer's local database.
 
 ## Authentication and Authorization
 
@@ -80,6 +80,21 @@ Phase 3B adds 33 tests: 8 domain cases, 17 API cases and 8 V13→V16 upgrade/sch
 The genuine upgrade inserts representative identity/role/organization/student/personnel/catalog/audit fixtures at V13, captures complete records/history, applies exactly V14/V15/V16, and validates types/lengths/nullability/defaults/PK/FK/uniqueness/indexes/approved CHECK constraints through SQLSTATE assertions and boundary writes. A minimal JPA context validates all 14 currently implemented production entities against that exact upgraded public schema with Flyway disabled, and verifies unchanged migration history and legacy records. V1–V13 remain unchanged. The V11→V13 test freezes its entity scan at V13 packages so later delivery entities cannot silently change its validation target.
 
 Review PASS covers the domain/API contract, reference ownership, lock order (term → offering → section), error advice scope, database query bounds and import boundaries. Search and open-child checks use parent/status indexes; no load-test or benchmark result is claimed. Enrollment and broader Academic mutation audit remain Phase 3C/3D work.
+
+## Phase 3C Verification
+
+Verified on 2026-10-04:
+
+- `.\mvnw.cmd "-Dtest=EnrollmentTest,EnrollmentIntegrationTest,AcademicDeliveryIntegrationTest,FlywayV16ToV17EnrollmentUpgradeIntegrationTest,FlywayV13ToV16AcademicDeliveryUpgradeIntegrationTest" test`: BUILD SUCCESS; 47 tests, no failures/errors/skips; 1 minute 32 seconds. Subsequent cleanup removes the unused locking JPQL queries; full verification below covers the final source.
+- `.\mvnw.cmd clean verify`: BUILD SUCCESS; 176 tests, no failures/errors/skips; 4 minutes 18 seconds.
+
+Phase 3C adds 22 tests: 2 domain, 17 application/HTTP/transaction integration and 3 genuine V16→V17 upgrade/schema cases. Cases cover ADMIN-only routes, invalid request/query bounds, stale and duplicate rollback, immutable membership identity, available capacity, historical withdrawal, re-enrollment eligibility, inactive/missing Students, draft/closed sections, filters and actual timestamp-tie pagination. Separate transactions race for the last seat, duplicate membership, stale withdrawal, restored membership versus a new student, and section closure versus admission. A bounded PostgreSQL lock_timeout proves the production section lock blocks another transaction with SQLSTATE 55P03 and that acquisition succeeds after release.
+
+The first full run exposed a cached-entity version conflict before refresh in the old delivery locking query. Delivery adapters now acquire PESSIMISTIC_WRITE through refresh directly. A deterministic regression caches a section, commits closure on another connection, then asserts admission sees CLOSED and rolls back without creating membership. Existing 3B lifecycle/version/concurrency tests pass on the final source.
+
+The exact upgrade migrates to V16, inserts representative Identity/role/organization/Student/personnel/catalog/term/offering/section/audit records, snapshots every existing table and migration history, then applies only V17. It checks the new enrollment columns/defaults/nullability/PK/unique/FKs/CHECK/indexes, valid lifecycle SQL writes, and rejected writes with specific SQLSTATEs. A minimal context validates all 15 production entities against that same upgraded public schema with Flyway disabled; history and baseline data remain unchanged. The historical V16 context scans only its original 14 production entities. V1–V16 remain unchanged.
+
+Final review PASS requires the evidence matrix in the Phase 3C plan, inspected production transaction/query/module boundaries and clean diff checks. No benchmark, self-service, waitlist, registration window or broader Academic mutation audit is claimed; see ADR 0005 and Phase 3D.
 
 ## Naming Convention
 

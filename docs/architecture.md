@@ -8,7 +8,7 @@
 
 ## System Context
 
-Campus Service will provide a backend platform for university operations. Implemented capabilities cover Identity, organization and people registries, and Academic catalogs and delivery foundations; later use cases cover enrollment and selected campus operations.
+Campus Service will provide a backend platform for university operations. Implemented capabilities cover Identity, organization and people registries, Academic catalogs/delivery and administrative enrollment; later use cases cover selected campus operations.
 
 ```mermaid
 flowchart LR
@@ -21,7 +21,7 @@ flowchart LR
     Academic --> DB
 ```
 
-The diagram describes the implemented modular direction. Phase 1B includes the Identity module with authentication and administrator user management; Phase 2 includes the organization and people registry foundations; Phase 3A includes Program/Course catalogs; Phase 3B includes terms, offerings and sections.
+The diagram describes the implemented modular direction. Phase 1B includes the Identity module with authentication and administrator user management; Phase 2 includes the organization and people registry foundations; Phase 3A includes Program/Course catalogs; Phase 3B includes terms, offerings and sections; Phase 3C includes administrative enrollment through the Student application contract.
 
 ## Modular Monolith
 
@@ -34,7 +34,7 @@ The initial system is one deployable application with modules organized by busin
 - `organization`: reference organization units used by approved registry modules.
 - `student`: student profiles and their optional Identity link.
 - `personnel`: faculty and staff profiles and their optional Identity link.
-- `academic`: Program/Course catalog, terms, course offerings and class sections; enrollment remains future work.
+- `academic`: Program/Course catalog, terms, course offerings, class sections and administrative enrollment.
 - Future modules: `dormitory`, `finance`, and supporting modules when their scope is approved.
 
 A module owns its application logic, domain model, persistence mapping, and external API adapters. Cross-module access goes through explicit application-facing contracts, not repositories, entities, or database tables from another module.
@@ -84,4 +84,8 @@ A module may be extracted only after evidence supports it, such as independent s
 
 A course offering belongs to one term/course pair and retains its organization UUID; a class section belongs to one offering and owns its capacity and single faculty assignment. Academic owns the lifecycle checks. Delivery mutations lock term, then offering, then section where applicable to prevent concurrent parent closure and child opening. These are local database transactions within the monolith. The tradeoff is serialization of delivery mutations within a term; no load-test claim is made. Course/organization/faculty status is checked when opening and when relevant references are newly assigned; deactivation does not rewrite historical classes.
 
-Historical upgrade validation scans only production entity packages present at its target version. V13 validation excludes the new delivery entity package; V16 validation includes all currently implemented entities. Flyway remains disabled during exact-schema Hibernate validation.
+Historical upgrade validation scans only production entity packages present at its target version. V13 validation excludes delivery/enrollment; V16 validation includes delivery and excludes enrollment; V17 validation includes all currently implemented entities. Flyway remains disabled during exact-schema Hibernate validation.
+
+## Enrollment invariants
+
+Academic owns one retained enrollment per student/section pair. Only ENROLLED consumes capacity; WITHDRAWN may be restored using expectedVersion and full eligibility/capacity checks. Enrollment writes use the same term → offering → section lock order before counting seats or refreshing an existing enrollment. Student eligibility uses the Student application service, with no cross-module persistence lock; later deactivation does not rewrite enrollment history. Withdrawal is possible after closure. Direct SQL admission is unsupported and capacity is an application transaction invariant, rather than a database CHECK. See [ADR 0005](decisions/0005-enrollment-capacity-and-lifecycle.md) for tradeoffs and deferred scope.

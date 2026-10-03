@@ -12,7 +12,7 @@ Build an extensible, maintainable platform that can support campus operations to
 
 ## Implemented Scope
 
-The implemented backend includes the Phase 1 platform and Identity foundations, Phase 2 organization and people registries, and Academic catalogs, terms, course offerings and class sections. Enrollment, campus operations, and frontend remain future work. This personal project is developed locally; production deployment is not a completion requirement for these phases.
+The implemented backend includes the Phase 1 platform and Identity foundations, Phase 2 organization and people registries, and Academic catalogs, terms, course offerings, class sections and administrative enrollment. Campus operations and frontend remain future work. This personal project is developed locally; production deployment is not a completion requirement for these phases.
 
 ## Domain Roadmap
 
@@ -61,9 +61,9 @@ Campus Service will begin as a modular monolith: one deployable application with
 
 ## Status
 
-**Phase 3B: Academic terms, offerings and class sections.** Phase 1, Phase 2 and Phase 3A are merged into `main`. Phase 3B adds ADMIN-only create/get/query/PUT APIs under `/api/v1/admin/academic/terms`, `/offerings` and `/sections`. Terms define date windows; an offering links one course to one term and retains organization ownership; sections carry capacity and faculty assignment. Draft sections may omit faculty; opening requires active FACULTY, active term and open offering. Version-aware mutations and parent locks protect lifecycle transitions. See the [Phase 3B contract](docs/plans/phase-3b-academic-offerings.md) and [Testing](docs/testing.md) for verification evidence.
+**Phase 3C: Enrollment Foundation.** Phase 1, Phase 2, Phase 3A and Phase 3B are merged into `main`. Phase 3C adds ADMIN-only POST/GET/query/PUT under `/api/v1/admin/academic/enrollments`. One record per student/section supports ENROLLED → WITHDRAWN and re-enrollment with expectedVersion. New/restored enrollment requires an active student, active term, open offering/section and available capacity. Parent locks serialize admission and closure; withdrawal releases a seat and preserves historical membership. See the [Phase 3C contract](docs/plans/phase-3c-academic-enrollment.md), [ADR 0005](docs/decisions/0005-enrollment-capacity-and-lifecycle.md) and [Testing](docs/testing.md) for verification status.
 
-[Phase 3A catalog APIs](docs/plans/phase-3a-academic-catalog.md) remain available under `/api/v1/admin/academic/programs` and `/courses`, with normalized unique codes, credits 1–30 and paginated search. Enrollment belongs to Phase 3C and has not started.
+[Phase 3A catalog APIs](docs/plans/phase-3a-academic-catalog.md) remain available under `/api/v1/admin/academic/programs` and `/courses`, with normalized unique codes, credits 1–30 and paginated search. [Phase 3B delivery APIs](docs/plans/phase-3b-academic-offerings.md) manage terms, offerings and sections. Student self-service, waitlists and broader Academic mutation audit remain outside 3C.
 
 Administrator APIs require `ROLE_ADMIN`. Identity authentication, session revocation and admin management, plus organization/student/faculty-staff registries, remain available. Runtime administrator provisioning and production deployment stay outside this implementation scope.
 
