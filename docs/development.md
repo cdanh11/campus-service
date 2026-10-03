@@ -2,7 +2,7 @@
 
 ## Current State
 
-Phase 1–3 are merged; Phase 4A1 adds Dormitory inventory and atomic audit. Accommodation assignment and Finance are subsequent gated slices. The repository contains JWT authentication, Spring Security authorization, Identity persistence, and administrator user-management endpoints backed by PostgreSQL and Flyway. Phase 1 release readiness adds CI, a production profile, health probes, a container build, and a release runbook. Selecting production infrastructure and running the release remain environment-owner responsibilities.
+Phase 1–3 are merged; Phase 4A1/4A2 add Dormitory inventory, current accommodation and atomic audit. Finance and operations hardening are subsequent gated slices. The repository contains JWT authentication, Spring Security authorization, Identity persistence, and administrator user-management endpoints backed by PostgreSQL and Flyway. Phase 1 release readiness adds CI, a production profile, health probes, a container build, and a release runbook. Selecting production infrastructure and running the release remain environment-owner responsibilities.
 
 ## Prerequisites
 
@@ -57,7 +57,7 @@ Build the neutral deployment artifact with `docker build --tag campus-service:<v
 
 Flyway will own schema evolution. New migrations must be ordered, reviewed, and tested against a clean PostgreSQL database. Do not alter a migration after it has been applied outside disposable local development; create a corrective migration instead.
 
-V1–V18 are the merged baseline and must not be edited. Phase 4A1 adds V19; subsequent changes must preserve delivered migrations and use later versions. Never use Flyway repair to mask a checksum mismatch; investigate the migration history and add an approved corrective migration when needed.
+V1–V18 are the merged baseline and must not be edited. Delivered Phase 4A1 adds V19; Phase 4A2 adds V20. Subsequent changes must preserve delivered migrations and use later versions. Never use Flyway repair to mask a checksum mismatch; investigate the migration history and add an approved corrective migration when needed.
 
 ## Windows and WSL
 

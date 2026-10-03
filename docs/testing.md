@@ -127,6 +127,19 @@ The actual upgraded PostgreSQL/public schema validates all 20 production entitie
 
 Allocation/occupancy and Finance are not part of this slice. No load benchmark, measured coverage percentage or frontend E2E result is claimed.
 
+## Phase 4A2 Accommodation Verification
+
+Verified on 2026-10-04 with Docker Desktop running:
+
+- `.\mvnw.cmd "-Dtest=AccommodationAssignmentTest,AccommodationAssignmentIntegrationTest,FlywayV19ToV20AssignmentUpgradeIntegrationTest,DormitoryInventoryIntegrationTest,FlywayV18ToV19DormitoryUpgradeIntegrationTest,ModuleBoundaryTest" test`: BUILD SUCCESS, 47 tests, no failures/errors/skips, 1m34s. Later strict POST/PUT-to-GET response equality assertions are covered by the full run.
+- `.\mvnw.cmd clean verify`: BUILD SUCCESS, exit 0, 260 tests in 43 suites, no failures/errors/skips, 6m29s; packaged jar and independently summed Surefire XML agree.
+
+The 16 new cases include 2 domain, 11 API/transaction/lock/concurrency and 3 genuine V19→V20 upgrade/schema cases. They verify immutable history and terminal release, later stay with a new UUID, active eligibility and occupied-bed deactivation, all route authorization, query bounds/stable ties, real PostgreSQL audit-failure rollback, same-bed and same-Student/different-building races, stale releases, release/admission and close/admission consistency, and production locks across separate transactions with bounded lock_timeout and SQLSTATE 55P03 followed by successful acquisition.
+
+The exact upgrade applies only V20 after representative legacy fixtures and all existing table/history snapshots. Assertions cover assignment types/defaults/nullability/PK/FKs/CHECKs/partial unique indexes, valid history and rejected SQL writes with specific SQLSTATEs, and audit resource/action compatibility. Hibernate validates all 21 production entities on that same upgraded public schema with Flyway disabled; legacy data/history remain unchanged. Historical V19 validation retains 20 entities; V1–V19 are unchanged.
+
+The first focused run failed one timestamp-preservation assertion because POST used nanoseconds while PostgreSQL stored microseconds. Persistence now flushes/refreshes before returning, and strict comparisons pass. The final full run logged closed-container Hikari warnings and a slow test-JVM exit: Surefire terminated the fork after its 30-second exit timeout, after complete successful test results. Maven returned BUILD SUCCESS and packaged the jar. Track this suite lifecycle observation in Phase 4C; no load benchmark or measured coverage percentage is claimed. See [4A2 final review](reviews/phase-4a2-final-review.md).
+
 ## Naming Convention
 
 Use behavior-oriented names that state the condition and expected result, such as `createsUserWhenRequestIsValid` or `deniesEnrollmentReadWhenCallerLacksRole`. Follow the project test style once it is established rather than introducing competing conventions.

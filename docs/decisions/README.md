@@ -34,3 +34,4 @@ Create an ADR when a decision changes module boundaries, persistence strategy, s
 - [0005: Enrollment Capacity and Lifecycle](0005-enrollment-capacity-and-lifecycle.md)
 - [0006: Academic Mutation Audit](0006-academic-mutation-audit.md)
 - [0007: Dormitory Inventory and Assignment Boundary](0007-dormitory-inventory-and-assignment-boundary.md)
+- [0008: Accommodation Current Place and Release](0008-accommodation-current-place-and-release.md)
