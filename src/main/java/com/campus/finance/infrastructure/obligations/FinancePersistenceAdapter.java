@@ -38,6 +38,13 @@ class FinancePersistenceAdapter implements FinanceRepository {
         if (entity == null) throw new FinanceObligationService.NotFoundException();
         entities.refresh(entity, LockModeType.PESSIMISTIC_WRITE); return entity;
     }
+    public StudentCharge advanceChargeVersion(UUID id, long expectedVersion, java.time.Instant time) {
+        var entity = lock(StudentChargeEntity.class, id);
+        int changed = entities.createQuery("update StudentChargeEntity c set c.version=c.version+1,c.updatedAt=:time where c.id=:id and c.version=:version")
+                .setParameter("id",id).setParameter("version",expectedVersion).setParameter("time",time).executeUpdate();
+        if(changed != 1) throw new FinanceObligationService.StaleVersionException();
+        entities.refresh(entity); return entity.domain();
+    }
     public PageResult<FeeDefinition> fees(FinanceSearch query) { query.fees(); return search(FeeDefinitionEntity.class, query, false, FeeDefinitionEntity::domain); }
     public PageResult<StudentCharge> charges(FinanceSearch query) { query.charges(); return search(StudentChargeEntity.class, query, true, StudentChargeEntity::domain); }
     private <T, D> PageResult<D> search(Class<T> type, FinanceSearch query, boolean charge, Function<T, D> domain) {
