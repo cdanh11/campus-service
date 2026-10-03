@@ -158,7 +158,12 @@ class FlywayV20ToV21FinanceUpgradeIntegrationTest {
         assertThat(jdbc.queryForList("SELECT * FROM flyway_schema_history ORDER BY installed_rank")).isEqualTo(before);
         assertThat(snapshot()).isEqualTo(legacy);
     }
-    @Configuration(proxyBeanMethods=false) @EntityScan("com.campus") static class ValidationConfiguration { }
+    @Configuration(proxyBeanMethods=false) @EntityScan({
+            "com.campus.identity.infrastructure.persistence", "com.campus.organization.infrastructure.persistence",
+            "com.campus.student.infrastructure.persistence", "com.campus.personnel.infrastructure.persistence",
+            "com.campus.shared.infrastructure.persistence", "com.campus.academic.infrastructure.persistence",
+            "com.campus.dormitory.infrastructure.persistence", "com.campus.dormitory.infrastructure.assignment",
+            "com.campus.finance.infrastructure.obligations"}) static class ValidationConfiguration { }
     private UUID fee() {
         UUID id=UUID.randomUUID();
         jdbc.update("INSERT INTO finance_fee_definitions (id,code,name,amount) VALUES (?,?,'Fee',100000)",id,id.toString().substring(0,8));return id;

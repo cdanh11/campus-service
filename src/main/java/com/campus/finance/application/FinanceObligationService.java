@@ -18,8 +18,9 @@ public class FinanceObligationService {
     private final StudentManagementService students;
     private final FinanceAudit audit;
     private final Clock clock;
-    public FinanceObligationService(FinanceRepository repository, StudentManagementService students, FinanceAudit audit, Clock clock) {
-        this.repository = repository; this.students = students; this.audit = audit; this.clock = clock;
+    private final PaymentRepository payments;
+    public FinanceObligationService(FinanceRepository repository, StudentManagementService students, FinanceAudit audit, Clock clock, PaymentRepository payments) {
+        this.repository = repository; this.students = students; this.audit = audit; this.clock = clock; this.payments = payments;
     }
     public FeeDefinition createFee(UUID actor, String code, String name, BigDecimal amount) {
         actor(actor); var now = clock.instant();
@@ -50,6 +51,7 @@ public class FinanceObligationService {
         var old = repository.lockCharge(id);
         if (old.rowVersion() != expectedVersion) throw new StaleVersionException();
         if (old.status() != ChargeStatus.OPEN) throw new InvalidStateException();
+        if (payments.totalRecorded(id).signum() != 0) throw new InvalidStateException();
         var saved = repository.updateCharge(old.cancel(clock.instant()), expectedVersion);
         event(actor, saved, "CANCELLED"); return saved;
     }
