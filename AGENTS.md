@@ -2,7 +2,7 @@
 
 ## Purpose and Phase
 
-Campus Service is an Intelligent Smart Campus Platform. Phase 1A bootstrap is complete. Phase 1B Identity and Access is implemented: PostgreSQL/Flyway persistence, JWT authentication, Spring Security, and administrator user management. Production deployment and first-administrator runtime provisioning remain out of scope; see `docs/runbooks/initial-admin-provisioning.md` for the safe operational handoff.
+Campus Service is an Intelligent Smart Campus Platform. The implemented baseline covers platform/Identity, organization/people registries and the Academic catalog. Read `README.md`, the current plan in `docs/plans/`, and Git state for the authoritative phase and verification status. Production deployment and first-administrator runtime provisioning remain out of scope unless explicitly requested; see `docs/runbooks/initial-admin-provisioning.md`.
 
 ## Repository Structure
 
@@ -19,7 +19,7 @@ Follow: **inspect -> plan -> implement -> build/test -> review diff -> report**.
 
 - Start as a modular monolith; do not introduce microservices, message brokers, Kubernetes, or other distributed infrastructure without an approved need.
 - Keep domain modules independent. A module must not access another module's persistence internals.
-- Phase 1 is limited to shared foundations and Identity and Access. Do not implement future domains opportunistically.
+- Implement only the approved phase plan. Do not implement future domains opportunistically.
 - Record consequential architectural changes in an ADR.
 
 ## Coding Principles
@@ -37,7 +37,7 @@ Follow: **inspect -> plan -> implement -> build/test -> review diff -> report**.
 
 ## Database and Tests
 
-- Use PostgreSQL and Flyway for approved Phase 1 persistence work.
+- Use PostgreSQL and Flyway for approved persistence work.
 - Treat applied migrations as immutable; add corrective migrations instead of editing released ones.
 - Add proportionate tests for changed behavior, including authorization and migration effects where applicable.
 - Never claim tests passed unless they were actually run and their result was verified.

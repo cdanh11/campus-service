@@ -24,9 +24,9 @@ flowchart BT
 
 ## Current Tooling
 
-Phase 1, the Phase 2 registries and Phase 3A catalogs use JUnit 5, Spring Boot Test, MockMvc, Testcontainers PostgreSQL, and Flyway. The verified Windows command is `./mvnw.cmd clean verify` when run from PowerShell as `.\mvnw.cmd clean verify`.
+Phase 1, the Phase 2 registries and Phase 3 Academic foundations use JUnit 5, Spring Boot Test, MockMvc, Testcontainers PostgreSQL, and Flyway. The verified Windows command is `./mvnw.cmd clean verify` when run from PowerShell as `.\mvnw.cmd clean verify`.
 
-The 121 tests verified by `./mvnw.cmd clean verify` on 2026-10-03 cover health and readiness probes, production-profile configuration, Flyway migrations through V13 including V4-to-V5, V8-to-V10, V10-to-V11 and V11-to-V13 upgrades, authentication and authorization boundaries, administrator user-management flows, multi-session HTTP revocation, audit-failure rollback, the organization, student, and faculty/staff registries, and Program/Course catalog validation, authorization, concurrent updates and paginated queries. Integration tests run against PostgreSQL Testcontainers and do not connect to a developer's local database.
+The 154 tests verified by `./mvnw.cmd clean verify` on 2026-10-03 cover health and readiness probes, production-profile configuration, Flyway migrations through V16 including V4-to-V5, V8-to-V10, V10-to-V11, V11-to-V13 and V13-to-V16 upgrades, authentication and authorization boundaries, administrator user-management flows, multi-session HTTP revocation, audit-failure rollback, the organization, student, and faculty/staff registries, Program/Course catalog validation, authorization, concurrent updates and paginated queries, and term/offering/section lifecycle and faculty-assignment rules. Integration tests run against PostgreSQL Testcontainers and do not connect to a developer's local database.
 
 ## Authentication and Authorization
 
@@ -64,9 +64,22 @@ Verified on 2026-10-03 with Docker Desktop running:
 
 The 31 Academic tests comprise 9 domain cases, 16 API cases and 6 upgrade/schema cases. They cover six-character boundary whitespace and Unicode length, credit boundaries, ADMIN-only operations, create/read/PUT, stale and duplicate update rollback, two competing updates (one succeeds, one returns 409), missing/inactive ownership, error contracts, database pagination/search/status/sort and invalid query parameters.
 
-`FlywayV11ToV13AcademicCatalogUpgradeIntegrationTest` inserts representative V11 identity/role/organization/student/personnel/audit fixtures, captures every field and original migration history, then applies exactly V12/V13. It verifies column types, approved lengths, nullability, defaults, primary/unique/foreign keys, indexes, valid boundary writes and SQLSTATE rejection for invalid writes. A minimal JPA context scans production entities and runs `ddl-auto=validate` against that same upgraded public schema with Flyway disabled. Migration history and existing records remain unchanged. V1–V11 were not edited.
+`FlywayV11ToV13AcademicCatalogUpgradeIntegrationTest` inserts representative V11 identity/role/organization/student/personnel/audit fixtures, captures every field and original migration history, then applies exactly V12/V13. It verifies column types, approved lengths, nullability, defaults, primary/unique/foreign keys, indexes, valid boundary writes and SQLSTATE rejection for invalid writes. A minimal JPA context scans production entities present at V13 and runs `ddl-auto=validate` against that same upgraded public schema with Flyway disabled. Migration history and existing records remain unchanged. V1–V11 were not edited.
 
 Final review covers error/transaction/version behavior, bounded database queries, module imports, migrations, tests and staged whitespace checks. Academic mutation audit, terms, sections and enrollment remain outside Phase 3A.
+
+## Phase 3B Verification
+
+Verified on 2026-10-03:
+
+- `.\mvnw.cmd "-Dtest=AcademicDeliveryTest,AcademicDeliveryIntegrationTest,FlywayV13ToV16AcademicDeliveryUpgradeIntegrationTest,FlywayV11ToV13AcademicCatalogUpgradeIntegrationTest" test`: BUILD SUCCESS; 39 tests, no failures/errors/skips; 1 minute 04 seconds.
+- `.\mvnw.cmd clean verify`: BUILD SUCCESS; 154 tests, no failures/errors/skips; 3 minutes 53 seconds.
+
+Phase 3B adds 33 tests: 8 domain cases, 17 API cases and 8 V13→V16 upgrade/schema cases. Coverage includes term date/lifecycle boundaries, optional faculty in DRAFT and mandatory active FACULTY in OPEN, STAFF/inactive/missing/cross-organization faculty, live organization and catalog availability, historical closure after deactivation, parent closure versus child opening across concurrent HTTP transactions using latches, cancellation, ADMIN authorization, stale/duplicate mutation rollback, bounded query filters/sort and positive section capacity.
+
+The genuine upgrade inserts representative identity/role/organization/student/personnel/catalog/audit fixtures at V13, captures complete records/history, applies exactly V14/V15/V16, and validates types/lengths/nullability/defaults/PK/FK/uniqueness/indexes/approved CHECK constraints through SQLSTATE assertions and boundary writes. A minimal JPA context validates all 14 currently implemented production entities against that exact upgraded public schema with Flyway disabled, and verifies unchanged migration history and legacy records. V1–V13 remain unchanged. The V11→V13 test freezes its entity scan at V13 packages so later delivery entities cannot silently change its validation target.
+
+Review PASS covers the domain/API contract, reference ownership, lock order (term → offering → section), error advice scope, database query bounds and import boundaries. Search and open-child checks use parent/status indexes; no load-test or benchmark result is claimed. Enrollment and broader Academic mutation audit remain Phase 3C/3D work.
 
 ## Naming Convention
 

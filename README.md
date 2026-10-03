@@ -12,7 +12,7 @@ Build an extensible, maintainable platform that can support campus operations to
 
 ## Implemented Scope
 
-The implemented backend includes the Phase 1 platform and Identity foundations, Phase 2 organization and people registries, and Phase 3A Program/Course catalogs. Academic terms, class sections, enrollment, campus operations, and frontend remain future work. This personal project is developed locally; production deployment is not a completion requirement for these phases.
+The implemented backend includes the Phase 1 platform and Identity foundations, Phase 2 organization and people registries, and Academic catalogs, terms, course offerings and class sections. Enrollment, campus operations, and frontend remain future work. This personal project is developed locally; production deployment is not a completion requirement for these phases.
 
 ## Domain Roadmap
 
@@ -61,7 +61,9 @@ Campus Service will begin as a modular monolith: one deployable application with
 
 ## Status
 
-**Phase 3A: Program and Course Catalog.** Phase 1 and Phase 2 are merged into `main`. Phase 3A adds admin create/get/search/update APIs under `/api/v1/admin/academic/programs` and `/api/v1/admin/academic/courses`, with active organization ownership, normalized unique codes, course credits 1–30, and version-aware updates. Search uses zero-based pagination, bounded page size, status filtering, and an allowlisted sort with a stable ID tie-breaker. See the [Phase 3A contract](docs/plans/phase-3a-academic-catalog.md) and [Testing](docs/testing.md) for verification evidence.
+**Phase 3B: Academic terms, offerings and class sections.** Phase 1, Phase 2 and Phase 3A are merged into `main`. Phase 3B adds ADMIN-only create/get/query/PUT APIs under `/api/v1/admin/academic/terms`, `/offerings` and `/sections`. Terms define date windows; an offering links one course to one term and retains organization ownership; sections carry capacity and faculty assignment. Draft sections may omit faculty; opening requires active FACULTY, active term and open offering. Version-aware mutations and parent locks protect lifecycle transitions. See the [Phase 3B contract](docs/plans/phase-3b-academic-offerings.md) and [Testing](docs/testing.md) for verification evidence.
+
+[Phase 3A catalog APIs](docs/plans/phase-3a-academic-catalog.md) remain available under `/api/v1/admin/academic/programs` and `/courses`, with normalized unique codes, credits 1–30 and paginated search. Enrollment belongs to Phase 3C and has not started.
 
 Administrator APIs require `ROLE_ADMIN`. Identity authentication, session revocation and admin management, plus organization/student/faculty-staff registries, remain available. Runtime administrator provisioning and production deployment stay outside this implementation scope.
 

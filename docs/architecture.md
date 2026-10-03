@@ -4,24 +4,24 @@
 
 **Confirmed:** Campus Service is a Spring Boot 3.5.16 modular monolith with base package `com.campus`, PostgreSQL, and Flyway.
 
-**Confirmed:** JWT authentication and the token lifecycle are implemented for Identity. Administrator user management follows accepted [ADR 0004](decisions/0004-admin-user-management-policy.md). Phase 3A adds Program/Course catalogs owned by `academic`, referencing active organization units through the Organization application service. Phase 2 adds Organization Unit, Student Registry, and Faculty/Staff Registry modules with optional Identity links, audited administrative mutations, and consistent administrative search APIs.
+**Confirmed:** JWT authentication and the token lifecycle are implemented for Identity. Administrator user management follows accepted [ADR 0004](decisions/0004-admin-user-management-policy.md). Phase 3A adds Program/Course catalogs owned by `academic`; Phase 3B adds terms, offerings and class sections. Organization ownership uses the Organization application service and faculty assignment uses the Personnel application service. No cross-module persistence imports are introduced. Phase 2 adds Organization Unit, Student Registry, and Faculty/Staff Registry modules with optional Identity links, audited administrative mutations, and consistent administrative search APIs.
 
 ## System Context
 
-Campus Service will provide a backend platform for university operations. Implemented capabilities cover Identity, organization and people registries, and Academic catalogs; later use cases cover terms, sections, enrollment and selected campus operations.
+Campus Service will provide a backend platform for university operations. Implemented capabilities cover Identity, organization and people registries, and Academic catalogs and delivery foundations; later use cases cover enrollment and selected campus operations.
 
 ```mermaid
 flowchart LR
     Client[Campus clients and integrations] --> API[Campus Service API]
     API --> IAM[Identity and Access]
     API --> Registry[Organization and people registries]
-    API --> Academic[Academic catalogs]
+    API --> Academic[Academic catalogs and delivery]
     IAM --> DB[(PostgreSQL)]
     Registry --> DB
     Academic --> DB
 ```
 
-The diagram describes the implemented modular direction. Phase 1B includes the Identity module with authentication and administrator user management; Phase 2 includes the organization and people registry foundations; Phase 3A includes Program/Course catalogs.
+The diagram describes the implemented modular direction. Phase 1B includes the Identity module with authentication and administrator user management; Phase 2 includes the organization and people registry foundations; Phase 3A includes Program/Course catalogs; Phase 3B includes terms, offerings and sections.
 
 ## Modular Monolith
 
@@ -34,7 +34,7 @@ The initial system is one deployable application with modules organized by busin
 - `organization`: reference organization units used by approved registry modules.
 - `student`: student profiles and their optional Identity link.
 - `personnel`: faculty and staff profiles and their optional Identity link.
-- `academic`: Program/Course catalog; term, section and enrollment use cases remain future work.
+- `academic`: Program/Course catalog, terms, course offerings and class sections; enrollment remains future work.
 - Future modules: `dormitory`, `finance`, and supporting modules when their scope is approved.
 
 A module owns its application logic, domain model, persistence mapping, and external API adapters. Cross-module access goes through explicit application-facing contracts, not repositories, entities, or database tables from another module.
@@ -79,3 +79,9 @@ Modules may publish in-process domain or application events for decoupled local 
 ## Future Service Extraction
 
 A module may be extracted only after evidence supports it, such as independent scaling needs, separately owned release cadence, bounded operational failure, or a proven integration boundary. Extraction requires an explicit API or event contract, data ownership plan, observability plan, migration path, and an ADR. Team preference alone is insufficient.
+
+## Academic delivery invariants
+
+A course offering belongs to one term/course pair and retains its organization UUID; a class section belongs to one offering and owns its capacity and single faculty assignment. Academic owns the lifecycle checks. Delivery mutations lock term, then offering, then section where applicable to prevent concurrent parent closure and child opening. These are local database transactions within the monolith. The tradeoff is serialization of delivery mutations within a term; no load-test claim is made. Course/organization/faculty status is checked when opening and when relevant references are newly assigned; deactivation does not rewrite historical classes.
+
+Historical upgrade validation scans only production entity packages present at its target version. V13 validation excludes the new delivery entity package; V16 validation includes all currently implemented entities. Flyway remains disabled during exact-schema Hibernate validation.

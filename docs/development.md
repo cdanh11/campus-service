@@ -2,7 +2,7 @@
 
 ## Current State
 
-Phase 1 and Phase 2 are complete; Phase 3A implements Program/Course catalogs. The repository contains JWT authentication, Spring Security authorization, Identity persistence, and administrator user-management endpoints backed by PostgreSQL and Flyway. Phase 1 release readiness adds CI, a production profile, health probes, a container build, and a release runbook. Selecting production infrastructure and running the release remain environment-owner responsibilities.
+Phase 1, Phase 2 and Phase 3A are merged; Phase 3B adds academic terms, offerings and class sections. The repository contains JWT authentication, Spring Security authorization, Identity persistence, and administrator user-management endpoints backed by PostgreSQL and Flyway. Phase 1 release readiness adds CI, a production profile, health probes, a container build, and a release runbook. Selecting production infrastructure and running the release remain environment-owner responsibilities.
 
 ## Prerequisites
 
@@ -57,7 +57,7 @@ Build the neutral deployment artifact with `docker build --tag campus-service:<v
 
 Flyway will own schema evolution. New migrations must be ordered, reviewed, and tested against a clean PostgreSQL database. Do not alter a migration after it has been applied outside disposable local development; create a corrective migration instead.
 
-V1–V11 are the merged baseline and must not be edited. Phase 3A adds V12/V13. Never use Flyway repair to mask a checksum mismatch; investigate the migration history and add an approved corrective migration when needed.
+V1–V13 are the merged baseline and must not be edited. Phase 3B adds V14/V15/V16. Never use Flyway repair to mask a checksum mismatch; investigate the migration history and add an approved corrective migration when needed.
 
 ## Windows and WSL
 
