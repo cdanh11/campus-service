@@ -44,7 +44,7 @@ class CourseOfferingPersistenceAdapter implements CourseOfferingRepository {
     public CourseOffering lock(UUID id) { return map(locked(id)); }
 
     private CourseOfferingEntity locked(UUID id) {
-        var entity = repository.findByIdForUpdate(id).orElseThrow(AcademicDeliveryService.ResourceNotFoundException::new);
+        var entity = repository.findById(id).orElseThrow(AcademicDeliveryService.ResourceNotFoundException::new);
         entityManager.refresh(entity, LockModeType.PESSIMISTIC_WRITE);
         return entity;
     }

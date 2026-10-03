@@ -31,3 +31,4 @@ Create an ADR when a decision changes module boundaries, persistence strategy, s
 - [0002: PostgreSQL and Flyway](0002-database-and-migration.md)
 - [0003: Stateless Access Tokens and Rotating Refresh Cookies](0003-authentication-token-strategy.md)
 - [0004: Administrator User Management Policy](0004-admin-user-management-policy.md)
+- [0005: Enrollment Capacity and Lifecycle](0005-enrollment-capacity-and-lifecycle.md)

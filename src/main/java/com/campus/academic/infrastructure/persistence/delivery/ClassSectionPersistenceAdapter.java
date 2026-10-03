@@ -44,7 +44,9 @@ class ClassSectionPersistenceAdapter implements ClassSectionRepository {
     public ClassSection lock(UUID id) { return map(locked(id)); }
 
     private ClassSectionEntity locked(UUID id) {
-        var entity = repository.findByIdForUpdate(id).orElseThrow(AcademicDeliveryService.ResourceNotFoundException::new);
+        // Refresh acquires the row lock and replaces stale state in one operation.
+        // A locking query first can reject a cached version before refresh runs.
+        var entity = repository.findById(id).orElseThrow(AcademicDeliveryService.ResourceNotFoundException::new);
         entityManager.refresh(entity, LockModeType.PESSIMISTIC_WRITE);
         return entity;
     }

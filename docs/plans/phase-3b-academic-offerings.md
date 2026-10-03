@@ -18,7 +18,7 @@ The user approved optional faculty while DRAFT and mandatory active FACULTY when
 
 Domain lifecycle/date/course-reference rules; ADMIN authorization and uniform errors; create/read/query/update and duplicate/stale writes; competing updates; faculty/organization/catalog boundaries; migration columns/defaults/constraints/indexes/data preservation; minimal Hibernate ddl-auto=validate on the exact V13→V16 upgraded schema with Flyway disabled. Run focused tests and full clean verify, review diff and update actual evidence before PASS. Commit by function after PASS; roadmap remains local.
 
-Status: implemented; final review PASS on 2026-10-03; awaiting PR/merge.
+Status: implemented; final review PASS on 2026-10-03; merged through PR #9 at `a903c3e`.
 
 ## HTTP contract
 
@@ -35,4 +35,4 @@ CLOSED/CANCELLED are terminal lifecycle states, rather than a blanket ban on eve
 - Focused domain/API/upgrade + historical V13 validation: BUILD SUCCESS, 39 tests, 1m04s.
 - Full clean verify: BUILD SUCCESS, 154 tests, no failures/errors/skips, 3m53s.
 - Review checks domain policies, HTTP contracts, migration constraints/defaults/FKs, legacy preservation, exact Hibernate validation, lifecycle lock order, version rollback, bounded queries and module boundaries. V1–V13 unchanged; migrations added are V14–V16.
-- Roadmap remains local; commit groups separate domain/schema, administrative APIs, migration tests and documentation. Phase 3C has not started.
+- Roadmap remains local; commit groups separate domain/schema, administrative APIs, migration tests and documentation. Enrollment is tracked separately in the Phase 3C plan.
