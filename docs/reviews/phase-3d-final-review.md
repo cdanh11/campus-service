@@ -37,3 +37,31 @@ Baseline: Phase 3C merged in PR #10 at `51b48b3`; branch `feature/academic-harde
 ## Limits and deferred scope
 
 No benchmark/SLA or deployment result. Locks conservatively serialize term writes. Student/organization/faculty eligibility remains checked through application contracts rather than cross-module persistence locks; existing temporal/historical rules are unchanged. Direct SQL cannot rely on application capacity/audit policy. Audit history starts at V18; no backfill, retention job, read API or DB-enforced immutability. Self-service, waitlist, grading, fees, schedules and Phase 4 remain outside Phase 3. Stateless JWT behavior follows ADR 0003 rather than immediate access-token revocation.
+
+## Closure re-review — 2026-10-04
+
+Result: PASS for the approved Phase 1–3 implementation scope. No new production defect or unresolved blocker/major finding was found in the inspected paths. This conclusion uses source inspection and new executions, rather than relying only on the earlier PASS.
+
+The re-review followed controller → application transaction → persistence/domain paths for Academic, inspected Identity route/token/mutation policies and registry application contracts, and compared migration assertions with the actual V18 schema. Historical upgrade contexts continue to validate their target-version production entities with Flyway disabled; V18 validates all 16 currently implemented entities on the same upgraded PostgreSQL public schema. Hibernate validation supplements SQL constraint/default/index tests; it does not independently prove every business rule or SQL constraint.
+
+Coverage improvements:
+
+- Six new parameterized cases snapshot business rows and audit counts after anonymous/USER POST and PUT denial, invalid bodies/UUID and invalid pagination, across all six Academic resources.
+- Two new concurrent HTTP cases prove competing Program/Course updates produce one 200, one 409, one committed version and exactly one new audit event.
+- Existing six-resource PUT tests now verify resource type, target, resulting status-only metadata and event time as well as actor/action/version.
+- Existing term-close/offering-open and offering-close/section-open races now assert exactly one extra audit event for the successful transaction.
+
+New verification on the final test source:
+
+- `.\mvnw.cmd "-Dtest=AcademicAuditIntegrationTest,FlywayV17ToV18AcademicAuditUpgradeIntegrationTest,ModuleBoundaryTest" test`: BUILD SUCCESS; 29 tests, 0 failures/errors/skips; 1m14s. Subsequent delivery race assertions are covered by the full run.
+- `.\mvnw.cmd clean verify`: BUILD SUCCESS; 208 tests, 0 failures/errors/skips; 5m01s. Surefire XML totals independently agree with Maven. Production jar packaging also completed.
+- `git diff --check`: clean; no migration or production source changed by this re-review.
+
+Non-blocking follow-ups and evidence limits:
+
+- Phase 2 tests are less granular than Academic tests. Registry role denial is primarily exercised through GET plus the shared ADMIN route policy; explicit per-operation denial would improve regression specificity. The dedicated People Registry audit failure test directly proves Student creation rollback, not a complete Student/Personnel create/update failure matrix.
+- Identity AuthenticationService currently imports concrete token/security infrastructure within its own module. This is a layering debt relative to the intended inward dependency direction, not cross-module persistence access; moving token behavior behind an application port can be scoped separately.
+- Some registry source/test files are densely formatted, making future reviews harder. No broad formatting/refactor was mixed into this closure.
+- No coverage percentage, mutation-test result, production-scale benchmark, penetration-test result or frontend end-to-end result is claimed. Generated OpenAPI tests verify Bearer declarations; not every request/query schema is asserted field by field.
+
+These follow-ups do not change the approved Phase 3 business contract. Phase 4 still requires its own scoped plan before implementation.
