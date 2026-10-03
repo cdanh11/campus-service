@@ -1,5 +1,7 @@
 package com.campus.identity.infrastructure.security;
 
+import com.campus.testsupport.PostgresApplicationTest;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,18 +13,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@Testcontainers
+@PostgresApplicationTest
 class SecurityConfigurationIntegrationTest {
-    @Container @ServiceConnection static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17.6-alpine");
+
     @Autowired JsonAccessDeniedHandler handler;
     @Autowired FilterChainProxy filterChainProxy;
     @Autowired ObjectMapper objectMapper;
