@@ -1,5 +1,7 @@
 package com.campus.dormitory.api;
 
+import com.campus.testsupport.PostgresApplicationTest;
+
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.*;
@@ -14,7 +16,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -23,15 +24,13 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest @AutoConfigureMockMvc @ActiveProfiles("test") @Testcontainers
+@SpringBootTest @AutoConfigureMockMvc @ActiveProfiles("test") @PostgresApplicationTest
 class DormitoryInventoryIntegrationTest {
-    @Container @ServiceConnection static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17.6-alpine");
+
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
     @Autowired JdbcTemplate jdbc;
@@ -83,12 +82,15 @@ class DormitoryInventoryIntegrationTest {
         var created = read(call(post(ROOT + route), body).andExpect(status().isCreated()).andExpect(header().exists("Location")));
         UUID id = id(created);
         assertThat(created.get("rowVersion").asLong()).isZero();
+        assertThat(read(call(get(ROOT + route + "/" + id), null).andExpect(status().isOk()))).isEqualTo(created);
         call(post(ROOT + route), body).andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("DORMITORY_CODE_ALREADY_EXISTS"));
         var update = update(created, "Updated", "ACTIVE");
         update.put("parentId", UUID.randomUUID()); // Not a PUT field; parent stays immutable.
         var changed = read(call(put(ROOT + route + "/" + id), update).andExpect(status().isOk()));
         assertThat(changed.get("rowVersion").asLong()).isEqualTo(1);
         assertThat(changed.get("parentId")).isEqualTo(created.get("parentId"));
+        assertThat(changed.get("createdAt")).isEqualTo(created.get("createdAt"));
+        assertThat(read(call(get(ROOT + route + "/" + id), null).andExpect(status().isOk()))).isEqualTo(changed);
         call(put(ROOT + route + "/" + id), update).andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("CONCURRENT_MODIFICATION"));
         call(get(ROOT + route + "/" + id), null).andExpect(status().isOk());
         call(get(ROOT + route).param("q", prefix), null).andExpect(status().isOk());

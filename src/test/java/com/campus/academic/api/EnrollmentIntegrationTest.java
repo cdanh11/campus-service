@@ -1,5 +1,7 @@
 package com.campus.academic.api;
 
+import com.campus.testsupport.PostgresApplicationTest;
+
 import java.time.LocalDate;
 import java.time.Instant;
 import java.util.*;
@@ -18,7 +20,6 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -27,15 +28,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.sql.SQLException;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest @AutoConfigureMockMvc @ActiveProfiles("test") @Testcontainers
+@SpringBootTest @AutoConfigureMockMvc @ActiveProfiles("test") @PostgresApplicationTest
 class EnrollmentIntegrationTest {
-    @Container @ServiceConnection static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17.6-alpine");
+
     @Autowired EnrollmentService enrollments;
     @Autowired AcademicDeliveryService delivery;
     @Autowired AcademicCatalogService catalog;

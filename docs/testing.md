@@ -166,6 +166,18 @@ The upgrade inserts representative V21 Identity/registries/Academic/Dormitory/Fi
 
 An initial testCompile failure came from JSON escaping in the upgrade fixture; jsonb_build_object fixed it. The full suite again had closed-container Hikari warnings and slow JVM shutdown; Surefire terminated its fork after the 30-second exit timeout after complete successful test results. Maven exited 0 and packaged the jar. Teardown remains Phase 4C work. Aggregate overpayment/cancellation protection belongs to supported application transactions, not direct SQL; no gateway/refund-transfer, load benchmark or measured coverage claim. See [4B2 final review](reviews/phase-4b2-final-review.md).
 
+## Phase 4C and Phase 4 Closure Verification
+
+Verified on 2026-10-04 after resolving application-context/container teardown and inventory timestamp response consistency:
+
+- `.\mvnw.cmd "-Dtest=ManualPaymentIntegrationTest,AccommodationAssignmentIntegrationTest,HealthEndpointIntegrationTest,AdminFacultyStaffControllerIntegrationTest" test`: BUILD SUCCESS; 30 tests, zero failures/errors/skips; 1m31s.
+- `.\mvnw.cmd "-Dtest=DormitoryInventoryIntegrationTest,OperationsQueryPlanIntegrationTest,FlywayV18ToV19DormitoryUpgradeIntegrationTest,FlywayV19ToV20AssignmentUpgradeIntegrationTest,FlywayV20ToV21FinanceUpgradeIntegrationTest,FlywayV21ToV22PaymentUpgradeIntegrationTest,ModuleBoundaryTest" test`: BUILD SUCCESS; 44 tests, zero failures/errors/skips; 2m15s.
+- Final `.\mvnw.cmd clean verify`: BUILD SUCCESS, exit 0; 304 tests in 50 suites, zero failures/errors/skips; 6m59s, finished 2026-10-04T03:52:31+07:00. Jar packaged; independently summed Surefire XML agrees. All 32 Hikari pools started and shut down completely; no closed-connection validation, fork-kill or terminated-VM warning.
+
+Application integration classes now import a test-only Spring-managed PostgreSQL container through `@PostgresApplicationTest`, with AFTER_CLASS context cleanup and one isolated database per class. This preserves actual PostgreSQL/Flyway and all existing assertions, without skips or inflated fork timeouts. Historical upgrade tests retain their own container/minimal-context lifecycles. The inventory regression first failed all three resource kinds, then passed with flush/refresh returning the persisted precision; POST/PUT equals subsequent GET and createdAt is retained.
+
+Three Operations query-plan cases use 10,000 rooms/beds/charges, 10,100 assignments and 50,000 receipts, ANALYZE and unforced EXPLAIN. They verify existing selective parent/current-place/Student-status/fee-status/charge-status indexes, plus the production balance projection. Parent inventory may legitimately choose a parent-prefixed unique code index instead of its parent/status index. No new index, measured coverage percentage or production load/latency claim. Full verification covers all Phase 1–4 behavior/security/audit/concurrency and genuine historical upgrades; exact V22 validates 25 entities with Flyway disabled. V1–V22 unchanged in 4C. [Closure review](reviews/phase-4-final-review.md) records the evidence matrix, corrected failures and limits. Historical earlier slice results above remain records of their execution, including the teardown observation now resolved.
+
 ## Naming Convention
 
 Use behavior-oriented names that state the condition and expected result, such as `createsUserWhenRequestIsValid` or `deniesEnrollmentReadWhenCallerLacksRole`. Follow the project test style once it is established rather than introducing competing conventions.
