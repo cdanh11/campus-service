@@ -87,8 +87,11 @@ class AcademicAuditIntegrationTest {
         assertThat(events()).isEqualTo(before);
         var updated = json.readTree(call(put(ROOT + route + "/" + id), updateBody(route, created)).andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
         var last = jdbc.queryForMap("SELECT * FROM academic_audit_events WHERE target_id = ? AND action <> 'CREATED'", id);
-        assertThat(last).containsEntry("actor_user_id", actor).containsEntry("resource_version", updated.get("rowVersion").asLong())
+        assertThat(last).containsEntry("actor_user_id", actor).containsEntry("resource_type", resource(route))
+                .containsEntry("target_id", id).containsEntry("resource_version", updated.get("rowVersion").asLong())
                 .containsEntry("action", route.equals("enrollments") ? "WITHDRAWN" : "UPDATED");
+        assertThat(json.readTree(last.get("metadata").toString())).isEqualTo(json.createObjectNode().put("status", updated.get("status").asText()));
+        assertThat(last.get("occurred_at")).isNotNull();
         assertThat(events()).isEqualTo(before + 1);
         call(put(ROOT + route + "/" + id), updateBody(route, created)).andExpect(status().isConflict());
         assertThat(events()).isEqualTo(before + 1);
@@ -146,6 +149,69 @@ class AcademicAuditIntegrationTest {
         assertThat(jdbc.queryForObject("SELECT actor_user_id FROM academic_audit_events WHERE target_id = ?", UUID.class, UUID.fromString(created.get("id").asText()))).isEqualTo(actor);
         call(post(ROOT + "programs"), body).andExpect(status().isConflict());
         assertThat(events()).isEqualTo(before + 1);
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"programs", "courses", "terms", "offerings", "sections", "enrollments"})
+    void deniedAndMalformedMutationsPreserveBusinessRowsAndAudit(String route) throws Exception {
+        var created = create(route);
+        String path = ROOT + route;
+        String target = path + "/" + created.get("id").asText();
+        var before = jdbc.queryForList("SELECT * FROM " + table(route) + " ORDER BY id");
+        long count = events();
+        var ordinary = users.save(UserAccount.create(UUID.randomUUID(), prefix + "-user@campus.example", "Ordinary User",
+                passwords.encode("test-password"), AccountStatus.ACTIVE,
+                Set.of(roles.findByCode(RoleCode.USER).orElseThrow()), Instant.now()));
+        String bearer = tokens.accessToken(ordinary);
+        // Authorization must reject before body validation or any mutation runs.
+        for (var request : List.of(post(path), put(target))) {
+            mvc.perform(request.contentType("application/json").content("{}"))
+                    .andExpect(status().isUnauthorized());
+        }
+        for (var request : List.of(post(path), put(target))) {
+            mvc.perform(request.header("Authorization", "Bearer " + bearer).contentType("application/json").content("{}"))
+                    .andExpect(status().isForbidden());
+        }
+        call(post(path), Map.of()).andExpect(status().isBadRequest());
+        call(put(target), Map.of()).andExpect(status().isBadRequest());
+        call(put(path + "/not-a-uuid"), updateBody(route, created)).andExpect(status().isBadRequest());
+        call(get(path).param("page", "-1"), null).andExpect(status().isBadRequest());
+        assertThat(jdbc.queryForList("SELECT * FROM " + table(route) + " ORDER BY id")).isEqualTo(before);
+        assertThat(events()).isEqualTo(count);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM academic_audit_events WHERE actor_user_id = ?", Long.class, ordinary.id())).isZero();
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"programs", "courses"})
+    void competingCatalogUpdatesAuditOnlyTheCommittedVersion(String route) throws Exception {
+        var created = create(route);
+        UUID id = UUID.fromString(created.get("id").asText());
+        long before = events();
+        var pool = Executors.newFixedThreadPool(2);
+        var ready = new CountDownLatch(2);
+        var start = new CountDownLatch(1);
+        try {
+            var futures = new ArrayList<Future<Integer>>();
+            for (int index = 0; index < 2; index++) {
+                var body = updateBody(route, created);
+                body.put(route.equals("programs") ? "name" : "title", "Competing " + index);
+                String content = json.writeValueAsString(body);
+                futures.add(pool.submit(() -> {
+                    ready.countDown();
+                    if (!start.await(10, TimeUnit.SECONDS)) throw new IllegalStateException("Race start timed out");
+                    return mvc.perform(put(ROOT + route + "/" + id).header("Authorization", "Bearer " + admin)
+                            .contentType("application/json").content(content)).andReturn().getResponse().getStatus();
+                }));
+            }
+            assertThat(ready.await(10, TimeUnit.SECONDS)).isTrue(); start.countDown();
+            assertThat(List.of(futures.get(0).get(30, TimeUnit.SECONDS), futures.get(1).get(30, TimeUnit.SECONDS)))
+                    .containsExactlyInAnyOrder(200, 409);
+            var saved = json.readTree(call(get(ROOT + route + "/" + id), null).andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+            assertThat(saved.get("rowVersion").asLong()).isEqualTo(1);
+            assertThat(events()).isEqualTo(before + 1);
+            var event = jdbc.queryForMap("SELECT * FROM academic_audit_events WHERE target_id = ? AND action = 'UPDATED'", id);
+            assertThat(event).containsEntry("actor_user_id", actor).containsEntry("resource_type", resource(route))
+                    .containsEntry("resource_version", 1L);
+            assertThat(json.readTree(event.get("metadata").toString())).isEqualTo(json.createObjectNode().put("status", saved.get("status").asText()));
+        } finally { start.countDown(); pool.shutdownNow(); assertThat(pool.awaitTermination(10, TimeUnit.SECONDS)).isTrue(); }
     }
 
     @Test void generatedOpenApiDeclaresBearerSecurityOnEveryAcademicOperation() throws Exception {

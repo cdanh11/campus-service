@@ -21,6 +21,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -37,6 +38,7 @@ class AcademicDeliveryIntegrationTest {
     @Container @ServiceConnection static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17.6-alpine");
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
+    @Autowired JdbcTemplate jdbc;
     @Autowired UserAccountRepository users;
     @Autowired RoleRepository roles;
     @Autowired PasswordEncoder passwords;
@@ -271,6 +273,7 @@ class AcademicDeliveryIntegrationTest {
     }
 
     private void race(String leftKind, JsonNode left, Map<String, Object> leftBody, String rightKind, JsonNode right, Map<String, Object> rightBody) throws Exception {
+        long auditBefore = jdbc.queryForObject("SELECT count(*) FROM academic_audit_events WHERE target_id IN (?, ?)", Long.class, id(left), id(right));
         ExecutorService executor = Executors.newFixedThreadPool(2);
         CountDownLatch ready = new CountDownLatch(2), start = new CountDownLatch(1);
         try {
@@ -285,6 +288,8 @@ class AcademicDeliveryIntegrationTest {
             }
             assertThat(ready.await(10, TimeUnit.SECONDS)).isTrue(); start.countDown();
             assertThat(List.of(results.get(0).get(30, TimeUnit.SECONDS), results.get(1).get(30, TimeUnit.SECONDS))).containsExactlyInAnyOrder(200, 409);
+            assertThat(jdbc.queryForObject("SELECT count(*) FROM academic_audit_events WHERE target_id IN (?, ?)", Long.class, id(left), id(right)))
+                    .isEqualTo(auditBefore + 1);
         } finally { start.countDown(); executor.shutdownNow(); }
     }
     private UUID member(PersonnelType type, PersonnelStatus status) {
