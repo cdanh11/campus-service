@@ -30,14 +30,14 @@ class InventoryPersistenceAdapter implements InventoryRepository {
             case ROOM -> new ResidenceRoomEntity(item);
             case BED -> new ResidenceBedEntity(item);
         };
-        entities.persist(entity); entities.flush();
+        entities.persist(entity); entities.flush(); entities.refresh(entity);
         return entity.domain();
     }
     public InventoryItem update(InventoryItem item, long expectedVersion) {
         var entity = entities.find(type(item.kind()), item.id());
         entities.refresh(entity, LockModeType.PESSIMISTIC_WRITE);
         if (entity.version != expectedVersion) throw new DormitoryInventoryService.StaleVersionException();
-        entity.update(item); entities.flush();
+        entity.update(item); entities.flush(); entities.refresh(entity);
         return entity.domain();
     }
     public boolean hasActiveChildren(InventoryKind kind, UUID id) {
