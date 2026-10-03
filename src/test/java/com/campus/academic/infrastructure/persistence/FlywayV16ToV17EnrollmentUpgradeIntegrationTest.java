@@ -102,7 +102,12 @@ class FlywayV16ToV17EnrollmentUpgradeIntegrationTest {
         assertThat(snapshot()).isEqualTo(legacy);
     }
 
-    @Configuration(proxyBeanMethods = false) @EntityScan("com.campus") static class ValidationConfiguration { }
+    @Configuration(proxyBeanMethods = false) @EntityScan({
+            "com.campus.identity.infrastructure.persistence", "com.campus.organization.infrastructure.persistence",
+            "com.campus.student.infrastructure.persistence", "com.campus.personnel.infrastructure.persistence",
+            "com.campus.shared.infrastructure.persistence", "com.campus.academic.infrastructure.persistence.entity",
+            "com.campus.academic.infrastructure.persistence.delivery", "com.campus.academic.infrastructure.persistence.enrollment"})
+    static class ValidationConfiguration { }
     private static Flyway flyway(String version) { return Flyway.configure().dataSource(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword()).locations("classpath:db/migration").target(version).load(); }
     private static Map<String, List<Map<String, Object>>> snapshot() {
         var result = new LinkedHashMap<String, List<Map<String, Object>>>();
