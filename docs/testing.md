@@ -153,6 +153,19 @@ The actual upgrade migrates to V20 with representative legacy records including 
 
 The full run again logged closed-container Hikari warnings and Surefire's forced fork termination after the 30-second exit timeout, after all tests completed successfully. Maven exited 0 and packaged the jar. This teardown issue remains a 4C follow-up; no benchmark, coverage percentage or payment behavior is claimed. See [4B1 final review](reviews/phase-4b1-final-review.md).
 
+## Phase 4B2 Manual Payment Verification
+
+Verified on 2026-10-04 with Docker Desktop running:
+
+- `.\mvnw.cmd "-Dtest=ManualPaymentTest,ManualPaymentIntegrationTest,FinanceObligationIntegrationTest,FlywayV21ToV22PaymentUpgradeIntegrationTest,FlywayV20ToV21FinanceUpgradeIntegrationTest,ModuleBoundaryTest" test`: BUILD SUCCESS, 38 tests, no failures/errors/skips, 1m45s.
+- `.\mvnw.cmd clean verify`: BUILD SUCCESS, exit 0, 301 tests in 49 suites, no failures/errors/skips, 7m05s; jar packaged and Surefire XML summed independently. Includes subsequent domain/HTTP cancelled-charge zero-outstanding assertions.
+
+The 21 new cases comprise 3 domain, 15 API/transaction/lock/concurrency and 3 genuine V21→V22 upgrade/schema cases. They cover exact VND maximum/minimum/fraction/overflow behavior, partial/full settlement and terminal full reversal with immutable history/reason, retained receipt uniqueness, zero-paid cancellation, all five new operation role denials, trusted audit actor, malformed/query/body/reason/version bounds, existing inactive reference settlement, complete payment/charge/version/balance/audit rollback, final-balance competition, cross-charge duplicate receipts, competing reversals, cancel/payment and reversal/new payment consistency, cached charge/receipt refresh, coincident-clock version advancement and production charge lock with bounded SQLSTATE 55P03 followed by success. Queries cover filters/sorts/literal matching and actual timestamp-tie pagination; OpenAPI declares Bearer and unique schemas.
+
+The upgrade inserts representative V21 Identity/registries/Academic/Dormitory/Finance/audit records and snapshots all old tables/history, then applies only V22. It verifies payment columns/types/lengths/defaults/nullability/PK/charge FK/unique/indexes, integer/range/currency/status/version/reversal-shape CHECKs and specific SQLSTATE rejection, plus audit policy compatibility. Hibernate validates all 25 production entities on the same upgraded public schema with Flyway disabled; old data/history remain unchanged. Historical V21 validation retains 24 entities. V1–V21 unchanged.
+
+An initial testCompile failure came from JSON escaping in the upgrade fixture; jsonb_build_object fixed it. The full suite again had closed-container Hikari warnings and slow JVM shutdown; Surefire terminated its fork after the 30-second exit timeout after complete successful test results. Maven exited 0 and packaged the jar. Teardown remains Phase 4C work. Aggregate overpayment/cancellation protection belongs to supported application transactions, not direct SQL; no gateway/refund-transfer, load benchmark or measured coverage claim. See [4B2 final review](reviews/phase-4b2-final-review.md).
+
 ## Naming Convention
 
 Use behavior-oriented names that state the condition and expected result, such as `createsUserWhenRequestIsValid` or `deniesEnrollmentReadWhenCallerLacksRole`. Follow the project test style once it is established rather than introducing competing conventions.
