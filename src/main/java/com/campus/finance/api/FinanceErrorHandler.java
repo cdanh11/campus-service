@@ -17,7 +17,7 @@ public class FinanceErrorHandler {
     ResponseEntity<Error> validation(HttpServletRequest request) { return error(400, "VALIDATION_FAILED", request); }
     @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
     ResponseEntity<Error> malformed(HttpServletRequest request) { return error(400, "MALFORMED_REQUEST", request); }
-    @ExceptionHandler(AdminFinanceController.InvalidQueryException.class)
+    @ExceptionHandler({AdminFinanceController.InvalidQueryException.class, AdminManualPaymentController.InvalidQueryException.class})
     ResponseEntity<Error> query(HttpServletRequest request) { return error(400, "INVALID_QUERY_PARAMETER", request); }
     @ExceptionHandler(FinanceObligationService.NotFoundException.class)
     ResponseEntity<Error> missing(HttpServletRequest request) { return error(404, "FINANCE_RESOURCE_NOT_FOUND", request); }
@@ -27,6 +27,8 @@ public class FinanceErrorHandler {
     ResponseEntity<Error> reference(HttpServletRequest request) { return error(409, "FINANCE_REFERENCE_UNAVAILABLE", request); }
     @ExceptionHandler(FinanceObligationService.InvalidStateException.class)
     ResponseEntity<Error> state(HttpServletRequest request) { return error(409, "INVALID_FINANCE_STATE", request); }
+    @ExceptionHandler(ManualPaymentService.ExceedsBalanceException.class)
+    ResponseEntity<Error> balance(HttpServletRequest request) { return error(409, "PAYMENT_EXCEEDS_BALANCE", request); }
     @ExceptionHandler(FinanceAudit.UnavailableException.class)
     ResponseEntity<Error> audit(HttpServletRequest request) { return error(500, "AUDIT_WRITE_FAILED", request); }
     @ExceptionHandler(DataIntegrityViolationException.class)
