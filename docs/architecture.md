@@ -8,7 +8,7 @@
 
 ## System Context
 
-Campus Service will provide a backend platform for university operations. Implemented capabilities cover Identity, organization and people registries, Academic catalogs/delivery and administrative enrollment; later use cases cover selected campus operations.
+Campus Service provides a backend platform for university operations. Implemented capabilities cover Identity, organization and people registries, Academic catalogs/delivery/enrollment, Dormitory inventory/accommodation and Finance fee/obligation foundations; later slices extend payments and supporting operations.
 
 ```mermaid
 flowchart LR
@@ -16,12 +16,16 @@ flowchart LR
     API --> IAM[Identity and Access]
     API --> Registry[Organization and people registries]
     API --> Academic[Academic catalogs and delivery]
+    API --> Dormitory[Dormitory inventory and accommodation]
+    API --> Finance[Finance fees and obligations]
     IAM --> DB[(PostgreSQL)]
     Registry --> DB
     Academic --> DB
+    Dormitory --> DB
+    Finance --> DB
 ```
 
-The diagram describes the implemented modular direction. Phase 1B includes the Identity module with authentication and administrator user management; Phase 2 includes the organization and people registry foundations; Phase 3A includes Program/Course catalogs; Phase 3B includes terms, offerings and sections; Phase 3C includes administrative enrollment through the Student application contract.
+The diagram describes the implemented modular direction. Phase 1B includes Identity authentication/admin management; Phase 2 organization and people registries; Phase 3 catalogs/delivery/enrollment/audit; Phase 4A Dormitory; Phase 4B1 Finance obligations. Enrollment, accommodation and Finance eligibility use the Student application contract.
 
 ## Modular Monolith
 
@@ -36,7 +40,8 @@ The initial system is one deployable application with modules organized by busin
 - `personnel`: faculty and staff profiles and their optional Identity link.
 - `academic`: Program/Course catalog, terms, course offerings, class sections and administrative enrollment.
 - `dormitory`: building/room/bed inventory, current accommodation assignments and atomic mutation audit (4A1/4A2).
-- Future modules: `finance` and supporting modules when their scope is approved.
+- `finance`: VND fee definitions, immutable Student obligation snapshots and atomic mutation audit (4B1); manual payments follow in 4B2.
+- Future modules: supporting modules when their scope is approved.
 
 A module owns its application logic, domain model, persistence mapping, and external API adapters. Cross-module access goes through explicit application-facing contracts, not repositories, entities, or database tables from another module.
 
@@ -85,7 +90,7 @@ A module may be extracted only after evidence supports it, such as independent s
 
 A course offering belongs to one term/course pair and retains its organization UUID; a class section belongs to one offering and owns its capacity and single faculty assignment. Academic owns the lifecycle checks. Delivery mutations lock term, then offering, then section where applicable to prevent concurrent parent closure and child opening. These are local database transactions within the monolith. The tradeoff is serialization of delivery mutations within a term; no load-test claim is made. Course/organization/faculty status is checked when opening and when relevant references are newly assigned; deactivation does not rewrite historical classes.
 
-Historical upgrade validation scans only production entity packages present at its target version. V13 validation excludes delivery/enrollment/audit; V16 includes delivery and excludes enrollment/audit; V17 includes enrollment and excludes audit; V18 retains its original 16 entities and excludes Dormitory; V19 retains 20 entities and excludes the separate assignment persistence package; V20 includes 21 entities. Flyway remains disabled during exact-schema Hibernate validation.
+Historical upgrade validation scans only production entity packages present at its target version. V13 validation excludes delivery/enrollment/audit; V16 includes delivery and excludes enrollment/audit; V17 includes enrollment and excludes audit; V18 retains its original 16 entities and excludes Dormitory; V19 retains 20 entities and excludes the separate assignment persistence package; V20 retains 21 and excludes Finance; V21 includes 24 entities. Flyway remains disabled during exact-schema Hibernate validation.
 
 ## Enrollment invariants
 
@@ -100,3 +105,7 @@ Enrollment occupancy and Student/status queries have selective index-plan eviden
 ## Dormitory inventory
 
 Dormitory owns three inventory tables, assignments and its mutation audit. Immutable UUID parent links form building → room → bed; lifecycle locks use that order, followed by assignment when releasing. Active child creation/activation requires active ancestors, and deactivation refuses active immediate children or an occupied bed. Partial unique indexes enforce one ASSIGNED record per Student and per bed, including competition across buildings. RELEASED frees occupancy and preserves history; later stays use a new UUID. Eligibility reads the Student application contract without importing its persistence internals; Student status is checked at the operation decision, not frozen across modules. All Dormitory mutations require an actor and synchronous audit; HTTP enforces ADMIN and obtains that actor from the JWT principal. Shared inventory queries use fixed resource kinds. No future booking intervals or billing are modeled. See [ADR 0007](decisions/0007-dormitory-inventory-and-assignment-boundary.md) and [ADR 0008](decisions/0008-accommodation-current-place-and-release.md).
+
+## Finance obligations
+
+Finance owns fee definitions, Student charges and synchronous status-only audit. VND amounts use BigDecimal and NUMERIC with integer/range CHECKs; a declared database scale is avoided because it could round fractions before the CHECK. Charge creation locks an ACTIVE fee, checks ACTIVE Student through its application contract and stores immutable fee/code/name/amount/currency/due-date snapshots. Fee changes and reference deactivation preserve history. Cancellation is terminal with expectedVersion under the charge lock; 4B2 will add payment/reversal safeguards using that lock. Persistence refreshes stored timestamps and cached locked entities. No gateway, automatic Academic/Dormitory billing or accounting ledger. See [ADR 0009](decisions/0009-finance-vnd-obligations-and-snapshots.md).

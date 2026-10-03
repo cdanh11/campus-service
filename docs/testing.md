@@ -140,6 +140,19 @@ The exact upgrade applies only V20 after representative legacy fixtures and all 
 
 The first focused run failed one timestamp-preservation assertion because POST used nanoseconds while PostgreSQL stored microseconds. Persistence now flushes/refreshes before returning, and strict comparisons pass. The final full run logged closed-container Hikari warnings and a slow test-JVM exit: Surefire terminated the fork after its 30-second exit timeout, after complete successful test results. Maven returned BUILD SUCCESS and packaged the jar. Track this suite lifecycle observation in Phase 4C; no load benchmark or measured coverage percentage is claimed. See [4A2 final review](reviews/phase-4a2-final-review.md).
 
+## Phase 4B1 Finance Obligation Verification
+
+Verified on 2026-10-04 with Docker Desktop running:
+
+- `.\mvnw.cmd "-Dtest=FinanceObligationTest,FinanceObligationIntegrationTest,FlywayV20ToV21FinanceUpgradeIntegrationTest,FlywayV19ToV20AssignmentUpgradeIntegrationTest,ModuleBoundaryTest" test`: BUILD SUCCESS, 23 cases, no failures/errors/skips, 1m17s.
+- `.\mvnw.cmd clean verify`: BUILD SUCCESS, exit 0, 280 tests in 46 suites, no failures/errors/skips, 6m37s; packaged jar and independently summed Surefire XML agree. Includes subsequent cached-fee and maximum-charge-snapshot assertions.
+
+Finance adds 20 cases: 4 domain, 12 API/transaction/lock/concurrency and 4 genuine V20→V21 upgrade/schema cases. They cover exact VND integer boundaries and fractional/overflow rejection, six-character whitespace/Unicode/uppercase expansion, immutable financial snapshots after fee/reference changes, terminal cancellation, all eight operation authorization denials, trusted audit actor, complete-row rollback for all four mutations when PostgreSQL audit insert fails, duplicate/stale/reference/query failures, bounded filters/allowlisted sorts/literal matching/actual due-date ties, competing updates/cancellations/duplicate charges, fee closure versus admission, cached fee refresh after another transaction commits deactivation, and bounded production fee lock (55P03 then acquisition after release).
+
+The actual upgrade migrates to V20 with representative legacy records including released accommodation and audit, snapshots all old tables/history, and applies only V21. New fee/charge/audit columns/types/approved lengths/defaults/nullability/PK/FKs/uniqueness/CHECKs/indexes are verified with boundary and specific SQLSTATE writes, including tiny fractions, NaN/infinity and large Unicode JSON without an invented length cap. Hibernate validates all 24 production entities on the exact upgraded public schema with Flyway disabled; history/legacy tables stay unchanged. Historical V20 retains 21 entities. V1–V20 are unchanged.
+
+The full run again logged closed-container Hikari warnings and Surefire's forced fork termination after the 30-second exit timeout, after all tests completed successfully. Maven exited 0 and packaged the jar. This teardown issue remains a 4C follow-up; no benchmark, coverage percentage or payment behavior is claimed. See [4B1 final review](reviews/phase-4b1-final-review.md).
+
 ## Naming Convention
 
 Use behavior-oriented names that state the condition and expected result, such as `createsUserWhenRequestIsValid` or `deniesEnrollmentReadWhenCallerLacksRole`. Follow the project test style once it is established rather than introducing competing conventions.
