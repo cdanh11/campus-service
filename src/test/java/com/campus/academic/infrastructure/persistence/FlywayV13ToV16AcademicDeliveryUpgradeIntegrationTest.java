@@ -157,7 +157,11 @@ class FlywayV13ToV16AcademicDeliveryUpgradeIntegrationTest {
         assertThat(jdbc.queryForList("SELECT * FROM flyway_schema_history ORDER BY installed_rank")).isEqualTo(before);
         assertThat(snapshot()).isEqualTo(legacy);
     }
-    @Configuration(proxyBeanMethods = false) @EntityScan("com.campus")
+    @Configuration(proxyBeanMethods = false) @EntityScan({
+            "com.campus.identity.infrastructure.persistence", "com.campus.organization.infrastructure.persistence",
+            "com.campus.student.infrastructure.persistence", "com.campus.personnel.infrastructure.persistence",
+            "com.campus.shared.infrastructure.persistence", "com.campus.academic.infrastructure.persistence.entity",
+            "com.campus.academic.infrastructure.persistence.delivery"})
     static class ValidationConfiguration { }
     private static Flyway flyway(String version) { return Flyway.configure().dataSource(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword()).locations("classpath:db/migration").target(version).load(); }
     private static Map<String, List<Map<String, Object>>> snapshot() {
