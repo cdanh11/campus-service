@@ -13,11 +13,13 @@ public class DormitoryInventoryService {
     private final InventoryRepository inventory;
     private final DormitoryAudit audit;
     private final Clock clock;
+    private final AssignmentRepository assignments;
 
-    public DormitoryInventoryService(InventoryRepository inventory, DormitoryAudit audit, Clock clock) {
+    public DormitoryInventoryService(InventoryRepository inventory, DormitoryAudit audit, Clock clock, AssignmentRepository assignments) {
         this.inventory = inventory;
         this.audit = audit;
         this.clock = clock;
+        this.assignments = assignments;
     }
 
     public InventoryItem create(UUID actor, InventoryKind kind, UUID parent, String code, String name) {
@@ -42,6 +44,7 @@ public class DormitoryInventoryService {
         var old = inventory.lock(kind, id);
         if (old.rowVersion() != expectedVersion) throw new StaleVersionException();
         if (status == InventoryStatus.INACTIVE && inventory.hasActiveChildren(kind, id)) throw new InvalidStateException();
+        if (kind == InventoryKind.BED && status == InventoryStatus.INACTIVE && assignments.hasCurrentBed(id)) throw new InvalidStateException();
         var saved = inventory.update(candidate, expectedVersion);
         audit.record(actor, saved, "UPDATED", clock.instant());
         return saved;
