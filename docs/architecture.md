@@ -4,22 +4,24 @@
 
 **Confirmed:** Campus Service is a Spring Boot 3.5.16 modular monolith with base package `com.campus`, PostgreSQL, and Flyway.
 
-**Confirmed:** JWT authentication and the token lifecycle are implemented for Identity. Administrator user management follows accepted [ADR 0004](decisions/0004-admin-user-management-policy.md). Phase 2 adds Organization Unit, Student Registry, and Faculty/Staff Registry modules with optional Identity links, audited administrative mutations, and consistent administrative search APIs.
+**Confirmed:** JWT authentication and the token lifecycle are implemented for Identity. Administrator user management follows accepted [ADR 0004](decisions/0004-admin-user-management-policy.md). Phase 3A adds Program/Course catalogs owned by `academic`, referencing active organization units through the Organization application service. Phase 2 adds Organization Unit, Student Registry, and Faculty/Staff Registry modules with optional Identity links, audited administrative mutations, and consistent administrative search APIs.
 
 ## System Context
 
-Campus Service will provide a backend platform for university operations. The first implemented capability will be Identity and Access; later modules will cover student, faculty and staff, academic, dormitory, finance, and selected supporting capabilities.
+Campus Service will provide a backend platform for university operations. Implemented capabilities cover Identity, organization and people registries, and Academic catalogs; later use cases cover terms, sections, enrollment and selected campus operations.
 
 ```mermaid
 flowchart LR
     Client[Campus clients and integrations] --> API[Campus Service API]
     API --> IAM[Identity and Access]
     API --> Registry[Organization and people registries]
+    API --> Academic[Academic catalogs]
     IAM --> DB[(PostgreSQL)]
     Registry --> DB
+    Academic --> DB
 ```
 
-The diagram describes the implemented modular direction. Phase 1B includes the Identity module with authentication and administrator user management; Phase 2 includes the organization and people registry foundations.
+The diagram describes the implemented modular direction. Phase 1B includes the Identity module with authentication and administrator user management; Phase 2 includes the organization and people registry foundations; Phase 3A includes Program/Course catalogs.
 
 ## Modular Monolith
 
@@ -32,7 +34,8 @@ The initial system is one deployable application with modules organized by busin
 - `organization`: reference organization units used by approved registry modules.
 - `student`: student profiles and their optional Identity link.
 - `personnel`: faculty and staff profiles and their optional Identity link.
-- Future modules: `academic`, `dormitory`, `finance`, and supporting modules when their scope is approved.
+- `academic`: Program/Course catalog; term, section and enrollment use cases remain future work.
+- Future modules: `dormitory`, `finance`, and supporting modules when their scope is approved.
 
 A module owns its application logic, domain model, persistence mapping, and external API adapters. Cross-module access goes through explicit application-facing contracts, not repositories, entities, or database tables from another module.
 
@@ -59,7 +62,7 @@ Dependencies point inward: API and infrastructure code depend on application and
 - **Domain:** business rules, domain terminology, invariants, and events.
 - **Infrastructure:** JPA adapters, database access, JWT implementation, external integrations, and framework configuration.
 
-The exact source layout is proposed and will be validated during Phase 1. It must not be treated as an implemented package structure.
+The implemented modules follow API, application, domain and infrastructure packages. Future modules must preserve the same ownership boundaries.
 
 ## Security Direction
 
