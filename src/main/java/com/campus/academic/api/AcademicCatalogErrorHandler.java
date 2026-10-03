@@ -10,7 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 
-@RestControllerAdvice(basePackageClasses = {AdminAcademicProgramController.class, AdminAcademicCourseController.class})
+@RestControllerAdvice(assignableTypes = {AdminAcademicProgramController.class, AdminAcademicCourseController.class})
 public class AcademicCatalogErrorHandler {
     @ExceptionHandler({MethodArgumentNotValidException.class, AcademicCatalogService.RequestValidationException.class})
     ResponseEntity<Error> validation(HttpServletRequest request) {
