@@ -12,7 +12,7 @@ Build an extensible, maintainable platform that can support campus operations to
 
 ## Implemented Scope
 
-The implemented backend includes the Phase 1 platform and Identity foundations, Phase 2 organization and people registries, and Academic catalogs, terms, course offerings, class sections and administrative enrollment. Campus operations and frontend remain future work. This personal project is developed locally; production deployment is not a completion requirement for these phases.
+The implemented backend includes the Phase 1 platform and Identity foundations, Phase 2 organization and people registries, Academic catalogs/delivery/enrollment/audit, Phase 4A Dormitory inventory/current accommodation and Phase 4B1 Finance fees/obligations. Manual payments, operations hardening and frontend remain future work. This personal project is developed locally; production deployment is not a completion requirement for these phases.
 
 ## Domain Roadmap
 
@@ -61,7 +61,7 @@ Campus Service will begin as a modular monolith: one deployable application with
 
 ## Status
 
-**Phase 3D: Academic hardening — closure re-review PASS.** Phase 1, Phase 2 and Phase 3A–3C are merged into `main`. Phase 3D completes the approved Academic foundation with transactional audit for all administrative mutations, OpenAPI Bearer requirements, exact V17→V18 schema validation, query/index evidence and cross-module regression guards. Latest clean verify: 208 tests, no failures/errors/skips, 5m01s on 2026-10-04. See the [Phase 3D plan](docs/plans/phase-3d-academic-hardening.md), [final Phase 1–3 review](docs/reviews/phase-3d-final-review.md), [Academic API contract](docs/api/academic.md) and [Testing](docs/testing.md).
+**Phase 4A and 4B1 — review PASS.** Phase 1–3 are merged into `main` (Phase 3D PR #11); Dormitory is on `feature/dormitory-foundation`, and `feature/finance-obligations` depends on that reviewed branch. ADMIN Dormitory APIs enforce one current place per Student/bed with retained release history. Finance adds exact integer VND fee definitions and immutable Student charge snapshots, versioned cancellation, bounded queries and atomic audit. Latest clean verify: BUILD SUCCESS, 280 tests/46 suites, no failures/errors/skips, 6m37s on 2026-10-04. V20→V21 validates all 24 production entities on the exact upgraded schema with Flyway disabled; V1–V20 unchanged. See the [Phase 4 plan](docs/plans/phase-4-campus-operations.md), [4B1 review](docs/reviews/phase-4b1-final-review.md), [Dormitory API](docs/api/dormitory.md), [Finance API](docs/api/finance.md) and [Testing](docs/testing.md). Phase 4B2 payments and 4C hardening remain incomplete.
 
 [Phase 3A catalog APIs](docs/plans/phase-3a-academic-catalog.md) remain available under `/api/v1/admin/academic/programs` and `/courses`, with normalized unique codes, credits 1–30 and paginated search. [Phase 3B delivery APIs](docs/plans/phase-3b-academic-offerings.md) manage terms, offerings and sections. [Phase 3C enrollment](docs/plans/phase-3c-academic-enrollment.md) supports withdrawal/re-enrollment with version and capacity protection. Student self-service, waitlists, grading, fees and schedules remain future scope.
 
@@ -73,7 +73,8 @@ Administrator APIs require `ROLE_ADMIN`. Identity authentication, session revoca
 2. Phase 1: Spring Boot bootstrap, shared kernel, Identity and Access, PostgreSQL, Flyway, and authentication/authorization tests.
 3. Phase 2: Organization, Student and Faculty/Staff registries with query, audit and migration hardening.
 4. Phase 3: Academic catalog (3A), terms/class sections (3B), enrollment (3C), and Academic hardening (3D).
-5. Later: selected Dormitory/Finance and supporting modules; reporting; frontend; end-to-end release readiness; optional workflow/AI.
+5. Phase 4: Dormitory inventory (4A1), accommodation assignment (4A2), Finance obligations (4B1), manual payments (4B2), operations hardening (4C).
+6. Later: supporting modules; reporting; frontend; end-to-end release readiness; optional workflow/AI.
 
 ## Documentation Map
 

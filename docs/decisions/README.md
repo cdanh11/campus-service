@@ -33,3 +33,6 @@ Create an ADR when a decision changes module boundaries, persistence strategy, s
 - [0004: Administrator User Management Policy](0004-admin-user-management-policy.md)
 - [0005: Enrollment Capacity and Lifecycle](0005-enrollment-capacity-and-lifecycle.md)
 - [0006: Academic Mutation Audit](0006-academic-mutation-audit.md)
+- [0007: Dormitory Inventory and Assignment Boundary](0007-dormitory-inventory-and-assignment-boundary.md)
+- [0008: Accommodation Current Place and Release](0008-accommodation-current-place-and-release.md)
+- [0009: VND Obligations and Immutable Fee Snapshots](0009-finance-vnd-obligations-and-snapshots.md)

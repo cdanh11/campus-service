@@ -26,7 +26,7 @@ flowchart BT
 
 Phase 1, the Phase 2 registries and Phase 3 Academic foundations use JUnit 5, Spring Boot Test, MockMvc, Testcontainers PostgreSQL, and Flyway. The verified Windows command is `./mvnw.cmd clean verify` when run from PowerShell as `.\mvnw.cmd clean verify`.
 
-The 208 tests verified by `./mvnw.cmd clean verify` on 2026-10-04 cover health and readiness probes, production-profile configuration, Flyway migrations through V18 including V4-to-V5, V8-to-V10, V10-to-V11, V11-to-V13, V13-to-V16, V16-to-V17 and V17-to-V18 upgrades, authentication and authorization boundaries, administrator user-management flows, multi-session HTTP revocation, audit-failure rollback, the organization, student, and faculty/staff registries, Program/Course catalog validation, authorization, concurrent updates and paginated queries, term/offering/section lifecycle and faculty-assignment rules, administrative enrollment with capacity, withdrawal/re-enrollment and competing transaction protection, transactional Academic mutation audit, OpenAPI security, selective PostgreSQL query plans and cross-module Java dependency guards. Integration tests run against PostgreSQL Testcontainers and do not connect to a developer's local database.
+The Phase 3 baseline of 208 tests verified by `./mvnw.cmd clean verify` on 2026-10-04 cover health and readiness probes, production-profile configuration, Flyway migrations through V18 including V4-to-V5, V8-to-V10, V10-to-V11, V11-to-V13, V13-to-V16, V16-to-V17 and V17-to-V18 upgrades, authentication and authorization boundaries, administrator user-management flows, multi-session HTTP revocation, audit-failure rollback, the organization, student, and faculty/staff registries, Program/Course catalog validation, authorization, concurrent updates and paginated queries, term/offering/section lifecycle and faculty-assignment rules, administrative enrollment with capacity, withdrawal/re-enrollment and competing transaction protection, transactional Academic mutation audit, OpenAPI security, selective PostgreSQL query plans and cross-module Java dependency guards. Integration tests run against PostgreSQL Testcontainers and do not connect to a developer's local database.
 
 ## Authentication and Authorization
 
@@ -113,6 +113,45 @@ The final review records resolved findings, evidence and boundaries in [Phase 3D
 ## Phase 3 Closure Re-review
 
 Closure re-review on 2026-10-04 added eight cases and strengthened existing audit/lifecycle assertions. Focused audit/V18/boundary verification passed 29 tests in 1m14s; subsequent delivery assertions passed in full `.\mvnw.cmd clean verify`: BUILD SUCCESS, 208 tests, zero failures/errors/skips, 5m01s. Surefire totals: 37 suites, 114 Academic cases, 66 Identity cases and 28 platform/registry cases. See the final review's closure section for specific evidence gaps and non-blocking follow-ups; these totals do not imply measured code coverage.
+
+## Phase 4A1 Dormitory Inventory Verification
+
+Verified on 2026-10-04:
+
+- `.\mvnw.cmd "-Dtest=InventoryItemTest,DormitoryInventoryIntegrationTest,FlywayV18ToV19DormitoryUpgradeIntegrationTest,FlywayV17ToV18AcademicAuditUpgradeIntegrationTest,ModuleBoundaryTest" test`: BUILD SUCCESS, 40 cases, no failures/errors/skips, 1m30s. Subsequent explicit OpenAPI names/field assertions are covered by the full run.
+- `.\mvnw.cmd clean verify`: BUILD SUCCESS, 244 tests in 40 suites, no failures/errors/skips, 5m28s; packaged jar. Surefire XML independently agrees.
+
+Dormitory adds 36 cases: 6 domain, 24 API/transaction/lock/concurrency and 6 genuine V18→V19 upgrade/schema cases. Coverage includes all operation role denials, Unicode/whitespace/length and scoped uniqueness, immutable parents, bounded literal queries and actual timestamp-tie pagination, stale/duplicate rollback, real database audit failure for all inventory create/update routes, update and parent/child races, bounded production parent locks (55P03 and success after release), exact schema types/defaults/constraints/indexes and SQLSTATE rejection, and status-only audit/OpenAPI contracts.
+
+The actual upgraded PostgreSQL/public schema validates all 20 production entities using ddl-auto=validate with Flyway disabled, and checks baseline records/history unchanged. Historical V18 validation retains its original 16 entities. V1–V18 remain unchanged. First upgrade verification exposed a bad legacy fixture missing required Identity status; it was corrected. A later Docker HTTP 503 discovery failure was environmental; final successful runs occurred after daemon recovery. See [4A1 final review](reviews/phase-4a1-final-review.md).
+
+Allocation/occupancy and Finance are not part of this slice. No load benchmark, measured coverage percentage or frontend E2E result is claimed.
+
+## Phase 4A2 Accommodation Verification
+
+Verified on 2026-10-04 with Docker Desktop running:
+
+- `.\mvnw.cmd "-Dtest=AccommodationAssignmentTest,AccommodationAssignmentIntegrationTest,FlywayV19ToV20AssignmentUpgradeIntegrationTest,DormitoryInventoryIntegrationTest,FlywayV18ToV19DormitoryUpgradeIntegrationTest,ModuleBoundaryTest" test`: BUILD SUCCESS, 47 tests, no failures/errors/skips, 1m34s. Later strict POST/PUT-to-GET response equality assertions are covered by the full run.
+- `.\mvnw.cmd clean verify`: BUILD SUCCESS, exit 0, 260 tests in 43 suites, no failures/errors/skips, 6m29s; packaged jar and independently summed Surefire XML agree.
+
+The 16 new cases include 2 domain, 11 API/transaction/lock/concurrency and 3 genuine V19→V20 upgrade/schema cases. They verify immutable history and terminal release, later stay with a new UUID, active eligibility and occupied-bed deactivation, all route authorization, query bounds/stable ties, real PostgreSQL audit-failure rollback, same-bed and same-Student/different-building races, stale releases, release/admission and close/admission consistency, and production locks across separate transactions with bounded lock_timeout and SQLSTATE 55P03 followed by successful acquisition.
+
+The exact upgrade applies only V20 after representative legacy fixtures and all existing table/history snapshots. Assertions cover assignment types/defaults/nullability/PK/FKs/CHECKs/partial unique indexes, valid history and rejected SQL writes with specific SQLSTATEs, and audit resource/action compatibility. Hibernate validates all 21 production entities on that same upgraded public schema with Flyway disabled; legacy data/history remain unchanged. Historical V19 validation retains 20 entities; V1–V19 are unchanged.
+
+The first focused run failed one timestamp-preservation assertion because POST used nanoseconds while PostgreSQL stored microseconds. Persistence now flushes/refreshes before returning, and strict comparisons pass. The final full run logged closed-container Hikari warnings and a slow test-JVM exit: Surefire terminated the fork after its 30-second exit timeout, after complete successful test results. Maven returned BUILD SUCCESS and packaged the jar. Track this suite lifecycle observation in Phase 4C; no load benchmark or measured coverage percentage is claimed. See [4A2 final review](reviews/phase-4a2-final-review.md).
+
+## Phase 4B1 Finance Obligation Verification
+
+Verified on 2026-10-04 with Docker Desktop running:
+
+- `.\mvnw.cmd "-Dtest=FinanceObligationTest,FinanceObligationIntegrationTest,FlywayV20ToV21FinanceUpgradeIntegrationTest,FlywayV19ToV20AssignmentUpgradeIntegrationTest,ModuleBoundaryTest" test`: BUILD SUCCESS, 23 cases, no failures/errors/skips, 1m17s.
+- `.\mvnw.cmd clean verify`: BUILD SUCCESS, exit 0, 280 tests in 46 suites, no failures/errors/skips, 6m37s; packaged jar and independently summed Surefire XML agree. Includes subsequent cached-fee and maximum-charge-snapshot assertions.
+
+Finance adds 20 cases: 4 domain, 12 API/transaction/lock/concurrency and 4 genuine V20→V21 upgrade/schema cases. They cover exact VND integer boundaries and fractional/overflow rejection, six-character whitespace/Unicode/uppercase expansion, immutable financial snapshots after fee/reference changes, terminal cancellation, all eight operation authorization denials, trusted audit actor, complete-row rollback for all four mutations when PostgreSQL audit insert fails, duplicate/stale/reference/query failures, bounded filters/allowlisted sorts/literal matching/actual due-date ties, competing updates/cancellations/duplicate charges, fee closure versus admission, cached fee refresh after another transaction commits deactivation, and bounded production fee lock (55P03 then acquisition after release).
+
+The actual upgrade migrates to V20 with representative legacy records including released accommodation and audit, snapshots all old tables/history, and applies only V21. New fee/charge/audit columns/types/approved lengths/defaults/nullability/PK/FKs/uniqueness/CHECKs/indexes are verified with boundary and specific SQLSTATE writes, including tiny fractions, NaN/infinity and large Unicode JSON without an invented length cap. Hibernate validates all 24 production entities on the exact upgraded public schema with Flyway disabled; history/legacy tables stay unchanged. Historical V20 retains 21 entities. V1–V20 are unchanged.
+
+The full run again logged closed-container Hikari warnings and Surefire's forced fork termination after the 30-second exit timeout, after all tests completed successfully. Maven exited 0 and packaged the jar. This teardown issue remains a 4C follow-up; no benchmark, coverage percentage or payment behavior is claimed. See [4B1 final review](reviews/phase-4b1-final-review.md).
 
 ## Naming Convention
 
