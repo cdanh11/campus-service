@@ -1,5 +1,9 @@
 package com.campus.academic.api.delivery;
 
+import com.campus.academic.application.AcademicAdministrationService;
+import org.springframework.security.core.Authentication;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import java.time.LocalDate;
 import java.util.UUID;
 import com.campus.academic.application.AcademicDeliveryService;
@@ -11,16 +15,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/v1/admin/academic/offerings")
 public class AdminCourseOfferingController {
     private final AcademicDeliveryService service;
-    public AdminCourseOfferingController(AcademicDeliveryService service) { this.service = service; }
+    private final AcademicAdministrationService administration;
+    public AdminCourseOfferingController(AcademicDeliveryService service, AcademicAdministrationService administration) { this.service = service; this.administration = administration; }
 
     @PostMapping
     @Operation(summary = "Create offering (ADMIN)", description = "New resources start in DRAFT; lifecycle transitions require PUT and expectedVersion.")
-    public ResponseEntity<CourseOffering> create(@Valid @RequestBody CreateRequest request) {
-        var value = service.createOffering(request.termId(), request.courseId());
+    public ResponseEntity<CourseOffering> create(Authentication authentication, @Valid @RequestBody CreateRequest request) {
+        var value = administration.createOffering((UUID) authentication.getPrincipal(), request.termId(), request.courseId());
         return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(value.id()).toUri()).body(value);
     }
@@ -30,8 +36,8 @@ public class AdminCourseOfferingController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update offering (ADMIN)", description = "Requires expectedVersion; stale version, invalid lifecycle or unavailable references return 409. Parent identifiers are immutable.")
-    public CourseOffering update(@PathVariable UUID id, @Valid @RequestBody UpdateRequest request) {
-        return service.updateOffering(id, request.status(), request.expectedVersion());
+    public CourseOffering update(Authentication authentication, @PathVariable UUID id, @Valid @RequestBody UpdateRequest request) {
+        return administration.updateOffering((UUID) authentication.getPrincipal(), id, request.status(), request.expectedVersion());
     }
 
     @GetMapping

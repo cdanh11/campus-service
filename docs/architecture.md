@@ -66,7 +66,7 @@ The implemented modules follow API, application, domain and infrastructure packa
 
 ## Security Direction
 
-Spring Security with JWT-based authentication is implemented for Identity. `/api/v1/admin/**` requires `ROLE_ADMIN`, while the application layer uses the validated JWT subject UUID as the mutation actor. Authorization is enforced at both boundaries. Token signing, expiry, refresh, and revocation follow accepted ADR 0003; administrator management follows ADR 0004.
+Spring Security with JWT-based authentication is implemented for Identity. The HTTP boundary enforces `ROLE_ADMIN` for `/api/v1/admin/**`; administrative application entry points receive the validated JWT subject UUID as the mutation actor. Internal provisioning/fixture entry points are trusted server-side calls, not client interfaces. Token signing, expiry, refresh, and revocation follow accepted ADR 0003; administrator management follows ADR 0004.
 
 ## Database Ownership
 
@@ -84,8 +84,14 @@ A module may be extracted only after evidence supports it, such as independent s
 
 A course offering belongs to one term/course pair and retains its organization UUID; a class section belongs to one offering and owns its capacity and single faculty assignment. Academic owns the lifecycle checks. Delivery mutations lock term, then offering, then section where applicable to prevent concurrent parent closure and child opening. These are local database transactions within the monolith. The tradeoff is serialization of delivery mutations within a term; no load-test claim is made. Course/organization/faculty status is checked when opening and when relevant references are newly assigned; deactivation does not rewrite historical classes.
 
-Historical upgrade validation scans only production entity packages present at its target version. V13 validation excludes delivery/enrollment; V16 validation includes delivery and excludes enrollment; V17 validation includes all currently implemented entities. Flyway remains disabled during exact-schema Hibernate validation.
+Historical upgrade validation scans only production entity packages present at its target version. V13 validation excludes delivery/enrollment/audit; V16 includes delivery and excludes enrollment/audit; V17 includes enrollment and excludes audit; V18 includes all currently implemented entities. Flyway remains disabled during exact-schema Hibernate validation.
 
 ## Enrollment invariants
 
 Academic owns one retained enrollment per student/section pair. Only ENROLLED consumes capacity; WITHDRAWN may be restored using expectedVersion and full eligibility/capacity checks. Enrollment writes use the same term → offering → section lock order before counting seats or refreshing an existing enrollment. Student eligibility uses the Student application service, with no cross-module persistence lock; later deactivation does not rewrite enrollment history. Withdrawal is possible after closure. Direct SQL admission is unsupported and capacity is an application transaction invariant, rather than a database CHECK. See [ADR 0005](decisions/0005-enrollment-capacity-and-lifecycle.md) for tradeoffs and deferred scope.
+
+## Academic mutation audit and query review
+
+All Academic HTTP create/update operations use AcademicAdministrationService, whose transaction encloses the original application use case and synchronous AcademicAudit persistence. Actor UUID comes from the JWT principal. Audit records contain resource UUID/type, action, resulting version, time and status-only JSONB metadata; they contain no arbitrary request snapshots or contact/credential data. Failure rolls back both writes and returns the safe AUDIT_WRITE_FAILED error. The Academic-owned audit schema has an actor FK but no polymorphic target FK or public audit query interface. See [ADR 0006](decisions/0006-academic-mutation-audit.md).
+
+Enrollment occupancy and Student/status queries have selective index-plan evidence on synthetic PostgreSQL fixtures, without planner overrides. Substring search with a leading wildcard may scan; no claim is made that the catalog's B-tree uniqueness index optimizes arbitrary substring searches. Further indexing or narrower locks must be justified by actual workload measurements.

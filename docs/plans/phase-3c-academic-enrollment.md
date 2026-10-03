@@ -26,7 +26,7 @@ PASS requires requirement-by-requirement evidence, rather than a green build alo
 5. Query/index and module-boundary review, unchanged V1–V16, focused tests followed by persistent `./mvnw.cmd clean verify`, verified totals and `git diff --check`.
 6. Resolve every blocker/major finding before PASS. Document residual limitations and defer wider Academic audit to 3D. Update docs only with actual verification evidence; commit by function and push after PASS. Local roadmap stays untracked.
 
-Status: implemented; final review PASS on 2026-10-04; ready for PR/merge after scoped commits and push.
+Status: implemented; final review PASS on 2026-10-04; merged in PR #10 at `51b48b3`.
 
 ## Verified outcome
 

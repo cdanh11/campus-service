@@ -35,7 +35,7 @@ public class AdminOrganizationUnitController {
         return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest().path("/{unitId}").buildAndExpand(unit.id()).toUri()).body(response(unit));
     }
     @GetMapping public PageResponse list(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size, @RequestParam(required = false) String q, @RequestParam(required = false) String status, @RequestParam(defaultValue = "code,asc") String sort) {
-        if (page < 0 || size < 1 || size > 100 || (q != null && q.trim().codePointCount(0, q.trim().length()) > 100)) throw new InvalidQueryParameterException();
+        if (page < 0 || size < 1 || size > 100 || (long) page * size > Integer.MAX_VALUE || (q != null && q.trim().codePointCount(0, q.trim().length()) > 100)) throw new InvalidQueryParameterException();
         String[] parts = sort.split(",", -1); if (parts.length != 2 || !Set.of("code", "name", "status", "createdAt", "updatedAt").contains(parts[0]) || !(parts[1].equals("asc") || parts[1].equals("desc"))) throw new InvalidQueryParameterException();
         OrganizationUnitStatus requestedStatus; try { requestedStatus = status == null ? null : OrganizationUnitStatus.valueOf(status); } catch (IllegalArgumentException exception) { throw new InvalidQueryParameterException(); }
         var result = service.search(new com.campus.organization.domain.OrganizationUnitSearch(page, size, q == null || q.trim().isEmpty() ? null : q.trim(), requestedStatus, parts[0], parts[1].equals("asc")));

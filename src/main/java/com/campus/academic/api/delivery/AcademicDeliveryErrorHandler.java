@@ -15,6 +15,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 @RestControllerAdvice(basePackageClasses = AdminAcademicTermController.class)
 public class AcademicDeliveryErrorHandler {
+    @ExceptionHandler(com.campus.academic.application.AcademicAudit.UnavailableException.class)
+    ResponseEntity<Error> auditFailure(HttpServletRequest request) { return error(500, "AUDIT_WRITE_FAILED", request); }
     @ExceptionHandler({MethodArgumentNotValidException.class, IllegalArgumentException.class})
     ResponseEntity<Error> validation(HttpServletRequest request) { return error(400, "VALIDATION_FAILED", request); }
     @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})

@@ -14,6 +14,8 @@ import com.campus.organization.application.OrganizationUnitManagementService;
 import com.campus.organization.domain.OrganizationUnitStatus;
 import com.campus.organization.domain.OrganizationUnitType;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -45,6 +47,15 @@ class PeopleRegistrySearchIntegrationTest {
     @Autowired TokenService tokens;
     @Autowired OrganizationUnitManagementService organizations;
 
+    @ParameterizedTest @ValueSource(strings = {"organization-units", "students", "faculty-staff"})
+    void rejectsPaginationOffsetsThatCannotBeRepresentedByJpa(String route) throws Exception {
+        String token = tokens.accessToken(admin());
+        mvc.perform(get("/api/v1/admin/" + route).param("page", "2147483647").param("size", "2").header("Authorization", "Bearer " + token))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("INVALID_QUERY_PARAMETER"));
+        mvc.perform(get("/api/v1/admin/" + route).param("page", "2147483647").param("size", "1").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content.length()").value(0));
+    }
+
     @Test
     void searchesPaginatesAndSortsStudentAndFacultyStaffRegistries() throws Exception {
         String token = tokens.accessToken(admin());
@@ -68,7 +79,7 @@ class PeopleRegistrySearchIntegrationTest {
     }
 
     private UserAccount admin() {
-        return users.save(UserAccount.create(UUID.randomUUID(), "search-admin@campus.example", "Search Admin", passwords.encode("valid-password"), AccountStatus.ACTIVE,
+        return users.save(UserAccount.create(UUID.randomUUID(), UUID.randomUUID() + "@campus.example", "Search Admin", passwords.encode("valid-password"), AccountStatus.ACTIVE,
                 Set.of(roles.findByCode(RoleCode.ADMIN).orElseThrow()), Instant.now()));
     }
 }

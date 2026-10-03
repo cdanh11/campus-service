@@ -1,5 +1,9 @@
 package com.campus.academic.api.delivery;
 
+import com.campus.academic.application.AcademicAdministrationService;
+import org.springframework.security.core.Authentication;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import java.time.LocalDate;
 import java.util.UUID;
 import com.campus.academic.application.AcademicDeliveryService;
@@ -11,16 +15,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/v1/admin/academic/sections")
 public class AdminClassSectionController {
     private final AcademicDeliveryService service;
-    public AdminClassSectionController(AcademicDeliveryService service) { this.service = service; }
+    private final AcademicAdministrationService administration;
+    public AdminClassSectionController(AcademicDeliveryService service, AcademicAdministrationService administration) { this.service = service; this.administration = administration; }
 
     @PostMapping
     @Operation(summary = "Create section (ADMIN)", description = "New resources start in DRAFT; lifecycle transitions require PUT and expectedVersion.")
-    public ResponseEntity<ClassSection> create(@Valid @RequestBody CreateRequest request) {
-        var value = service.createSection(request.offeringId(), request.code(), request.capacity(), request.facultyId());
+    public ResponseEntity<ClassSection> create(Authentication authentication, @Valid @RequestBody CreateRequest request) {
+        var value = administration.createSection((UUID) authentication.getPrincipal(), request.offeringId(), request.code(), request.capacity(), request.facultyId());
         return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(value.id()).toUri()).body(value);
     }
@@ -30,8 +36,8 @@ public class AdminClassSectionController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update section (ADMIN)", description = "Requires expectedVersion; stale version, invalid lifecycle or unavailable references return 409. Parent identifiers are immutable.")
-    public ClassSection update(@PathVariable UUID id, @Valid @RequestBody UpdateRequest request) {
-        return service.updateSection(id, request.code(), request.capacity(), request.facultyId(), request.status(), request.expectedVersion());
+    public ClassSection update(Authentication authentication, @PathVariable UUID id, @Valid @RequestBody UpdateRequest request) {
+        return administration.updateSection((UUID) authentication.getPrincipal(), id, request.code(), request.capacity(), request.facultyId(), request.status(), request.expectedVersion());
     }
 
     @GetMapping

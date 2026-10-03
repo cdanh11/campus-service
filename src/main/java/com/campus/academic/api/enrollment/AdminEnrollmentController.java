@@ -1,5 +1,9 @@
 package com.campus.academic.api.enrollment;
 
+import com.campus.academic.application.AcademicAdministrationService;
+import org.springframework.security.core.Authentication;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import java.util.Set;
 import java.util.UUID;
 import com.campus.academic.application.EnrollmentService;
@@ -12,16 +16,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/v1/admin/academic/enrollments")
 public class AdminEnrollmentController {
     private final EnrollmentService service;
-    public AdminEnrollmentController(EnrollmentService service) { this.service = service; }
+    private final AcademicAdministrationService administration;
+    public AdminEnrollmentController(EnrollmentService service, AcademicAdministrationService administration) { this.service = service; this.administration = administration; }
 
     @PostMapping
     @Operation(summary = "Enroll an active student (ADMIN)", description = "Requires open section/offering, active term and available capacity. Duplicate membership returns 409; use PUT to re-enroll withdrawn membership.")
-    public ResponseEntity<Enrollment> create(@Valid @RequestBody CreateRequest request) {
-        var value = service.create(request.studentId(), request.sectionId());
+    public ResponseEntity<Enrollment> create(Authentication authentication, @Valid @RequestBody CreateRequest request) {
+        var value = administration.create((UUID) authentication.getPrincipal(), request.studentId(), request.sectionId());
         return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(value.id()).toUri()).body(value);
     }
 
@@ -30,8 +36,8 @@ public class AdminEnrollmentController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Withdraw or re-enroll (ADMIN)", description = "Requires expectedVersion. Withdrawal releases capacity and is allowed after closure. Re-enrollment rechecks eligibility and capacity. Identifiers cannot change; repeating the current status returns 409.")
-    public Enrollment update(@PathVariable UUID id, @Valid @RequestBody UpdateRequest request) {
-        return service.update(id, request.status(), request.expectedVersion());
+    public Enrollment update(Authentication authentication, @PathVariable UUID id, @Valid @RequestBody UpdateRequest request) {
+        return administration.update((UUID) authentication.getPrincipal(), id, request.status(), request.expectedVersion());
     }
 
     @GetMapping
