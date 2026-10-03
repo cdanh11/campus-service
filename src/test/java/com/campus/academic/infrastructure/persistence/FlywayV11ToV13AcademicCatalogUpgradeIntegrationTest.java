@@ -150,7 +150,10 @@ class FlywayV11ToV13AcademicCatalogUpgradeIntegrationTest {
     }
 
     @Configuration(proxyBeanMethods = false)
-    @EntityScan("com.campus")
+    @EntityScan(basePackages = {"com.campus.identity.infrastructure.persistence.entity",
+            "com.campus.organization.infrastructure.persistence.entity", "com.campus.student.infrastructure.persistence.entity",
+            "com.campus.personnel.infrastructure.persistence.entity", "com.campus.shared.infrastructure.persistence",
+            "com.campus.academic.infrastructure.persistence.entity"})
     static class ValidationConfiguration { }
 
     private static Map<String, List<Map<String, Object>>> snapshot() {
