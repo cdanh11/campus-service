@@ -19,6 +19,8 @@ Errors follow timestamp/status/code/message/path/traceId. Invalid body/text is 4
 
 Successful create/update writes exactly one audit event with the JWT principal actor, resource type/UUID, actual resulting version, status-only JSON metadata and time. Reads and rejected operations add none. Audit persistence failure returns 500 AUDIT_WRITE_FAILED and rolls back business data/version. No credentials, names/contact details or full request snapshots are audited.
 
+Inventory POST/PUT returns stored PostgreSQL timestamp precision and actual resulting rowVersion after flush/refresh. A subsequent GET returns the same representation when there is no intervening mutation; createdAt remains unchanged through PUT.
+
 ## Current accommodation
 
 | Operation | Contract |

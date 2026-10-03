@@ -2,7 +2,7 @@
 
 ## Current State
 
-Phase 1–3 are merged; Phase 4A adds Dormitory inventory/current accommodation and 4B adds Finance VND fees/obligation snapshots/manual receipts/reversal with atomic audit. Operations hardening remains a separate gate. The repository contains JWT authentication, Spring Security authorization, Identity persistence, and administrator user-management endpoints backed by PostgreSQL and Flyway. Phase 1 release readiness adds CI, a production profile, health probes, a container build, and a release runbook. Selecting production infrastructure and running the release remain environment-owner responsibilities.
+Phase 1–3 are merged; Phase 4 adds Dormitory inventory/current accommodation, Finance VND fees/obligation snapshots/manual receipts/reversal with atomic audit, and operations hardening reviewed PASS. Phase 4 feature history awaits user PR/merge; Phase 5 needs a separate approved plan. The repository contains JWT authentication, Spring Security authorization, Identity persistence, and administrator user-management endpoints backed by PostgreSQL and Flyway. Phase 1 release readiness adds CI, a production profile, health probes, a container build, and a release runbook. Selecting production infrastructure and running the release remain environment-owner responsibilities.
 
 ## Prerequisites
 
@@ -36,6 +36,8 @@ Expected variables cover the application profile, server port, PostgreSQL connec
 6. Review migrations, logs, and the diff before opening a change for review.
 
 The Maven Wrapper command above is the required verification command on Windows. Testcontainers starts an isolated PostgreSQL instance; Docker Compose and a long-running local application are optional local-development workflows.
+
+Application integration tests pair `@SpringBootTest` with test-only `@PostgresApplicationTest`: a Spring-managed PostgreSQL container bean supplies the service connection and `AFTER_CLASS` cleanup closes dependent pools/context before the container. Each class gets an isolated database. Do not reintroduce a static JUnit-owned container while leaving its Spring context cached beyond the class. Exact historical upgrade tests retain independently owned containers and close their minimal Hibernate validation contexts explicitly. No developer database, container reuse flag, longer fork timeout or skipped assertion is required.
 
 ## Production Profile And Container Build
 
