@@ -26,7 +26,7 @@ flowchart BT
 
 Phase 1, the Phase 2 registries and Phase 3 Academic foundations use JUnit 5, Spring Boot Test, MockMvc, Testcontainers PostgreSQL, and Flyway. The verified Windows command is `./mvnw.cmd clean verify` when run from PowerShell as `.\mvnw.cmd clean verify`.
 
-The 176 tests verified by `./mvnw.cmd clean verify` on 2026-10-04 cover health and readiness probes, production-profile configuration, Flyway migrations through V17 including V4-to-V5, V8-to-V10, V10-to-V11, V11-to-V13, V13-to-V16 and V16-to-V17 upgrades, authentication and authorization boundaries, administrator user-management flows, multi-session HTTP revocation, audit-failure rollback, the organization, student, and faculty/staff registries, Program/Course catalog validation, authorization, concurrent updates and paginated queries, term/offering/section lifecycle and faculty-assignment rules, and administrative enrollment with capacity, withdrawal/re-enrollment and competing transaction protection. Integration tests run against PostgreSQL Testcontainers and do not connect to a developer's local database.
+The 200 tests verified by `./mvnw.cmd clean verify` on 2026-10-04 cover health and readiness probes, production-profile configuration, Flyway migrations through V18 including V4-to-V5, V8-to-V10, V10-to-V11, V11-to-V13, V13-to-V16, V16-to-V17 and V17-to-V18 upgrades, authentication and authorization boundaries, administrator user-management flows, multi-session HTTP revocation, audit-failure rollback, the organization, student, and faculty/staff registries, Program/Course catalog validation, authorization, concurrent updates and paginated queries, term/offering/section lifecycle and faculty-assignment rules, administrative enrollment with capacity, withdrawal/re-enrollment and competing transaction protection, transactional Academic mutation audit, OpenAPI security, selective PostgreSQL query plans and cross-module Java dependency guards. Integration tests run against PostgreSQL Testcontainers and do not connect to a developer's local database.
 
 ## Authentication and Authorization
 
@@ -95,6 +95,20 @@ The first full run exposed a cached-entity version conflict before refresh in th
 The exact upgrade migrates to V16, inserts representative Identity/role/organization/Student/personnel/catalog/term/offering/section/audit records, snapshots every existing table and migration history, then applies only V17. It checks the new enrollment columns/defaults/nullability/PK/unique/FKs/CHECK/indexes, valid lifecycle SQL writes, and rejected writes with specific SQLSTATEs. A minimal context validates all 15 production entities against that same upgraded public schema with Flyway disabled; history and baseline data remain unchanged. The historical V16 context scans only its original 14 production entities. V1–V16 remain unchanged.
 
 Final review PASS requires the evidence matrix in the Phase 3C plan, inspected production transaction/query/module boundaries and clean diff checks. No benchmark, self-service, waitlist, registration window or broader Academic mutation audit is claimed; see ADR 0005 and Phase 3D.
+
+## Phase 3D Verification
+
+Verified on 2026-10-04:
+
+- `.\mvnw.cmd "-Dtest=AdminAcademicCatalogControllerIntegrationTest,AcademicDeliveryIntegrationTest,EnrollmentIntegrationTest" test`: BUILD SUCCESS; 50 tests, no failures/errors/skips; 4 minutes 16 seconds.
+- `.\mvnw.cmd "-Dtest=AcademicAuditIntegrationTest,FlywayV17ToV18AcademicAuditUpgradeIntegrationTest,FlywayV16ToV17EnrollmentUpgradeIntegrationTest,ModuleBoundaryTest,PeopleRegistrySearchIntegrationTest" test`: BUILD SUCCESS; 28 tests, no failures/errors/skips; 1 minute 18 seconds. The full run includes the subsequent assertion that columns without approved defaults have none.
+- `.\mvnw.cmd clean verify`: BUILD SUCCESS; 200 tests, no failures/errors/skips; 4 minutes 56 seconds.
+
+Phase 3D adds 24 cases: 17 audit/API/query/concurrency cases, 3 V17→V18 upgrade/schema cases, 1 module-boundary guard and 3 Phase 2 pagination boundary cases. Every resource create/update verifies the trusted actor and resulting event type/action/version/status; real PostgreSQL trigger failures prove business rows and versions roll back with audit failure. Enrollment restoration rollback and last-seat competition verify occupancy and event consistency. Unauthorized/malformed/stale/duplicate requests and reads add no success events. Generated OpenAPI declares Bearer security on all 24 Academic operations. Synthetic 10,000-pair fixtures, ANALYZE and unforced PostgreSQL EXPLAIN show the existing section/status and student/status enrollment indexes serve selective queries; this is not a latency/load benchmark.
+
+The actual upgrade first migrates to V17, inserts complete representative legacy records including withdrawn enrollment and People Registry audit, snapshots all existing tables/history, then applies only V18. It verifies all audit columns/types/lengths/nullability/defaults, PK/actor FK, resource/action/version/object-metadata constraints, indexes and specific SQLSTATE rejections. Large Unicode JSON objects are accepted without an invented metadata length cap. A minimal context validates all 16 production entities on the exact upgraded public schema with Flyway disabled; migration history and baseline records remain unchanged. Historical V17 validation keeps its original 15 entity set. V1–V17 are unchanged.
+
+The final review records resolved findings, evidence and boundaries in [Phase 3D Final Review](reviews/phase-3d-final-review.md). Java dependency guards supplement manual SQL/module ownership review; they are not a substitute for architecture or security review. Academic HTTP writes are audited, while trusted internal fixture/provisioning services remain distinct. No audit query endpoint, backfill, DB-enforced append-only policy, production-load certification or deployment is claimed.
 
 ## Naming Convention
 
