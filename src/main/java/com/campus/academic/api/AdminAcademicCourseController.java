@@ -1,5 +1,9 @@
 package com.campus.academic.api;
 
+import com.campus.academic.application.AcademicAdministrationService;
+import org.springframework.security.core.Authentication;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import java.time.Instant;
 import java.util.*;
 import com.campus.academic.application.AcademicCatalogService;
@@ -11,19 +15,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/v1/admin/academic/courses")
 public class AdminAcademicCourseController {
     private final AcademicCatalogService service;
+    private final AcademicAdministrationService administration;
 
-    public AdminAcademicCourseController(AcademicCatalogService service) {
-        this.service = service;
+    public AdminAcademicCourseController(AcademicCatalogService service, AcademicAdministrationService administration) {
+        this.service = service; this.administration = administration;
     }
 
     @PostMapping
     @Operation(summary = "Create an academic course (ADMIN)")
-    public ResponseEntity<Response> create(@Valid @RequestBody Request request) {
-        var value = service.createCourse(request.code(), request.title(), request.credits(), request.organizationUnitId(), request.status());
+    public ResponseEntity<Response> create(Authentication authentication, @Valid @RequestBody Request request) {
+        var value = administration.createCourse((UUID) authentication.getPrincipal(), request.code(), request.title(), request.credits(), request.organizationUnitId(), request.status());
         return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(value.id()).toUri()).body(out(value));
     }
@@ -47,8 +53,8 @@ public class AdminAcademicCourseController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update an academic course (ADMIN)", description = "Requires expectedVersion from the last read; stale versions and duplicate codes return 409.")
-    public Response update(@PathVariable UUID id, @Valid @RequestBody UpdateRequest request) {
-        return out(service.updateCourse(id, request.code(), request.title(), request.credits(), request.organizationUnitId(),
+    public Response update(Authentication authentication, @PathVariable UUID id, @Valid @RequestBody UpdateRequest request) {
+        return out(administration.updateCourse((UUID) authentication.getPrincipal(), id, request.code(), request.title(), request.credits(), request.organizationUnitId(),
                 request.status(), request.expectedVersion()));
     }
 

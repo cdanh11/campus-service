@@ -12,6 +12,10 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 
 @RestControllerAdvice(assignableTypes = {AdminAcademicProgramController.class, AdminAcademicCourseController.class})
 public class AcademicCatalogErrorHandler {
+    @ExceptionHandler(com.campus.academic.application.AcademicAudit.UnavailableException.class)
+    ResponseEntity<Error> auditFailure(HttpServletRequest request) {
+        return error(HttpStatus.INTERNAL_SERVER_ERROR, "AUDIT_WRITE_FAILED", request);
+    }
     @ExceptionHandler({MethodArgumentNotValidException.class, AcademicCatalogService.RequestValidationException.class})
     ResponseEntity<Error> validation(HttpServletRequest request) {
         return error(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", request);

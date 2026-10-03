@@ -1,5 +1,9 @@
 package com.campus.academic.api.delivery;
 
+import com.campus.academic.application.AcademicAdministrationService;
+import org.springframework.security.core.Authentication;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import java.time.LocalDate;
 import java.util.UUID;
 import com.campus.academic.application.AcademicDeliveryService;
@@ -11,16 +15,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/v1/admin/academic/terms")
 public class AdminAcademicTermController {
     private final AcademicDeliveryService service;
-    public AdminAcademicTermController(AcademicDeliveryService service) { this.service = service; }
+    private final AcademicAdministrationService administration;
+    public AdminAcademicTermController(AcademicDeliveryService service, AcademicAdministrationService administration) { this.service = service; this.administration = administration; }
 
     @PostMapping
     @Operation(summary = "Create term (ADMIN)", description = "New resources start in PLANNED; lifecycle transitions require PUT and expectedVersion.")
-    public ResponseEntity<AcademicTerm> create(@Valid @RequestBody CreateRequest request) {
-        var value = service.createTerm(request.code(), request.name(), request.startDate(), request.endDate());
+    public ResponseEntity<AcademicTerm> create(Authentication authentication, @Valid @RequestBody CreateRequest request) {
+        var value = administration.createTerm((UUID) authentication.getPrincipal(), request.code(), request.name(), request.startDate(), request.endDate());
         return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(value.id()).toUri()).body(value);
     }
@@ -30,8 +36,8 @@ public class AdminAcademicTermController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update term (ADMIN)", description = "Requires expectedVersion; stale version, invalid lifecycle or unavailable references return 409. Parent identifiers are immutable.")
-    public AcademicTerm update(@PathVariable UUID id, @Valid @RequestBody UpdateRequest request) {
-        return service.updateTerm(id, request.code(), request.name(), request.startDate(), request.endDate(), request.status(), request.expectedVersion());
+    public AcademicTerm update(Authentication authentication, @PathVariable UUID id, @Valid @RequestBody UpdateRequest request) {
+        return administration.updateTerm((UUID) authentication.getPrincipal(), id, request.code(), request.name(), request.startDate(), request.endDate(), request.status(), request.expectedVersion());
     }
 
     @GetMapping
