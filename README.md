@@ -10,9 +10,9 @@ University operations commonly span separate processes for identity, academic re
 
 Build an extensible, maintainable platform that can support campus operations today and workflow and AI-assisted capabilities later, without introducing distributed-system complexity before it is justified.
 
-## Initial Scope
+## Implemented Scope
 
-Phase 1A provides the backend bootstrap: Maven, Java 21, PostgreSQL integration, Flyway, Actuator health, and Testcontainers integration tests. Identity and Access, user and role management, authentication, authorization, and all business-domain modules remain out of scope.
+The implemented backend includes the Phase 1 platform and Identity foundations, Phase 2 organization and people registries, and Phase 3A Program/Course catalogs. Academic terms, class sections, enrollment, campus operations, and frontend remain future work. This personal project is developed locally; production deployment is not a completion requirement for these phases.
 
 ## Domain Roadmap
 
@@ -61,13 +61,17 @@ Campus Service will begin as a modular monolith: one deployable application with
 
 ## Status
 
-**Phase 1: Release readiness.** Phase 1B Identity and Access is merged to `main`: identity persistence, JWT authentication, and administrator user-management endpoints are implemented. Administrator endpoints require `ROLE_ADMIN`; create, list, get, status change, role replacement, and password reset are available under `/api/v1/admin/users`. The repository now includes production-profile configuration, health probes, CI, a container build, and a release runbook. Selecting infrastructure and performing production deployment remain environment-owner responsibilities.
+**Phase 3A: Program and Course Catalog.** Phase 1 and Phase 2 are merged into `main`. Phase 3A adds admin create/get/search/update APIs under `/api/v1/admin/academic/programs` and `/api/v1/admin/academic/courses`, with active organization ownership, normalized unique codes, course credits 1–30, and version-aware updates. Search uses zero-based pagination, bounded page size, status filtering, and an allowlisted sort with a stable ID tie-breaker. See the [Phase 3A contract](docs/plans/phase-3a-academic-catalog.md) and [Testing](docs/testing.md) for verification evidence.
+
+Administrator APIs require `ROLE_ADMIN`. Identity authentication, session revocation and admin management, plus organization/student/faculty-staff registries, remain available. Runtime administrator provisioning and production deployment stay outside this implementation scope.
 
 ## Planned Phases
 
 1. Phase 0: product scope, architecture baseline, conventions, test strategy, ADRs, and agent rules.
 2. Phase 1: Spring Boot bootstrap, shared kernel, Identity and Access, PostgreSQL, Flyway, and authentication/authorization tests.
-3. Later: Student and Faculty; Academic; Dormitory and Finance; supporting modules; observability and deployment; workflow and AI capabilities.
+3. Phase 2: Organization, Student and Faculty/Staff registries with query, audit and migration hardening.
+4. Phase 3: Academic catalog (3A), terms/class sections (3B), enrollment (3C), and Academic hardening (3D).
+5. Later: selected Dormitory/Finance and supporting modules; reporting; frontend; end-to-end release readiness; optional workflow/AI.
 
 ## Documentation Map
 
@@ -85,4 +89,4 @@ The verified Windows build command is:
 .\mvnw.cmd clean verify
 ```
 
-It compiles with Java 21 and runs PostgreSQL Testcontainers integration tests. The Docker Compose configuration was created for local development but was not started during this change.
+It compiles with Java 21 and runs PostgreSQL Testcontainers integration tests. Docker Compose provides optional local PostgreSQL; verification uses isolated PostgreSQL Testcontainers.

@@ -2,15 +2,15 @@
 
 ## Current State
 
-Phase 1A bootstrap and Phase 1B Identity and Access are complete. The repository contains JWT authentication, Spring Security authorization, Identity persistence, and administrator user-management endpoints backed by PostgreSQL and Flyway. Phase 1 release readiness adds CI, a production profile, health probes, a container build, and a release runbook. Selecting production infrastructure and running the release remain environment-owner responsibilities.
+Phase 1 and Phase 2 are complete; Phase 3A implements Program/Course catalogs. The repository contains JWT authentication, Spring Security authorization, Identity persistence, and administrator user-management endpoints backed by PostgreSQL and Flyway. Phase 1 release readiness adds CI, a production profile, health probes, a container build, and a release runbook. Selecting production infrastructure and running the release remain environment-owner responsibilities.
 
 ## Prerequisites
 
-The expected Phase 1 environment is:
+The development and test environment requires:
 
 - Java 21 (a JDK, not only a runtime)
 - Maven Wrapper (`mvnw` or `mvnw.cmd`); a global Maven installation is needed only to regenerate the wrapper
-- Docker Desktop or another Docker-compatible runtime for future local PostgreSQL and Testcontainers use
+- Docker Desktop or another Docker-compatible runtime for local PostgreSQL and Testcontainers
 - Git
 
 The bootstrap was verified with Java 21.0.12.1 and Maven Wrapper 3.9.14 on Windows. Docker Desktop was available for Testcontainers PostgreSQL.
@@ -46,7 +46,7 @@ Build the neutral deployment artifact with `docker build --tag campus-service:<v
 ## Branch and Commit Workflow
 
 - Start from the current approved branch and keep changes focused.
-- Use short-lived branches when repository workflow is established.
+- Use short-lived `feature/<function-or-phase>` branches. Each phase/subphase requires a PASS review before proceeding; split commits by function.
 - Write imperative, scoped commit messages, for example `docs: define modular monolith decision`.
 - Do not include secrets, generated local files, unrelated formatting, or unrelated user changes.
 - Inspect `git status` and `git diff` before committing or reporting work.
@@ -57,7 +57,7 @@ Build the neutral deployment artifact with `docker build --tag campus-service:<v
 
 Flyway will own schema evolution. New migrations must be ordered, reviewed, and tested against a clean PostgreSQL database. Do not alter a migration after it has been applied outside disposable local development; create a corrective migration instead.
 
-Warning: V5 is pre-release and its checksum can change before release. If V5 has already run against a disposable local database, do not use `flyway repair`; stop the local stack, remove that disposable database volume, recreate it, and rerun migrations. Once V5 is released or has run outside disposable local development, do not edit it; add a corrective migration.
+V1–V11 are the merged baseline and must not be edited. Phase 3A adds V12/V13. Never use Flyway repair to mask a checksum mismatch; investigate the migration history and add an approved corrective migration when needed.
 
 ## Windows and WSL
 
