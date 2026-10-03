@@ -35,7 +35,8 @@ The initial system is one deployable application with modules organized by busin
 - `student`: student profiles and their optional Identity link.
 - `personnel`: faculty and staff profiles and their optional Identity link.
 - `academic`: Program/Course catalog, terms, course offerings, class sections and administrative enrollment.
-- Future modules: `dormitory`, `finance`, and supporting modules when their scope is approved.
+- `dormitory`: building/room/bed inventory and atomic mutation audit (4A1); accommodation assignment follows in 4A2.
+- Future modules: `finance` and supporting modules when their scope is approved.
 
 A module owns its application logic, domain model, persistence mapping, and external API adapters. Cross-module access goes through explicit application-facing contracts, not repositories, entities, or database tables from another module.
 
@@ -84,7 +85,7 @@ A module may be extracted only after evidence supports it, such as independent s
 
 A course offering belongs to one term/course pair and retains its organization UUID; a class section belongs to one offering and owns its capacity and single faculty assignment. Academic owns the lifecycle checks. Delivery mutations lock term, then offering, then section where applicable to prevent concurrent parent closure and child opening. These are local database transactions within the monolith. The tradeoff is serialization of delivery mutations within a term; no load-test claim is made. Course/organization/faculty status is checked when opening and when relevant references are newly assigned; deactivation does not rewrite historical classes.
 
-Historical upgrade validation scans only production entity packages present at its target version. V13 validation excludes delivery/enrollment/audit; V16 includes delivery and excludes enrollment/audit; V17 includes enrollment and excludes audit; V18 includes all currently implemented entities. Flyway remains disabled during exact-schema Hibernate validation.
+Historical upgrade validation scans only production entity packages present at its target version. V13 validation excludes delivery/enrollment/audit; V16 includes delivery and excludes enrollment/audit; V17 includes enrollment and excludes audit; V18 retains its original 16 entities and excludes Dormitory; V19 includes all 20 current entities. Flyway remains disabled during exact-schema Hibernate validation.
 
 ## Enrollment invariants
 
@@ -95,3 +96,7 @@ Academic owns one retained enrollment per student/section pair. Only ENROLLED co
 All Academic HTTP create/update operations use AcademicAdministrationService, whose transaction encloses the original application use case and synchronous AcademicAudit persistence. Actor UUID comes from the JWT principal. Audit records contain resource UUID/type, action, resulting version, time and status-only JSONB metadata; they contain no arbitrary request snapshots or contact/credential data. Failure rolls back both writes and returns the safe AUDIT_WRITE_FAILED error. The Academic-owned audit schema has an actor FK but no polymorphic target FK or public audit query interface. See [ADR 0006](decisions/0006-academic-mutation-audit.md).
 
 Enrollment occupancy and Student/status queries have selective index-plan evidence on synthetic PostgreSQL fixtures, without planner overrides. Substring search with a leading wildcard may scan; no claim is made that the catalog's B-tree uniqueness index optimizes arbitrary substring searches. Further indexing or narrower locks must be justified by actual workload measurements.
+
+## Dormitory inventory
+
+Dormitory owns three explicit inventory tables and its mutation audit. Immutable UUID parent links form building → room → bed; lifecycle locks use that order. Active child creation/activation requires active ancestors, and deactivation refuses active immediate children. This availability hierarchy does not model occupancy, bookings or billing. 4A2 must add occupied-bed safeguards before assignment endpoints exist. All 4A1 application mutations require an actor and synchronous audit; HTTP enforces ADMIN and obtains that actor from the JWT principal. Shared inventory query/validation code uses fixed resource kinds, never arbitrary client-selected persistence. See [ADR 0007](decisions/0007-dormitory-inventory-and-assignment-boundary.md).
