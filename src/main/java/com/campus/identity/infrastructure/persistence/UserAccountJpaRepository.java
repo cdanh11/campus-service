@@ -13,6 +13,7 @@ import jakarta.persistence.LockModeType;
 interface UserAccountJpaRepository extends JpaRepository<UserAccountEntity, UUID>, JpaSpecificationExecutor<UserAccountEntity> {
 
     Optional<UserAccountEntity> findByEmailIgnoreCase(String email);
+    boolean existsByIdAndStatus(UUID id, com.campus.identity.domain.AccountStatus status);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select user from UserAccountEntity user where user.id = :id")

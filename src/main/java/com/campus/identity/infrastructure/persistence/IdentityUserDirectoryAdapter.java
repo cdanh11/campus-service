@@ -10,4 +10,7 @@ class IdentityUserDirectoryAdapter implements IdentityUserDirectory {
     private final UserAccountJpaRepository users;
     IdentityUserDirectoryAdapter(UserAccountJpaRepository users) { this.users = users; }
     @Override public boolean exists(UUID userId) { return users.existsById(userId); }
+    @Override public boolean isActive(UUID userId) {
+        return users.existsByIdAndStatus(userId, com.campus.identity.domain.AccountStatus.ACTIVE);
+    }
 }
