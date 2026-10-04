@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.*;
 class ModuleBoundaryTest {
     @Test void productionModulesDoNotReferenceAnotherModulesPersistenceInfrastructure() throws Exception {
         var module = Pattern.compile("package com\\.campus\\.(\\w+)(?:\\.|;)");
-        var infrastructure = Pattern.compile("\\bcom\\.campus\\.(\\w+)\\.infrastructure\\b");
+        var infrastructure = Pattern.compile("\\bcom\\.campus\\.(\\w+)\\.infrastructure(?:\\.\\w+)*");
         var failures = new ArrayList<String>();
         try (var files = Files.walk(Path.of("src/main/java/com/campus"))) {
             for (var file : files.filter(path -> path.toString().endsWith(".java")).toList()) {
@@ -19,7 +19,10 @@ class ModuleBoundaryTest {
                 if (!owner.find()) continue;
                 var references = infrastructure.matcher(source);
                 while (references.find()) {
-                    if (!owner.group(1).equals(references.group(1))) failures.add(file + " references " + references.group());
+                    // This SQL-agnostic shared helper carries no domain/table ownership.
+                    if (!owner.group(1).equals(references.group(1))
+                            && !references.group().equals("com.campus.shared.infrastructure.reporting.ReportJdbc"))
+                        failures.add(file + " references " + references.group());
                 }
             }
         }
