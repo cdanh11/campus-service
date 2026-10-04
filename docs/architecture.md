@@ -8,7 +8,7 @@
 
 ## System Context
 
-Campus Service provides a backend platform for university operations. Implemented capabilities cover Identity, organization and people registries, Academic catalogs/delivery/enrollment, Dormitory inventory/accommodation and Finance fees/obligations/manual payments/reversal, in-app Notification and Event catalog/membership; Library and audit viewing remain approved future slices.
+Campus Service provides a backend platform for university operations. Implemented capabilities cover Identity, organization and people registries, Academic catalogs/delivery/enrollment, Dormitory inventory/accommodation and Finance fees/obligations/manual payments/reversal, in-app Notification, Event catalog/membership and Library circulation. Audit viewing remains an approved future slice; Library verification status is recorded in its review.
 
 ```mermaid
 flowchart LR
@@ -20,6 +20,7 @@ flowchart LR
     API --> Finance[Finance obligations and manual payments]
     API --> Notification[In-app notifications]
     API --> Event[Event catalog and membership]
+    API --> Library[Library catalog and circulation]
     IAM --> DB[(PostgreSQL)]
     Registry --> DB
     Academic --> DB
@@ -27,6 +28,7 @@ flowchart LR
     Finance --> DB
     Notification --> DB
     Event --> DB
+    Library --> DB
 ```
 
 The diagram describes the implemented modular direction. Phase 1B includes Identity authentication/admin management; Phase 2 organization and people registries; Phase 3 catalogs/delivery/enrollment/audit; Phase 4A Dormitory; Phase 4B1 Finance obligations. Enrollment, accommodation and Finance eligibility use the Student application contract.
@@ -47,6 +49,7 @@ The initial system is one deployable application with modules organized by busin
 - `finance`: VND fee definitions, immutable Student obligation snapshots, manual receipts/reversal and atomic mutation audit (4B1/4B2).
 - `notification`: reusable text templates, draft/published snapshots, recipient-owned delivery/read acknowledgement and atomic mutation audit (5A); ACTIVE account eligibility uses IdentityUserDirectory without foreign persistence access. See ADR 0011.
 - `event`: Event catalog, retained Student membership, self-service via current Identity link, ADMIN attendance, capacity protection and atomic audit (5B). Eligibility/ownership uses StudentAccountDirectory; see ADR 0012.
+- `library`: titles/physical copies, ADMIN circulation, one OPEN loan per copy, retained returns and atomic audit (5C). ACTIVE Student eligibility uses StudentAccountDirectory; see ADR 0013.
 
 A module owns its application logic, domain model, persistence mapping, and external API adapters. Cross-module access goes through explicit application-facing contracts, not repositories, entities, or database tables from another module.
 
@@ -127,3 +130,9 @@ V23 adds four Notification tables/entities. Historical V22 validation explicitly
 ## Event membership ownership
 
 Event 5B is reviewed PASS: catalog and retained unique Student/event membership, linked-account owner APIs plus ADMIN attendance, OPEN-only manual admission gate and same-record expectedVersion restoration. StudentAccountDirectory supplies fresh scalar UUID/status eligibility without foreign persistence or locks. Event is locked/refreshed before membership; count REGISTERED/ATTENDED under that lock serializes admissions/restores and capacity reductions. Audit is synchronous/status-only, cancellation frees capacity, attendance is terminal and consumes a seat. Direct SQL bypass is not an aggregate capacity guarantee; no scheduler/fees/automatic Notification integration. ADR 0012 records scope and limits. V24 adds three entities; exact upgraded-schema validation now has 32 entities, while historical V23 retains 29. Freeze historical V24 scanning before adding Library entities.
+
+## Library circulation
+
+Library owns title/copy catalogs and retained OPEN/RETURNED loans. ADMIN mutation actors come from JWT; clients cannot choose loan dates. The server defaults to exactly 14 elapsed days. A partial unique index protects one OPEN loan per copy. Refreshed title→copy→loan locks serialize admission against catalog deactivation and return; conservative title-level serialization is an explicit local-project tradeoff. Return is permitted after reference deactivation or overdue and retains immutable association/original dates; next loan uses a new UUID. Student status is a fresh decision-time read through Student's own application contract. All six mutation types write status-only audit synchronously and rollback together. No reservations, renewals, fines, Student self-borrow or automatic Finance/Notification integration.
+
+V25 adds four Library entities. The populated exact V24→V25 validation checks all 36 production entities with Flyway disabled and ddl-auto=validate; historical V24 now explicitly retains its 32-entity scan. No previous migration is edited. See [ADR 0013](decisions/0013-library-circulation-and-history.md) and [Library review](reviews/phase-5c-library-review.md) for executed gates.

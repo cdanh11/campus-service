@@ -1,6 +1,6 @@
 # Phase 5C — Library Catalog and Circulation
 
-Approved business scope on 2026-10-04: title catalog and physical copies; one open loan per copy; default due time 14 days; return retains history; no fines. ADMIN alone records loan/return. Implement only after Event 5B review PASS. This is a plan, not an implementation claim.
+Approved business scope on 2026-10-04: title catalog and physical copies; one open loan per copy; default due time 14 days; return retains history; no fines. ADMIN alone records loan/return. Implemented after Event 5B PASS; **5C review PASS** on 2026-10-04. See ../reviews/phase-5c-library-review.md and ../api/library.md. Audit viewing 5D and closure 5E remain incomplete.
 
 ## Proposed technical contract
 
@@ -14,3 +14,5 @@ Approved business scope on 2026-10-04: title catalog and physical copies; one op
 Domain boundary/Unicode/lifecycle/default-date tests; anonymous and USER denials on all operations; inactive/missing references, duplicates, stale updates and overdue return; rollback for each mutation. Separate-transaction same-copy competition, cached reference changes and production lock timeout 55P03 followed by success, bounded synchronization/cleanup. Pagination/tie pages and selective query evidence.
 
 Use the next migration after Event, never edit delivered V1–V24. Freeze historical Event entity scanning; migrate representative populated prior schema to exactly the new Library migration, compare all old data/history, verify actual columns/defaults/CHECKs/PK/FKs/partial unique/indexes and SQLSTATE writes. Validate all actual production entities on that exact database/schema with Flyway disabled and ddl-auto=validate. Focused/full Maven verification and source/diff/docs review before PASS; no invented entity/test totals in advance.
+
+Verified: V25 adds four tables/entities, populated V24→V25 validates all 36 production entities with Flyway disabled and ddl-auto=validate. V1–V24 unchanged. Focused 26 tests (1m10s), then full clean verify **BUILD SUCCESS, 382 tests/64 suites, 0 failures/errors/skips, 7m32s**, finished 2026-10-04T16:47:05+07:00; all 42 pools close. Final full includes additional deactivation/return races and actual copy tie pages. Scoped source/diff/docs review and git diff --check passed.

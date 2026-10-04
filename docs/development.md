@@ -2,7 +2,7 @@
 
 ## Current State
 
-Phase 1–3 are merged; Phase 4 adds Dormitory inventory/current accommodation, Finance VND fees/obligation snapshots/manual receipts/reversal with atomic audit, and operations hardening reviewed PASS. Phase 4 is merged (PR #14). Phase 5 scope is approved; Notification 5A and Event 5B are reviewed PASS on feature/supporting-services. Library, audit viewing and closure remain incomplete; follow phase-5-supporting-services.md and each slice gate. The repository contains JWT authentication, Spring Security authorization, Identity persistence, and administrator user-management endpoints backed by PostgreSQL and Flyway. Phase 1 release readiness adds CI, a production profile, health probes, a container build, and a release runbook. Selecting production infrastructure and running the release remain environment-owner responsibilities.
+Phase 1–3 are merged; Phase 4 adds Dormitory inventory/current accommodation, Finance VND fees/obligation snapshots/manual receipts/reversal with atomic audit, and operations hardening reviewed PASS. Phase 4 is merged (PR #14). Phase 5 scope is approved; Notification 5A, Event 5B and Library 5C are reviewed PASS on feature/supporting-services. Audit viewing and closure remain incomplete; follow phase-5-supporting-services.md and each slice gate. The repository contains JWT authentication, Spring Security authorization, Identity persistence, and administrator user-management endpoints backed by PostgreSQL and Flyway. Phase 1 release readiness adds CI, a production profile, health probes, a container build, and a release runbook. Selecting production infrastructure and running the release remain environment-owner responsibilities.
 
 ## Prerequisites
 
@@ -65,4 +65,4 @@ V1–V18 are the merged baseline and must not be edited. Delivered Phase 4A1 add
 
 Campus Service supports native Windows development and WSL-based development. WSL is optional. Use paths, line endings, Docker access, and shell commands consistently within the chosen environment. If Maven or Docker runs in WSL, avoid mixing its generated files with tools configured against a different Windows path unless that workflow has been verified.
 
-Delivered Phase 5 adds V23 (Notification) and V24 (Event). Preserve V1–V24 for subsequent slices. Before adding Library entities, freeze historical V24 validation to its actual 32 entity packages; future exact upgrades must validate the full new entity set against that same upgraded database/schema with Flyway disabled, never repair migration metadata.
+Delivered Phase 5 adds V23 (Notification), V24 (Event) and V25 (Library). Preserve V1–V25 for subsequent slices. Historical V24 validation freezes its original 32 entity packages; exact V25 validates 36; future exact upgrades must validate the full new entity set against that same upgraded database/schema with Flyway disabled, never repair migration metadata.

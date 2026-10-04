@@ -39,3 +39,4 @@ Create an ADR when a decision changes module boundaries, persistence strategy, s
 - [0010: Manual Receipt Lifecycle and Charge Balance Protection](0010-manual-payments-and-charge-balance.md)
 - [0011: In-application Notification Ownership and Publication](0011-in-app-notification-ownership-and-publication.md)
 - [0012: Event Membership Ownership and Capacity](0012-event-membership-ownership-and-capacity.md)
+- [0013: Library Circulation and Retained History](0013-library-circulation-and-history.md)
