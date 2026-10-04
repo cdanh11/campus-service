@@ -8,7 +8,7 @@
 
 ## System Context
 
-Campus Service provides a backend platform for university operations. Implemented capabilities cover Identity, organization and people registries, Academic catalogs/delivery/enrollment, Dormitory inventory/accommodation and Finance fees/obligations/manual payments/reversal and in-app Notification; Event, Library and audit viewing are approved future slices.
+Campus Service provides a backend platform for university operations. Implemented capabilities cover Identity, organization and people registries, Academic catalogs/delivery/enrollment, Dormitory inventory/accommodation and Finance fees/obligations/manual payments/reversal, in-app Notification and Event catalog/membership; Library and audit viewing remain approved future slices.
 
 ```mermaid
 flowchart LR
@@ -17,12 +17,16 @@ flowchart LR
     API --> Registry[Organization and people registries]
     API --> Academic[Academic catalogs and delivery]
     API --> Dormitory[Dormitory inventory and accommodation]
-    API --> Finance[Finance fees and obligations]
+    API --> Finance[Finance obligations and manual payments]
+    API --> Notification[In-app notifications]
+    API --> Event[Event catalog and membership]
     IAM --> DB[(PostgreSQL)]
     Registry --> DB
     Academic --> DB
     Dormitory --> DB
     Finance --> DB
+    Notification --> DB
+    Event --> DB
 ```
 
 The diagram describes the implemented modular direction. Phase 1B includes Identity authentication/admin management; Phase 2 organization and people registries; Phase 3 catalogs/delivery/enrollment/audit; Phase 4A Dormitory; Phase 4B1 Finance obligations. Enrollment, accommodation and Finance eligibility use the Student application contract.
@@ -42,6 +46,7 @@ The initial system is one deployable application with modules organized by busin
 - `dormitory`: building/room/bed inventory, current accommodation assignments and atomic mutation audit (4A1/4A2).
 - `finance`: VND fee definitions, immutable Student obligation snapshots, manual receipts/reversal and atomic mutation audit (4B1/4B2).
 - `notification`: reusable text templates, draft/published snapshots, recipient-owned delivery/read acknowledgement and atomic mutation audit (5A); ACTIVE account eligibility uses IdentityUserDirectory without foreign persistence access. See ADR 0011.
+- `event`: Event catalog, retained Student membership, self-service via current Identity link, ADMIN attendance, capacity protection and atomic audit (5B). Eligibility/ownership uses StudentAccountDirectory; see ADR 0012.
 
 A module owns its application logic, domain model, persistence mapping, and external API adapters. Cross-module access goes through explicit application-facing contracts, not repositories, entities, or database tables from another module.
 
@@ -119,3 +124,6 @@ Dormitory inventory/assignment and Finance writes return refreshed persisted tim
 Phase 5A is reviewed PASS. Notification publication is an atomic local delivery to explicit active account UUIDs; it is not an external transport queue. Inbox ownership comes exclusively from the authenticated subject. Published text is immutable, repeated read acknowledgement is idempotent, and metadata contains status only. Page content uses one bounded batch query rather than a notice lookup per delivery. Identity eligibility uses a database status projection to avoid stale first-level-cache entities. Eligibility is checked at the operation decision; no cross-module lock is claimed.
 
 V23 adds four Notification tables/entities. Historical V22 validation explicitly scans its original 25 entity packages; the genuine V22→V23 test validates all 29 entities on the same upgraded database/public schema with Flyway disabled and ddl-auto=validate. Future modules must freeze that historical scan before introducing new entities. Delivered V1–V22 remain immutable.
+## Event membership ownership
+
+Event 5B is reviewed PASS: catalog and retained unique Student/event membership, linked-account owner APIs plus ADMIN attendance, OPEN-only manual admission gate and same-record expectedVersion restoration. StudentAccountDirectory supplies fresh scalar UUID/status eligibility without foreign persistence or locks. Event is locked/refreshed before membership; count REGISTERED/ATTENDED under that lock serializes admissions/restores and capacity reductions. Audit is synchronous/status-only, cancellation frees capacity, attendance is terminal and consumes a seat. Direct SQL bypass is not an aggregate capacity guarantee; no scheduler/fees/automatic Notification integration. ADR 0012 records scope and limits. V24 adds three entities; exact upgraded-schema validation now has 32 entities, while historical V23 retains 29. Freeze historical V24 scanning before adding Library entities.
