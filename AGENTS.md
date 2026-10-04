@@ -2,7 +2,7 @@
 
 ## Purpose and Phase
 
-Campus Service is an Intelligent Smart Campus Platform. The implemented baseline covers platform/Identity, organization/people registries, Academic catalog/delivery/enrollment/audit, Dormitory inventory/current accommodation and Finance fee/obligation snapshots/manual receipts/reversal. Phase 4 operations hardening and backend closure are reviewed PASS and merged. Phase 5 scope is approved: Notification 5A, Event 5B, Library 5C and audit viewing 5D are reviewed PASS; whole-phase closure remains pending. Follow docs/plans/phase-5-supporting-services.md. Read `README.md`, the current plan in `docs/plans/`, and Git state for the authoritative phase and verification status. Production deployment and first-administrator runtime provisioning remain out of scope unless explicitly requested; see `docs/runbooks/initial-admin-provisioning.md`.
+Campus Service is an Intelligent Smart Campus Platform. The implemented backend covers platform/Identity, organization/people registries, Academic catalog/delivery/enrollment/audit, Dormitory inventory/current accommodation, Finance fee/obligation snapshots/manual receipts/reversal, in-app Notification, Event membership, Library circulation and ADMIN audit viewing. Phase 4 is reviewed PASS and merged. All approved Phase 5 slices and whole-phase closure are reviewed PASS; user PR/merge remains pending. See docs/reviews/phase-5-final-review.md and docs/plans/phase-5-supporting-services.md. Phase 6 Reporting requires its own approved scope; do not implement it opportunistically. Read `README.md`, the current plan in `docs/plans/`, and Git state for the authoritative status. Production deployment and first-administrator runtime provisioning remain out of scope unless explicitly requested; see `docs/runbooks/initial-admin-provisioning.md`.
 
 ## Repository Structure
 
@@ -14,6 +14,8 @@ Campus Service is an Intelligent Smart Campus Platform. The implemented baseline
 ## Required Workflow
 
 Follow: **inspect -> plan -> implement -> build/test -> review diff -> report**. Adapt the build/test step to the repository state. Do not invent build, run, test, migration, or formatting commands until `pom.xml` exists.
+
+Each phase or subphase requires its own PASS/FAIL review before the next slice; resolve FAIL findings first. Commit by function after PASS when authorized. These rules continue through backend and frontend work.
 
 ## Architecture and Domains
 
@@ -45,6 +47,8 @@ Follow: **inspect -> plan -> implement -> build/test -> review diff -> report**.
 ## Git and Safety
 
 - Do not push, deploy, rewrite history, force operations, or run destructive Git or filesystem commands without explicit user approval.
+- Use the user's requested `feature/<function-or-phase>` branch naming.
+- `docs/plans/project-roadmap.md` is local tracking: preserve/update it, but do not stage, commit or push it unless the user changes that instruction.
 - Inspect `git status` and the diff before reporting completion.
 
 ## Definition of Done

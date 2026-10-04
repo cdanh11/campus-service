@@ -2,6 +2,8 @@
 
 Base: main 4d305db (Phase 4 merged, PR #14). Branch feature/supporting-services. User approved all four modules and the rules below on 2026-10-04. Preserve V1–V22 and the local/untracked project-roadmap.md. No deployment, external delivery, database deletion or Flyway repair.
 
+**Current status: whole Phase 5 backend review PASS**, including 5A–5E, 2026-10-04. Final clean verify BUILD SUCCESS, 393 tests/67 suites, zero failures/errors/skips, 7m36s, all 44 pools closed. See ../reviews/phase-5-final-review.md. Historical per-slice status notes below record the gates at that time; this closure status supersedes their earlier pending statements. User PR/merge remains pending; Phase 6 needs a new approved scope.
+
 ## Sequence and review gates
 
 1. **5A Notification:** in-application notices, ADMIN draft/create/update and publish to explicit account UUID recipients; recipient-only inbox/read acknowledgement, retained delivery history. No SMTP/SMS. Templates are reusable versioned text definitions, snapshotted into notices; no executable template language or implicit automatic cross-domain sends. Validate active recipients through Identity application contract. Publish is all-or-nothing, recipient uniqueness, bounded batch (1–100), atomic mutation audit and optimistic locking. Read acknowledgement is idempotent and owner-scoped. Domain/API/authorization/rollback/race tests, exact V22→V23 validation before PASS.
@@ -25,4 +27,4 @@ Status: approved business scope; 5A reviewed PASS on 2026-10-04: focused 23 test
 
 5C reviewed PASS on 2026-10-04: focused 26 tests (1m10s), final clean verify 382 tests/64 suites, 0 failures/errors/skips, 7m32s; all 42 pools close. Exact V25 validates 36 entities with Flyway disabled; V1–V24 unchanged. See ../reviews/phase-5c-library-review.md. Continue 5D audit viewing; 5E closure is still pending.
 
-5D reviewed PASS on 2026-10-04: final focused 17 tests (1m10s), full clean verify 393 tests/67 suites, zero failures/errors/skips, 7m36s, all 44 pools closed. Eight owner read contracts, safe metadata and snapshot consistency, no new schema. See ../reviews/phase-5d-audit-viewing-review.md. Final 5E closure review is pending.
+5D reviewed PASS on 2026-10-04: final focused 17 tests (1m10s), full clean verify 393 tests/67 suites, zero failures/errors/skips, 7m36s, all 44 pools closed. Eight owner read contracts, safe metadata and snapshot consistency, no new schema. See ../reviews/phase-5d-audit-viewing-review.md. Final 5E closure review PASS is in ../reviews/phase-5-final-review.md; all approved Phase 5 backend work is complete.

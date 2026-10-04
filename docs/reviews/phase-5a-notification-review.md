@@ -29,3 +29,5 @@ Base main 4d305db, merged Phase 4 PR #14; branch feature/supporting-services. Us
 ## Limits
 
 Status eligibility is checked at the operation decision, not frozen by cross-module locking. No SMTP/SMS, broadcast, executable templates, scheduled/automatic domain subscription or external retry queue. Local delivery/publish is atomic and rollback may be retried with its unchanged version. Direct SQL is not an audited interface and application immutability is not a database immutability claim. No measured load/coverage percentage. Event, Library, audit viewing and whole Phase 5 closure require their own gates.
+
+Later status: whole Phase 5 backend closure reviewed PASS on 2026-10-04 after 5D and final 393-test/67-suite regression. See [Phase 5 closure](phase-5-final-review.md); earlier pending notes above are historical slice-time evidence.

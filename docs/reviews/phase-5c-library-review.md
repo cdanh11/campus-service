@@ -24,3 +24,5 @@ Approved scope: titles/physical copies, one OPEN loan per copy, default 14 days,
 ## Limits and remaining work
 
 Student eligibility is decision-time through its own application projection; no foreign write lock. Title-first locking deliberately serializes circulation within a title and is sufficient for local scope, without a throughput claim. Catalog and loan history are retained; no deletion, renewal, reservation, fine, lost-book workflow, Student self-borrow or automatic Notification/Finance write. Returning does not require currently active references. Direct SQL is not a supported audited mutation interface. Audit viewing 5D and whole-phase regression closure 5E remain incomplete.
+
+Later status: whole Phase 5 backend closure reviewed PASS on 2026-10-04 after 5D and final 393-test/67-suite regression. See [Phase 5 closure](phase-5-final-review.md); earlier pending notes above are historical slice-time evidence.

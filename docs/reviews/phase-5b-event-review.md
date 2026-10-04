@@ -31,3 +31,4 @@ Base main 4d305db; branch feature/supporting-services. User approved linked Stud
 ## Limits
 
 Eligibility/link checks are decision-time, without freezing foreign registry transactions; direct SQL bypasses are not supported audited mutation interfaces. Aggregate capacity is application-transaction protection, not an invented cross-row CHECK. No fees, waitlist, scheduler, automatic Notification coupling, external ticketing, measured coverage percentage or production latency/load claim. Catalog DRAFT reads are authenticated as documented. Library 5C, audit viewing 5D and closure 5E have separate gates; this PASS does not complete the goal.
+Later status: whole Phase 5 backend closure reviewed PASS on 2026-10-04 after 5D and final 393-test/67-suite regression. See [Phase 5 closure](phase-5-final-review.md); earlier pending notes above are historical slice-time evidence.
