@@ -160,7 +160,15 @@ class FlywayV23ToV24EventUpgradeIntegrationTest {
         jdbc.update("INSERT INTO event_audit_events(id,actor_user_id,resource_type,target_id,action,resource_version) VALUES (?,?,'REGISTRATION',?,'RESTORED',1)",UUID.randomUUID(),actor,id);
         state("23514",()->jdbc.update("INSERT INTO event_audit_events(id,actor_user_id,resource_type,target_id,action,resource_version) VALUES (?,?,'REGISTRATION',?,'UPDATED',1)",UUID.randomUUID(),actor,id));
     }
-    @Configuration(proxyBeanMethods=false) @EntityScan("com.campus") static class ValidationConfiguration { }
+    // V24 is historical: later domain entities must not be validated against this schema.
+    @Configuration(proxyBeanMethods=false) @EntityScan({
+            "com.campus.identity.infrastructure.persistence.entity", "com.campus.organization.infrastructure.persistence",
+            "com.campus.student.infrastructure.persistence", "com.campus.personnel.infrastructure.persistence",
+            "com.campus.shared.infrastructure.persistence", "com.campus.academic.infrastructure.persistence",
+            "com.campus.dormitory.infrastructure.persistence", "com.campus.dormitory.infrastructure.assignment",
+            "com.campus.finance.infrastructure.obligations", "com.campus.finance.infrastructure.payments",
+            "com.campus.notification.infrastructure.persistence", "com.campus.event.infrastructure.persistence"
+    }) static class ValidationConfiguration { }
     private UUID event(String code,String title,String description) {
         UUID id=UUID.randomUUID(); jdbc.update("INSERT INTO campus_events(id,code,title,description,starts_at,ends_at,capacity) VALUES (?,?,?,?,now(),now()+interval '1 hour',1)",id,code,title,description); return id;
     }
