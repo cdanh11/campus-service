@@ -6,6 +6,8 @@ Phase 1–4 are merged (Phase 4 PR #14). Phase 5 Notification/Event/Library/ADMI
 
 ## Prerequisites
 
+Frontend lives independently in [campus-client](https://github.com/cdanh11/campus-client). Production OpenAPI uses owner-qualified implicit schema names (`springdoc.use-fqn`) to prevent nested DTO collisions; explicit @Schema names remain stable. Regenerate frontend snapshots/types after an approved contract change and record the exact backend commit. See [Phase 7 contract prerequisite](plans/phase-7-api-contracts.md) and [review](reviews/phase-7-api-contract-review.md).
+
 The development and test environment requires:
 
 - Java 21 (a JDK, not only a runtime)

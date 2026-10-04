@@ -1,5 +1,9 @@
 # Testing Strategy
 
+## Phase 7 OpenAPI contract prerequisite
+
+Full `./mvnw.cmd clean verify` on 2026-10-04: **BUILD SUCCESS, 417 tests/75 suites, zero failures/errors/skips, 10m35s**, finished 23:12:25+07:00. XML totals independently counted; Boot jar packaged and 49 pools close normally. The new production-document regression checks 104 DTO schema references against owner record signatures, including nested collections and generic pages. Base springdoc.use-fqn corrects duplicate nested DTO names; V1–V25, JSON fields and authorization remain unchanged. See [contract review](reviews/phase-7-api-contract-review.md). Earlier totals are historical checkpoints.
+
 ## Phase 6 verified closure
 
 Final `./mvnw.cmd clean verify` on 2026-10-04: **BUILD SUCCESS, 416 tests/74 suites, zero failures/errors/skips, 10m12s**, finished 21:07:26+07:00. XML totals independently match; packaged Boot jar and 48 clean pool shutdowns verified. Includes regression Phase 1–5 and 23 new tests covering owner dashboards/reports, ADMIN/OpenAPI, exact VND, lifecycle/date/page/filter bounds, CSV Unicode/formula/5000-row limits, count/page/export snapshot races, safe correlation/logging/metrics and 10,000-row/family query/workload evidence. No new schema/entity; exact historical upgrades through V25 remain validated with Flyway disabled in their minimal validation contexts. See [Phase 6 final review](reviews/phase-6-final-review.md) and [measured workload limits](runbooks/reporting-observability.md). Counts later in this file refer to historical phase checkpoints.
