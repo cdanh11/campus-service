@@ -185,3 +185,14 @@ Use behavior-oriented names that state the condition and expected result, such a
 ## Acceptable Evidence
 
 Evidence includes the exact command run, its verified result, the test scope, and any known gaps. If tests cannot run because the Maven project or required infrastructure does not yet exist, state that plainly. Never fabricate execution results, test counts, coverage, or environment status.
+
+## Phase 5A Notification Verification
+
+Verified on 2026-10-04 with Docker running:
+
+- `.\mvnw.cmd "-Dtest=NotificationIntegrationTest,NotificationDomainTest,FlywayV22ToV23NotificationUpgradeIntegrationTest,FlywayV21ToV22PaymentUpgradeIntegrationTest,ModuleBoundaryTest" test`: BUILD SUCCESS, 23 tests, zero failures/errors/skips, 1m05s.
+- `.\mvnw.cmd clean verify`: BUILD SUCCESS, exit 0, 323 tests in 53 suites, zero failures/errors/skips, 5m58s, finished 2026-10-04T15:03:14+07:00. Independently summed Surefire XML agrees; jar packaged; all 34 Hikari pools closed without fork termination or closed-container warnings.
+
+The 19 new cases cover four domain tests, eleven API/transaction/security/concurrency cases and four genuine V22→V23 upgrade cases. Evidence includes authorization across all twelve operations, own/foreign inbox isolation, immutable snapshots, Unicode/six-character trimming, recipient batch validation and complete rollback for every mutation, trusted actors, stale updates, idempotent/concurrent reads, duplicate publication, cached Identity deactivation and a real production lock timeout (55P03) followed by success. Queries include literal matching, every allowlisted sort and actual UUID-tied inbox pages; generated OpenAPI schemas are checked.
+
+The upgrade preserves all representative legacy tables/history and applies only V23, verifying actual four-table columns/defaults/constraints/indexes through specific SQLSTATE writes, including large JSONB without an invented limit. Hibernate validates all 29 production entities against the exact upgraded public schema with Flyway disabled; history remains unchanged. Historical V22 retains 25 entities. V1–V22 are unchanged. No load benchmark or coverage percentage is claimed; Event, Library, audit viewing and whole Phase 5 remain incomplete. See [5A review](reviews/phase-5a-notification-review.md).

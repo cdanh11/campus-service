@@ -8,7 +8,7 @@
 
 ## System Context
 
-Campus Service provides a backend platform for university operations. Implemented capabilities cover Identity, organization and people registries, Academic catalogs/delivery/enrollment, Dormitory inventory/accommodation and Finance fee/obligation foundations; later slices extend payments and supporting operations.
+Campus Service provides a backend platform for university operations. Implemented capabilities cover Identity, organization and people registries, Academic catalogs/delivery/enrollment, Dormitory inventory/accommodation and Finance fees/obligations/manual payments/reversal and in-app Notification; Event, Library and audit viewing are approved future slices.
 
 ```mermaid
 flowchart LR
@@ -41,7 +41,7 @@ The initial system is one deployable application with modules organized by busin
 - `academic`: Program/Course catalog, terms, course offerings, class sections and administrative enrollment.
 - `dormitory`: building/room/bed inventory, current accommodation assignments and atomic mutation audit (4A1/4A2).
 - `finance`: VND fee definitions, immutable Student obligation snapshots, manual receipts/reversal and atomic mutation audit (4B1/4B2).
-- Future modules: supporting modules when their scope is approved.
+- `notification`: reusable text templates, draft/published snapshots, recipient-owned delivery/read acknowledgement and atomic mutation audit (5A); ACTIVE account eligibility uses IdentityUserDirectory without foreign persistence access. See ADR 0011.
 
 A module owns its application logic, domain model, persistence mapping, and external API adapters. Cross-module access goes through explicit application-facing contracts, not repositories, entities, or database tables from another module.
 
@@ -113,3 +113,9 @@ Finance owns fee definitions, Student charges, manual receipts and synchronous s
 ## Operations query and response consistency
 
 Dormitory inventory/assignment and Finance writes return refreshed persisted timestamps and versions, matching subsequent reads at PostgreSQL precision. The Operations query-plan test exercises the same selective predicate/aggregate shapes as the adapters: parent inventory, current occupancy, Student assignment history, Student/fee charges and charge payment totals/balance. With synthetic fixtures, ANALYZE and the default PostgreSQL planner, existing parent-prefixed inventory indexes, partial current-place uniqueness indexes and Student/status or charge/status indexes serve these queries. Parent inventory may use either its unique code index or status index. This does not establish production latency or optimize arbitrary substring search; no extra index or distributed infrastructure is introduced. See [Phase 4 closure review](reviews/phase-4-final-review.md).
+
+## Notification ownership and upgrade validation
+
+Phase 5A is reviewed PASS. Notification publication is an atomic local delivery to explicit active account UUIDs; it is not an external transport queue. Inbox ownership comes exclusively from the authenticated subject. Published text is immutable, repeated read acknowledgement is idempotent, and metadata contains status only. Page content uses one bounded batch query rather than a notice lookup per delivery. Identity eligibility uses a database status projection to avoid stale first-level-cache entities. Eligibility is checked at the operation decision; no cross-module lock is claimed.
+
+V23 adds four Notification tables/entities. Historical V22 validation explicitly scans its original 25 entity packages; the genuine V22→V23 test validates all 29 entities on the same upgraded database/public schema with Flyway disabled and ddl-auto=validate. Future modules must freeze that historical scan before introducing new entities. Delivered V1–V22 remain immutable.

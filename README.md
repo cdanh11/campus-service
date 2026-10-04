@@ -12,7 +12,7 @@ Build an extensible, maintainable platform that can support campus operations to
 
 ## Implemented Scope
 
-The implemented backend includes the Phase 1 platform and Identity foundations, Phase 2 organization and people registries, Academic catalogs/delivery/enrollment/audit, and Phase 4 Dormitory inventory/current accommodation, Finance fees/obligations/manual payments/reversal and operations hardening. Supporting services and frontend remain future work. This personal project is developed locally; production deployment is not a completion requirement for these phases.
+The implemented backend includes the Phase 1 platform and Identity foundations, Phase 2 organization and people registries, Academic catalogs/delivery/enrollment/audit, and Phase 4 Dormitory inventory/current accommodation, Finance fees/obligations/manual payments/reversal and operations hardening. Phase 5A adds in-app Notification templates, immutable published snapshots, owner inbox/read acknowledgement and atomic audit. Event, Library, audit viewing and frontend remain incomplete. This personal project is developed locally; production deployment is not a completion requirement for these phases.
 
 ## Domain Roadmap
 
@@ -61,7 +61,7 @@ Campus Service will begin as a modular monolith: one deployable application with
 
 ## Status
 
-**Phase 4 — review PASS; approved backend scope complete.** Phase 1–3 are merged into `main` (Phase 3D PR #11); `feature/campus-operations-hardening` includes the reviewed Dormitory/Finance feature history, awaiting user PR/merge. ADMIN Dormitory APIs enforce one current place per Student/bed with retained release history. Finance supports exact integer VND obligations with immutable snapshots, partial manual payments, retained full-receipt reversal and zero-paid cancellation protection, bounded queries and atomic audit. 4C fixes test-container/context teardown and persisted inventory timestamp responses, adds selective query-plan evidence and verifies Phase 1–4 regression. Latest clean verify: BUILD SUCCESS, 304 tests/50 suites, no failures/errors/skips, 6m59s on 2026-10-04. All 32 test pools close cleanly. V21→V22 validates all 25 production entities on the exact upgraded schema with Flyway disabled; 4C changes no V1–V22 migration. See the [Phase 4 plan](docs/plans/phase-4-campus-operations.md), [closure review](docs/reviews/phase-4-final-review.md), [Dormitory API](docs/api/dormitory.md), [Finance API](docs/api/finance.md) and [Testing](docs/testing.md). Phase 5 requires a separate approved plan.
+**Phase 5 — in progress; Notification 5A review PASS.** Phase 1–4 are merged into `main` (Phase 4 PR #14, main `4d305db`). Branch `feature/supporting-services` implements in-app templates, draft/edit/publish to 1–100 active Identity accounts, recipient-owned inbox/read acknowledgement, optimistic locking and atomic audit. Latest clean verify: BUILD SUCCESS, 323 tests/53 suites, zero failures/errors/skips, 5m58s on 2026-10-04; all 34 test pools close cleanly. V22→V23 validates all 29 production entities against the exact upgraded schema with Flyway disabled. V1–V22 are unchanged. Event (5B), Library (5C), ADMIN audit viewing (5D) and closure (5E) remain incomplete. See the [approved Phase 5 plan](docs/plans/phase-5-supporting-services.md), [Notification review](docs/reviews/phase-5a-notification-review.md), [Notification API](docs/api/notifications.md), [Phase 4 closure](docs/reviews/phase-4-final-review.md) and [Testing](docs/testing.md).
 
 [Phase 3A catalog APIs](docs/plans/phase-3a-academic-catalog.md) remain available under `/api/v1/admin/academic/programs` and `/courses`, with normalized unique codes, credits 1–30 and paginated search. [Phase 3B delivery APIs](docs/plans/phase-3b-academic-offerings.md) manage terms, offerings and sections. [Phase 3C enrollment](docs/plans/phase-3c-academic-enrollment.md) supports withdrawal/re-enrollment with version and capacity protection. Student self-service, waitlists, grading, automatic tuition calculation and schedules remain future scope.
 
@@ -74,7 +74,8 @@ Administrator APIs require `ROLE_ADMIN`. Identity authentication, session revoca
 3. Phase 2: Organization, Student and Faculty/Staff registries with query, audit and migration hardening.
 4. Phase 3: Academic catalog (3A), terms/class sections (3B), enrollment (3C), and Academic hardening (3D).
 5. Phase 4: Dormitory inventory (4A1), accommodation assignment (4A2), Finance obligations (4B1), manual payments (4B2), operations hardening (4C).
-6. Later: supporting modules; reporting; frontend; end-to-end release readiness; optional workflow/AI.
+6. Phase 5: Notification (5A), Event (5B), Library (5C), ADMIN audit viewing (5D), regression closure (5E).
+7. Later: reporting; frontend; end-to-end release readiness; optional workflow/AI.
 
 ## Documentation Map
 

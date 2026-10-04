@@ -2,7 +2,7 @@
 
 ## Purpose and Phase
 
-Campus Service is an Intelligent Smart Campus Platform. The implemented baseline covers platform/Identity, organization/people registries, Academic catalog/delivery/enrollment/audit, Dormitory inventory/current accommodation and Finance fee/obligation snapshots/manual receipts/reversal. Phase 4 operations hardening and backend closure are reviewed PASS; Phase 5 needs a separate approved plan. Read `README.md`, the current plan in `docs/plans/`, and Git state for the authoritative phase and verification status. Production deployment and first-administrator runtime provisioning remain out of scope unless explicitly requested; see `docs/runbooks/initial-admin-provisioning.md`.
+Campus Service is an Intelligent Smart Campus Platform. The implemented baseline covers platform/Identity, organization/people registries, Academic catalog/delivery/enrollment/audit, Dormitory inventory/current accommodation and Finance fee/obligation snapshots/manual receipts/reversal. Phase 4 operations hardening and backend closure are reviewed PASS and merged. Phase 5 scope is approved: Notification 5A is reviewed PASS; Event, Library, audit viewing and whole-phase closure remain incomplete. Follow docs/plans/phase-5-supporting-services.md. Read `README.md`, the current plan in `docs/plans/`, and Git state for the authoritative phase and verification status. Production deployment and first-administrator runtime provisioning remain out of scope unless explicitly requested; see `docs/runbooks/initial-admin-provisioning.md`.
 
 ## Repository Structure
 
