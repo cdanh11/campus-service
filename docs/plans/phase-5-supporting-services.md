@@ -24,3 +24,5 @@ Status: approved business scope; 5A reviewed PASS on 2026-10-04: focused 23 test
 5B reviewed PASS on 2026-10-04 after both user decisions: same-record restore with expectedVersion/audit, OPEN-only manual closure. Final clean verify 360 tests/60 suites, 0 failures/errors/skips, 6m29s; exact V24 validates 32 entities. See phase-5b-events.md and ../reviews/phase-5b-event-review.md. Library PASS is recorded below; 5D–5E remain incomplete.
 
 5C reviewed PASS on 2026-10-04: focused 26 tests (1m10s), final clean verify 382 tests/64 suites, 0 failures/errors/skips, 7m32s; all 42 pools close. Exact V25 validates 36 entities with Flyway disabled; V1–V24 unchanged. See ../reviews/phase-5c-library-review.md. Continue 5D audit viewing; 5E closure is still pending.
+
+5D reviewed PASS on 2026-10-04: final focused 17 tests (1m10s), full clean verify 393 tests/67 suites, zero failures/errors/skips, 7m36s, all 44 pools closed. Eight owner read contracts, safe metadata and snapshot consistency, no new schema. See ../reviews/phase-5d-audit-viewing-review.md. Final 5E closure review is pending.

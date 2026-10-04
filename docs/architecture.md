@@ -8,7 +8,7 @@
 
 ## System Context
 
-Campus Service provides a backend platform for university operations. Implemented capabilities cover Identity, organization and people registries, Academic catalogs/delivery/enrollment, Dormitory inventory/accommodation and Finance fees/obligations/manual payments/reversal, in-app Notification, Event catalog/membership and Library circulation. Audit viewing remains an approved future slice; Library verification status is recorded in its review.
+Campus Service provides a backend platform for university operations. Implemented capabilities cover Identity, organization and people registries, Academic catalogs/delivery/enrollment, Dormitory inventory/accommodation and Finance fees/obligations/manual payments/reversal, in-app Notification, Event catalog/membership, Library circulation and ADMIN audit viewing. Per-slice verification and whole-phase scope are recorded in their reviews.
 
 ```mermaid
 flowchart LR
@@ -21,6 +21,7 @@ flowchart LR
     API --> Notification[In-app notifications]
     API --> Event[Event catalog and membership]
     API --> Library[Library catalog and circulation]
+    API --> Audit[ADMIN audit viewing via owner contracts]
     IAM --> DB[(PostgreSQL)]
     Registry --> DB
     Academic --> DB
@@ -50,6 +51,7 @@ The initial system is one deployable application with modules organized by busin
 - `notification`: reusable text templates, draft/published snapshots, recipient-owned delivery/read acknowledgement and atomic mutation audit (5A); ACTIVE account eligibility uses IdentityUserDirectory without foreign persistence access. See ADR 0011.
 - `event`: Event catalog, retained Student membership, self-service via current Identity link, ADMIN attendance, capacity protection and atomic audit (5B). Eligibility/ownership uses StudentAccountDirectory; see ADR 0012.
 - `library`: titles/physical copies, ADMIN circulation, one OPEN loan per copy, retained returns and atomic audit (5C). ACTIVE Student eligibility uses StudentAccountDirectory; see ADR 0013.
+- `audit`: ADMIN read orchestration through eight owner application query ports, safe recorded-field projection and selected-source pages (5D); no persistence/SQL/foreign table access in this module. See ADR 0014.
 
 A module owns its application logic, domain model, persistence mapping, and external API adapters. Cross-module access goes through explicit application-facing contracts, not repositories, entities, or database tables from another module.
 
@@ -136,3 +138,7 @@ Event 5B is reviewed PASS: catalog and retained unique Student/event membership,
 Library owns title/copy catalogs and retained OPEN/RETURNED loans. ADMIN mutation actors come from JWT; clients cannot choose loan dates. The server defaults to exactly 14 elapsed days. A partial unique index protects one OPEN loan per copy. Refreshed title→copy→loan locks serialize admission against catalog deactivation and return; conservative title-level serialization is an explicit local-project tradeoff. Return is permitted after reference deactivation or overdue and retains immutable association/original dates; next loan uses a new UUID. Student status is a fresh decision-time read through Student's own application contract. All six mutation types write status-only audit synchronously and rollback together. No reservations, renewals, fines, Student self-borrow or automatic Finance/Notification integration.
 
 V25 adds four Library entities. The populated exact V24→V25 validation checks all 36 production entities with Flyway disabled and ddl-auto=validate; historical V24 now explicitly retains its 32-entity scan. No previous migration is edited. See [ADR 0013](decisions/0013-library-circulation-and-history.md) and [Library review](reviews/phase-5c-library-review.md) for executed gates.
+
+## Retained audit viewing
+
+ADMIN list/get selects one source: Identity, People, Academic, Dormitory, Finance, Notification, Event or Library. Owner adapters query only their own fixed table/projection with bound filters. Shared application contracts contain bounded filters/DTO/policies; the audit module only routes contracts. Each count/page uses one read-only REPEATABLE_READ snapshot and occurredAt/UUID ordering. Legacy Identity/People have null recorded version and empty safe metadata. JSONB owners select only approved status values by resource, without transferring raw private bodies/credentials or inventing missing history. No mutation, export, expiry, cross-source union or additional schema/entity. Existing selective target indexes are verified; broad history may scan. See ADR 0014 and the 5D/final reviews.

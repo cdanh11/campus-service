@@ -2,7 +2,7 @@
 
 ## Current State
 
-Phase 1–3 are merged; Phase 4 adds Dormitory inventory/current accommodation, Finance VND fees/obligation snapshots/manual receipts/reversal with atomic audit, and operations hardening reviewed PASS. Phase 4 is merged (PR #14). Phase 5 scope is approved; Notification 5A, Event 5B and Library 5C are reviewed PASS on feature/supporting-services. Audit viewing and closure remain incomplete; follow phase-5-supporting-services.md and each slice gate. The repository contains JWT authentication, Spring Security authorization, Identity persistence, and administrator user-management endpoints backed by PostgreSQL and Flyway. Phase 1 release readiness adds CI, a production profile, health probes, a container build, and a release runbook. Selecting production infrastructure and running the release remain environment-owner responsibilities.
+Phase 1–3 are merged; Phase 4 adds Dormitory inventory/current accommodation, Finance VND fees/obligation snapshots/manual receipts/reversal with atomic audit, and operations hardening reviewed PASS. Phase 4 is merged (PR #14). Phase 5 scope is approved; Notification 5A, Event 5B, Library 5C and audit viewing 5D are reviewed PASS on feature/supporting-services. Closure remains pending; follow phase-5-supporting-services.md and each slice gate. The repository contains JWT authentication, Spring Security authorization, Identity persistence, and administrator user-management endpoints backed by PostgreSQL and Flyway. Phase 1 release readiness adds CI, a production profile, health probes, a container build, and a release runbook. Selecting production infrastructure and running the release remain environment-owner responsibilities.
 
 ## Prerequisites
 
