@@ -40,6 +40,8 @@ The initial system is one deployable application with modules organized by busin
 
 ### Proposed Module Boundaries
 
+Phase 6 introduces `reporting` as read-only ADMIN orchestration over owner application query contracts. Dashboard contributors read only owner tables; one read-only REPEATABLE_READ transaction spans the response. No reporting schema, foreign repository access or historical reconstruction is introduced. See [ADR 0015](decisions/0015-owner-scoped-current-state-reporting.md) and [Phase 6 plan](plans/phase-6-reporting.md). Dashboard/detail/CSV/observability and whole-phase closure are reviewed PASS; see [Phase 6 final review](reviews/phase-6-final-review.md).
+
 - `shared`: narrowly scoped cross-cutting primitives, error conventions, and shared technical support; it must not become a dumping ground for domain logic.
 - `identity`: users, roles, credentials, authentication, and authorization.
 - `organization`: reference organization units used by approved registry modules.

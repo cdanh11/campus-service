@@ -41,3 +41,4 @@ Create an ADR when a decision changes module boundaries, persistence strategy, s
 - [0012: Event Membership Ownership and Capacity](0012-event-membership-ownership-and-capacity.md)
 - [0013: Library Circulation and Retained History](0013-library-circulation-and-history.md)
 - [0014: Owner-scoped Retained Audit Viewing](0014-owner-scoped-audit-viewing.md)
+- [0015: Owner-scoped Current-state Reporting](0015-owner-scoped-current-state-reporting.md)
