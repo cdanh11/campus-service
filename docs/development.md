@@ -2,7 +2,7 @@
 
 ## Current State
 
-Phase 1–3 are merged; Phase 4 adds Dormitory inventory/current accommodation, Finance VND fees/obligation snapshots/manual receipts/reversal with atomic audit, and operations hardening reviewed PASS. Phase 4 feature history awaits user PR/merge; Phase 5 needs a separate approved plan. The repository contains JWT authentication, Spring Security authorization, Identity persistence, and administrator user-management endpoints backed by PostgreSQL and Flyway. Phase 1 release readiness adds CI, a production profile, health probes, a container build, and a release runbook. Selecting production infrastructure and running the release remain environment-owner responsibilities.
+Phase 1–4 are merged (Phase 4 PR #14). Phase 5 Notification/Event/Library/ADMIN audit viewing and whole-phase backend closure are reviewed PASS on feature/supporting-services; user PR/merge remains pending. Final clean verify 393 tests/67 suites, zero failures/errors/skips, 7m36s on 2026-10-04. Follow phase-5-supporting-services.md and phase-5-final-review.md. Phase 6 Reporting needs separately approved scope. The repository contains JWT authentication, Spring Security authorization, Identity persistence, and administrator user-management endpoints backed by PostgreSQL and Flyway. Phase 1 release readiness adds CI, a production profile, health probes, a container build, and a release runbook. Selecting production infrastructure and running the release remain environment-owner responsibilities.
 
 ## Prerequisites
 
@@ -64,3 +64,7 @@ V1–V18 are the merged baseline and must not be edited. Delivered Phase 4A1 add
 ## Windows and WSL
 
 Campus Service supports native Windows development and WSL-based development. WSL is optional. Use paths, line endings, Docker access, and shell commands consistently within the chosen environment. If Maven or Docker runs in WSL, avoid mixing its generated files with tools configured against a different Windows path unless that workflow has been verified.
+
+Delivered Phase 5 adds V23 (Notification), V24 (Event) and V25 (Library). Preserve V1–V25 for subsequent slices. Historical V24 validation freezes its original 32 entity packages; exact V25 validates 36; future exact upgrades must validate the full new entity set against that same upgraded database/schema with Flyway disabled, never repair migration metadata.
+
+Audit viewing adds owner query ports without a migration/entity. Before future entities are added, freeze historical V25 scanning to its original 36 production entities. Use feature/<function-or-phase> branches and per-slice PASS/FAIL reviews; commit by function only after PASS and authorization. Keep project-roadmap.md local/untracked. Frontend, deployment and next-phase features are not part of Phase 5 backend completion.

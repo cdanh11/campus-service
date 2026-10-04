@@ -37,3 +37,7 @@ Create an ADR when a decision changes module boundaries, persistence strategy, s
 - [0008: Accommodation Current Place and Release](0008-accommodation-current-place-and-release.md)
 - [0009: VND Obligations and Immutable Fee Snapshots](0009-finance-vnd-obligations-and-snapshots.md)
 - [0010: Manual Receipt Lifecycle and Charge Balance Protection](0010-manual-payments-and-charge-balance.md)
+- [0011: In-application Notification Ownership and Publication](0011-in-app-notification-ownership-and-publication.md)
+- [0012: Event Membership Ownership and Capacity](0012-event-membership-ownership-and-capacity.md)
+- [0013: Library Circulation and Retained History](0013-library-circulation-and-history.md)
+- [0014: Owner-scoped Retained Audit Viewing](0014-owner-scoped-audit-viewing.md)

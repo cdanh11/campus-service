@@ -144,7 +144,13 @@ class FlywayV21ToV22PaymentUpgradeIntegrationTest {
         assertThat(jdbc.queryForList("SELECT * FROM flyway_schema_history ORDER BY installed_rank")).isEqualTo(before);
         assertThat(snapshot()).isEqualTo(legacy);
     }
-    @Configuration(proxyBeanMethods=false) @EntityScan("com.campus") static class ValidationConfiguration { }
+    @Configuration(proxyBeanMethods=false) @EntityScan({
+            "com.campus.identity.infrastructure.persistence.entity", "com.campus.organization.infrastructure.persistence",
+            "com.campus.student.infrastructure.persistence", "com.campus.personnel.infrastructure.persistence",
+            "com.campus.shared.infrastructure.persistence", "com.campus.academic.infrastructure.persistence",
+            "com.campus.dormitory.infrastructure.persistence", "com.campus.dormitory.infrastructure.assignment",
+            "com.campus.finance.infrastructure.obligations", "com.campus.finance.infrastructure.payments"
+    }) static class ValidationConfiguration { }
     private void receipt(UUID id,String number) { jdbc.update("INSERT INTO finance_manual_payments (id,receipt_number,charge_id,amount) VALUES (?,?,?,1)",id,number,legacyCharge); }
     private static Flyway flyway(String target) { return Flyway.configure().dataSource(postgres.getJdbcUrl(),postgres.getUsername(),postgres.getPassword()).locations("classpath:db/migration").target(target).load(); }
     private static Map<String,List<Map<String,Object>>> snapshot() {

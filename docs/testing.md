@@ -185,3 +185,54 @@ Use behavior-oriented names that state the condition and expected result, such a
 ## Acceptable Evidence
 
 Evidence includes the exact command run, its verified result, the test scope, and any known gaps. If tests cannot run because the Maven project or required infrastructure does not yet exist, state that plainly. Never fabricate execution results, test counts, coverage, or environment status.
+
+## Phase 5A Notification Verification
+
+Verified on 2026-10-04 with Docker running:
+
+- `.\mvnw.cmd "-Dtest=NotificationIntegrationTest,NotificationDomainTest,FlywayV22ToV23NotificationUpgradeIntegrationTest,FlywayV21ToV22PaymentUpgradeIntegrationTest,ModuleBoundaryTest" test`: BUILD SUCCESS, 23 tests, zero failures/errors/skips, 1m05s.
+- `.\mvnw.cmd clean verify`: BUILD SUCCESS, exit 0, 323 tests in 53 suites, zero failures/errors/skips, 5m58s, finished 2026-10-04T15:03:14+07:00. Independently summed Surefire XML agrees; jar packaged; all 34 Hikari pools closed without fork termination or closed-container warnings.
+
+The 19 new cases cover four domain tests, eleven API/transaction/security/concurrency cases and four genuine V22→V23 upgrade cases. Evidence includes authorization across all twelve operations, own/foreign inbox isolation, immutable snapshots, Unicode/six-character trimming, recipient batch validation and complete rollback for every mutation, trusted actors, stale updates, idempotent/concurrent reads, duplicate publication, cached Identity deactivation and a real production lock timeout (55P03) followed by success. Queries include literal matching, every allowlisted sort and actual UUID-tied inbox pages; generated OpenAPI schemas are checked.
+
+The upgrade preserves all representative legacy tables/history and applies only V23, verifying actual four-table columns/defaults/constraints/indexes through specific SQLSTATE writes, including large JSONB without an invented limit. Hibernate validates all 29 production entities against the exact upgraded public schema with Flyway disabled; history remains unchanged. Historical V22 retains 25 entities. V1–V22 are unchanged. No load benchmark or coverage percentage is claimed; Event, Library, audit viewing and whole Phase 5 remain incomplete. See [5A review](reviews/phase-5a-notification-review.md).
+## Phase 5B Catalog Checkpoint Verification — incomplete slice
+
+Verified on 2026-10-04; this is working-tree progress, not Event 5B PASS:
+
+- `.\mvnw.cmd "-Dtest=CampusEventTest,EventCatalogIntegrationTest,StudentAccountDirectoryIntegrationTest,FlywayV22ToV23NotificationUpgradeIntegrationTest,ModuleBoundaryTest" test`: BUILD SUCCESS, 18 tests, zero failures/errors/skips, 1m06s, finished 15:25:05+07:00.
+- `.\mvnw.cmd "-Dtest=FlywayV23ToV24EventUpgradeIntegrationTest" test`: BUILD SUCCESS, three tests, zero failures/errors/skips, 26.617s, finished 15:27:08+07:00.
+- `.\mvnw.cmd clean verify`: BUILD SUCCESS, exit 0, 339 tests in 57 suites, zero failures/errors/skips, 6m20s, finished 2026-10-04T15:34:04+07:00. Surefire XML independently summed; jar packaged; all 37 Hikari pools closed without fork termination or closed-container warnings.
+
+New evidence covers catalog normalization/date/lifecycle/capacity/query bounds, all six operation authorization, stored precision and trusted actor, strict JSON capacity rejection, full audit rollback, duplicate/stale/concurrent edits, cached-state refresh, production lock timeout 55P03 followed by success, literal query matching/allowlisted sorts/actual tied UUID pages and generated Bearer schemas. Student lookup sees independently committed status/unlink despite cached profile. Genuine V23→V24 preserves all representative prior data/history, verifies actual catalog/audit schema and SQLSTATE boundaries, and validates 31 entities on the exact upgraded public schema with Flyway disabled. Historical V23 retains 29; delivered V1–V23 unchanged.
+
+Initial catalog run failed because fractional capacity JSON was coerced to integer and a stale-update test transaction lacked rollback cleanup; both corrected before successful focused/full runs. Registration/attendance, owner admission/cancellation/restoration, real consumed-seat count and races are still missing. V24 is unreleased/uncommitted; schema and tests must expand before Event PASS and before Library implementation. No load benchmark or coverage percentage. See [5B checkpoint review](reviews/phase-5b-event-review.md).
+## Phase 5B Final Verification
+
+Verified on 2026-10-04 after both registration decisions were approved:
+
+- Complete focused Event/catalog/domain/schema/Student/Notification-history/boundary command in the [5B review](reviews/phase-5b-event-review.md): BUILD SUCCESS, 40 tests, zero failures/errors/skips, 1m29s. Subsequent final-seat/lifecycle cases increased registration API coverage to 13, all passed; final expanded query-plan case passed in 32.276s.
+- Final `.\mvnw.cmd clean verify`: BUILD SUCCESS, exit 0, **360 tests in 60 suites**, zero failures/errors/skips, **6m29s**, finished **2026-10-04T16:10:34+07:00**. Jar packaged; Surefire XML independently summed; all 39 pools closed without fork termination or closed-container warnings. Includes every subsequent assertion and Phase 1–5B regression.
+
+Event adds 37 cases: four catalog-domain, five membership-domain, eight catalog API, thirteen registration API, four genuine V23→V24 upgrade, two Student directory and one expanded query-plan case. Coverage includes all fourteen operation authorization, owner/spoof isolation, OPEN-only past-event admission, retained restore/attendance/cancellation, strict JSON integers, all six mutation audit rollbacks, final-seat/duplicate/restore/cancel/attendance/closure/capacity races, cached Event/member/Student changes and actual production locks (55P03 then recovery), bounded filters/literal matches/actual tied pages and generated OpenAPI. Plan evidence uses 10,000 Events/Students/memberships, ANALYZE and unforced EXPLAIN; Event count may validly use retained membership's Event-prefixed unique index instead of the dedicated status index. No new forced setting, benchmark or coverage percentage.
+
+The populated V23 baseline includes every representative prior domain and Notification. Apply only V24, preserve all old tables/history, verify all three actual tables/defaults/constraints/indexes and specific SQLSTATE writes, including temporal/Unicode/large JSONB boundaries. Hibernate validates all 32 entities on that same upgraded public database/schema with Flyway disabled, no create/update or Flyway bean. Historical V23 scan freezes 29; V1–V23 unchanged. Corrected failures (fractional capacity/version coercion, expected-error test cleanup, overly restrictive plan assertion) are recorded in the review. Earlier catalog checkpoint results remain historical, superseded by this final membership-code regression. Library/audit viewing/whole Phase 5 remain incomplete.
+## Phase 5C Final Verification
+
+Verified 2026-10-04; [Library review](reviews/phase-5c-library-review.md) records full commands/evidence. Foundation 10 tests (34.019s), API checkpoint 10 tests (44.149s), focused 26 tests (1m10s), all BUILD SUCCESS with zero failures/errors/skips. Final `.\mvnw.cmd clean verify`: **BUILD SUCCESS, exit 0, 382 tests/64 suites, 0 failures/errors/skips, 7m32s**, finished **2026-10-04T16:47:05+07:00**; XML independently summed, jar packaged, all 42 pools closed cleanly. Includes the final added deactivation/admission, return/borrow and copy tie-page assertions.
+
+Library adds 22 cases: 5 domain, 11 API/authorization/rollback/concurrency/cache/lock/query/OpenAPI, 5 populated V24→V25 upgrade and 1 selective-plan case. All 12 HTTP operations enforce ADMIN; all 6 mutation kinds have actual audit-failure rollback. Production title/copy/loan locks return PostgreSQL 55P03 with bounded timeouts on separate transactions, then recover. One OPEN loan per copy, retained new-loan history, default 14 days, inactive/overdue return, strict versions, literal search and real UUID tie pages are covered. Unforced selective plans use 10,000 titles/copies/loans and agree with production queries, without latency/load claims.
+
+Exact V25 database/public schema validates all 36 entities with Flyway disabled and ddl-auto=validate, unchanged prior rows/history and no Flyway bean. Historical V24 freezes 32 entities. Actual columns/defaults/approved lengths/nullability/PK/FKs/CHECK/partial unique/indexes and rejected SQLSTATE writes checked; large JSONB allowed without an invented cap. V1–V24 unchanged. 5C PASS; 5D audit viewing and 5E whole Phase 5 closure remain incomplete.
+
+## Phase 5D Final Verification
+
+Final `.\mvnw.cmd "-Dtest=AuditViewingIntegrationTest,AuditViewingQueryPlanIntegrationTest,AuditQueryContractTest,ModuleBoundaryTest,FlywayV24ToV25LibraryUpgradeIntegrationTest" test`: BUILD SUCCESS, 17 tests, zero failures/errors/skips, 1m10s, finished 2026-10-04T17:06:05+07:00. Includes separate-transaction count/page snapshot concurrency for all eight sources and exact V25/36-entity Hibernate validation with Flyway disabled.
+
+Final `.\mvnw.cmd clean verify`: **BUILD SUCCESS, exit 0, 393 tests/67 suites, 0 failures/errors/skips, 7m36s**, finished **2026-10-04T17:14:15+07:00**. Independently summed XML agrees, jar packaged, all 44 pools closed cleanly without fork termination or closed-container warnings. Audit viewing adds 11 cases (7 API/database, 3 contract, 1 selective-plan); all prior Phase 1–5 regression/upgrade suites ran. No 5D migration/entity or V1–V25 change.
+
+Both ADMIN read operations have anonymous/USER denials on all eight sources. Recorded fields, null historical versions, malformed VARCHAR/safe JSONB metadata, filters/bounds/source ownership, exact [from,until) boundaries, equal-time UUID pages/counts, no read-side audit mutation, and a real business-write→audit-read path are checked. Selective unforced plans use existing target indexes on 10,000 events per owner; no global-page performance claim. First testCompile generic error and correction are recorded in [5D review](reviews/phase-5d-audit-viewing-review.md). Whole-phase completion evidence is in [Phase 5 closure](reviews/phase-5-final-review.md).
+
+## Phase 5E Closure
+
+All approved Phase 5 backend slices and closure reviewed PASS; final source/test code is the same code verified at 2026-10-04T17:14:15+07:00 (393 tests/67 suites, 0 failures/errors/skips, 7m36s). Subsequent closure edits are documentation only. The [final requirement matrix](reviews/phase-5-final-review.md) records actual package totals, legacy/upgrade/security/ownership/audit/query coverage, immutable V1–V22 and retained practical limits. This is a scoped source/schema/test/diff review, not an exhaustive-coverage percentage or production/frontend release certification. No additional run is warranted without source/test changes or a new unresolved concern.

@@ -8,7 +8,7 @@
 
 ## System Context
 
-Campus Service provides a backend platform for university operations. Implemented capabilities cover Identity, organization and people registries, Academic catalogs/delivery/enrollment, Dormitory inventory/accommodation and Finance fee/obligation foundations; later slices extend payments and supporting operations.
+Campus Service provides a backend platform for university operations. Implemented capabilities cover Identity, organization and people registries, Academic catalogs/delivery/enrollment, Dormitory inventory/accommodation and Finance fees/obligations/manual payments/reversal, in-app Notification, Event catalog/membership, Library circulation and ADMIN audit viewing. Per-slice verification and whole-phase scope are recorded in their reviews.
 
 ```mermaid
 flowchart LR
@@ -17,12 +17,19 @@ flowchart LR
     API --> Registry[Organization and people registries]
     API --> Academic[Academic catalogs and delivery]
     API --> Dormitory[Dormitory inventory and accommodation]
-    API --> Finance[Finance fees and obligations]
+    API --> Finance[Finance obligations and manual payments]
+    API --> Notification[In-app notifications]
+    API --> Event[Event catalog and membership]
+    API --> Library[Library catalog and circulation]
+    API --> Audit[ADMIN audit viewing via owner contracts]
     IAM --> DB[(PostgreSQL)]
     Registry --> DB
     Academic --> DB
     Dormitory --> DB
     Finance --> DB
+    Notification --> DB
+    Event --> DB
+    Library --> DB
 ```
 
 The diagram describes the implemented modular direction. Phase 1B includes Identity authentication/admin management; Phase 2 organization and people registries; Phase 3 catalogs/delivery/enrollment/audit; Phase 4A Dormitory; Phase 4B1 Finance obligations. Enrollment, accommodation and Finance eligibility use the Student application contract.
@@ -41,7 +48,10 @@ The initial system is one deployable application with modules organized by busin
 - `academic`: Program/Course catalog, terms, course offerings, class sections and administrative enrollment.
 - `dormitory`: building/room/bed inventory, current accommodation assignments and atomic mutation audit (4A1/4A2).
 - `finance`: VND fee definitions, immutable Student obligation snapshots, manual receipts/reversal and atomic mutation audit (4B1/4B2).
-- Future modules: supporting modules when their scope is approved.
+- `notification`: reusable text templates, draft/published snapshots, recipient-owned delivery/read acknowledgement and atomic mutation audit (5A); ACTIVE account eligibility uses IdentityUserDirectory without foreign persistence access. See ADR 0011.
+- `event`: Event catalog, retained Student membership, self-service via current Identity link, ADMIN attendance, capacity protection and atomic audit (5B). Eligibility/ownership uses StudentAccountDirectory; see ADR 0012.
+- `library`: titles/physical copies, ADMIN circulation, one OPEN loan per copy, retained returns and atomic audit (5C). ACTIVE Student eligibility uses StudentAccountDirectory; see ADR 0013.
+- `audit`: ADMIN read orchestration through eight owner application query ports, safe recorded-field projection and selected-source pages (5D); no persistence/SQL/foreign table access in this module. See ADR 0014.
 
 A module owns its application logic, domain model, persistence mapping, and external API adapters. Cross-module access goes through explicit application-facing contracts, not repositories, entities, or database tables from another module.
 
@@ -113,3 +123,22 @@ Finance owns fee definitions, Student charges, manual receipts and synchronous s
 ## Operations query and response consistency
 
 Dormitory inventory/assignment and Finance writes return refreshed persisted timestamps and versions, matching subsequent reads at PostgreSQL precision. The Operations query-plan test exercises the same selective predicate/aggregate shapes as the adapters: parent inventory, current occupancy, Student assignment history, Student/fee charges and charge payment totals/balance. With synthetic fixtures, ANALYZE and the default PostgreSQL planner, existing parent-prefixed inventory indexes, partial current-place uniqueness indexes and Student/status or charge/status indexes serve these queries. Parent inventory may use either its unique code index or status index. This does not establish production latency or optimize arbitrary substring search; no extra index or distributed infrastructure is introduced. See [Phase 4 closure review](reviews/phase-4-final-review.md).
+
+## Notification ownership and upgrade validation
+
+Phase 5A is reviewed PASS. Notification publication is an atomic local delivery to explicit active account UUIDs; it is not an external transport queue. Inbox ownership comes exclusively from the authenticated subject. Published text is immutable, repeated read acknowledgement is idempotent, and metadata contains status only. Page content uses one bounded batch query rather than a notice lookup per delivery. Identity eligibility uses a database status projection to avoid stale first-level-cache entities. Eligibility is checked at the operation decision; no cross-module lock is claimed.
+
+V23 adds four Notification tables/entities. Historical V22 validation explicitly scans its original 25 entity packages; the genuine V22→V23 test validates all 29 entities on the same upgraded database/public schema with Flyway disabled and ddl-auto=validate. Future modules must freeze that historical scan before introducing new entities. Delivered V1–V22 remain immutable.
+## Event membership ownership
+
+Event 5B is reviewed PASS: catalog and retained unique Student/event membership, linked-account owner APIs plus ADMIN attendance, OPEN-only manual admission gate and same-record expectedVersion restoration. StudentAccountDirectory supplies fresh scalar UUID/status eligibility without foreign persistence or locks. Event is locked/refreshed before membership; count REGISTERED/ATTENDED under that lock serializes admissions/restores and capacity reductions. Audit is synchronous/status-only, cancellation frees capacity, attendance is terminal and consumes a seat. Direct SQL bypass is not an aggregate capacity guarantee; no scheduler/fees/automatic Notification integration. ADR 0012 records scope and limits. V24 adds three entities; exact upgraded-schema validation now has 32 entities, while historical V23 retains 29. Freeze historical V24 scanning before adding Library entities.
+
+## Library circulation
+
+Library owns title/copy catalogs and retained OPEN/RETURNED loans. ADMIN mutation actors come from JWT; clients cannot choose loan dates. The server defaults to exactly 14 elapsed days. A partial unique index protects one OPEN loan per copy. Refreshed title→copy→loan locks serialize admission against catalog deactivation and return; conservative title-level serialization is an explicit local-project tradeoff. Return is permitted after reference deactivation or overdue and retains immutable association/original dates; next loan uses a new UUID. Student status is a fresh decision-time read through Student's own application contract. All six mutation types write status-only audit synchronously and rollback together. No reservations, renewals, fines, Student self-borrow or automatic Finance/Notification integration.
+
+V25 adds four Library entities. The populated exact V24→V25 validation checks all 36 production entities with Flyway disabled and ddl-auto=validate; historical V24 now explicitly retains its 32-entity scan. No previous migration is edited. See [ADR 0013](decisions/0013-library-circulation-and-history.md) and [Library review](reviews/phase-5c-library-review.md) for executed gates.
+
+## Retained audit viewing
+
+ADMIN list/get selects one source: Identity, People, Academic, Dormitory, Finance, Notification, Event or Library. Owner adapters query only their own fixed table/projection with bound filters. Shared application contracts contain bounded filters/DTO/policies; the audit module only routes contracts. Each count/page uses one read-only REPEATABLE_READ snapshot and occurredAt/UUID ordering. Legacy Identity/People have null recorded version and empty safe metadata. JSONB owners select only approved status values by resource, without transferring raw private bodies/credentials or inventing missing history. No mutation, export, expiry, cross-source union or additional schema/entity. Existing selective target indexes are verified; broad history may scan. See ADR 0014 and the 5D/final reviews.
