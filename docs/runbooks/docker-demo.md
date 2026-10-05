@@ -18,6 +18,8 @@ Each installation generates a private database password, JWT signing key and ran
 
 Native development ports 3000/8080 and its PostgreSQL volume remain separate. This installation uses the named `campus-platform-demo_campus-demo-data` volume. Restart without rebuilding:
 
+Docker uses the HttpOnly `CAMPUS_DEMO_REFRESH` cookie, distinct from native development's default `CAMPUS_REFRESH`. Cookie separation matters because browser cookies do not distinguish localhost ports. Both can be used in one browser without replacing each other's refresh cookie.
+
 ```powershell
 .\scripts\start-demo.ps1 -SkipBuild
 ```

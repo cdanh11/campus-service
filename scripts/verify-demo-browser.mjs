@@ -20,6 +20,7 @@ const report = { web, steps: [], verifiedAt: null }
 
 async function main() {
   const accounts = (await readJson(join(directory, 'accounts.json'))).accounts
+  const cookieName = target.port === '3300' ? 'CAMPUS_DEMO_REFRESH' : 'CAMPUS_REFRESH'
   const browser = await chromium.launch({ headless: true })
   async function contextFor(email, viewport = { width: 1366, height: 900 }) {
     checkpoint = 'login through frontend proxy'
@@ -38,9 +39,9 @@ async function main() {
   try {
     const { context, page } = await contextFor('admin.primary@example.test')
     checkpoint = 'private cookie and frontend data'
-    const initial = (await context.cookies()).find(cookie => cookie.name === 'CAMPUS_REFRESH')
+    const initial = (await context.cookies()).find(cookie => cookie.name === cookieName)
     assert.ok(initial?.httpOnly && !initial.secure && initial.sameSite === 'Lax' && initial.path === '/api/v1/auth')
-    assert.equal(await page.evaluate(() => document.cookie.includes('CAMPUS_REFRESH')), false)
+    assert.equal(await page.evaluate(name => document.cookie.includes(name), cookieName), false)
     assert.equal(await page.evaluate(() => localStorage.length + sessionStorage.length), 0)
     await page.goto('/admin/students')
     await expect(page.getByText('CD20260001', { exact: true })).toBeVisible()
@@ -50,7 +51,7 @@ async function main() {
     const refresh = page.waitForResponse(response => response.url().endsWith('/auth/refresh') && response.status() === 200)
     await page.reload(); await refresh
     await expect(page.getByRole('banner').getByText('admin.primary@example.test', { exact: true })).toBeVisible()
-    const rotated = (await context.cookies()).find(cookie => cookie.name === 'CAMPUS_REFRESH')
+    const rotated = (await context.cookies()).find(cookie => cookie.name === cookieName)
     assert.notEqual(rotated.value, initial.value)
     const forbidden = await context.request.post('/api/v1/auth/refresh', { headers: { Origin: 'https://untrusted.example.test' } })
     assert.equal(forbidden.status(), 403)
@@ -58,7 +59,7 @@ async function main() {
     await expect(second.getByRole('banner').getByText('admin.primary@example.test', { exact: true })).toBeVisible()
     await page.getByRole('button', { name: 'Đăng xuất', exact: true }).click()
     await expect(second.getByRole('heading', { name: 'Đăng nhập', exact: true })).toBeVisible()
-    assert.equal((await context.cookies()).some(cookie => cookie.name === 'CAMPUS_REFRESH'), false)
+    assert.equal((await context.cookies()).some(cookie => cookie.name === cookieName), false)
     report.steps.push('Refresh rotation/reload, denied Origin and cross-tab logout PASS')
     await context.close()
 
@@ -97,6 +98,41 @@ async function main() {
     assert.equal(administrativeRequests.length, 0)
     report.steps.push('Linked Student mobile inbox/Event views, no ADMIN requests and no page overflow PASS')
     await student.context.close()
+    if (process.argv.includes('--with-native')) {
+      checkpoint = 'native and Docker refresh-cookie isolation'
+      const nativeAccounts = (await readJson(resolve(directory, '../accounts.json'))).accounts
+      const nativeAccount = nativeAccounts.find(value => value.email === 'admin.primary@example.test')
+      const demoAccount = accounts.find(value => value.email === 'admin.primary@example.test')
+      assert.ok(nativeAccount && demoAccount)
+      const shared = await browser.newContext()
+      const nativePage = await shared.newPage(), demoPage = await shared.newPage()
+      for (const [tab, origin, account] of [[nativePage, 'http://localhost:3000', nativeAccount], [demoPage, web, demoAccount]]) {
+        checkpoint = `cookie isolation: login ${origin}`
+        await tab.goto(origin + '/login')
+        await tab.getByLabel('Email', { exact: true }).fill(account.email)
+        await tab.getByLabel('Mật khẩu', { exact: true }).fill(account.password)
+        await tab.getByRole('button', { name: 'Đăng nhập', exact: true }).click()
+        await expect(tab.getByRole('banner').getByText(account.email, { exact: true })).toBeVisible()
+      }
+      checkpoint = 'cookie isolation: both cookie names present'
+      const cookies = await shared.cookies()
+      assert.ok(cookies.some(cookie => cookie.name === 'CAMPUS_REFRESH'))
+      assert.ok(cookies.some(cookie => cookie.name === 'CAMPUS_DEMO_REFRESH'))
+      for (const tab of [nativePage, demoPage]) {
+        checkpoint = `cookie isolation: reload ${new URL(tab.url()).origin}`
+        const refresh = tab.waitForResponse(response => response.url().endsWith('/auth/refresh') && response.status() === 200)
+        await tab.reload(); await refresh
+        await expect(tab.getByRole('banner').getByText('admin.primary@example.test', { exact: true })).toBeVisible()
+      }
+      checkpoint = 'cookie isolation: Docker logout'
+      await demoPage.getByRole('button', { name: 'Đăng xuất', exact: true }).click()
+      const refresh = nativePage.waitForResponse(response => response.url().endsWith('/auth/refresh') && response.status() === 200)
+      checkpoint = 'cookie isolation: native reload after Docker logout'
+      await nativePage.reload(); await refresh
+      await expect(nativePage.getByRole('banner').getByText(nativeAccount.email, { exact: true })).toBeVisible()
+      report.steps.push('Native/Docker simultaneous login, independent refresh and Docker logout preserving native session PASS')
+      await shared.close()
+    }
     report.verifiedAt = new Date().toISOString()
     await writeJson(join(directory, 'browser-review.json'), report)
     console.log(JSON.stringify(report, null, 2))

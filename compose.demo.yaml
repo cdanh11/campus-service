@@ -26,6 +26,7 @@ services:
       JWT_ISSUER: ${DEMO_JWT_ISSUER:?Run scripts/start-demo.ps1 first}
       JWT_AUDIENCE: campus-demo-client
       REFRESH_COOKIE_SECURE: 'false'
+      REFRESH_COOKIE_NAME: CAMPUS_DEMO_REFRESH
       ALLOWED_ORIGINS: http://localhost:3300,http://127.0.0.1:3300
       SERVER_PORT: 8080
     ports:
