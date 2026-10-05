@@ -1,6 +1,6 @@
 # Administration permission matrix
 
-Phase 8A2 implementation: functional roles across existing owner APIs. This is not a complete university HR/approval hierarchy. Verification remains in progress.
+Phase 8A2 implementation: functional roles across existing owner APIs. This is not a complete university HR/approval hierarchy. Verification is [PASS for 8A2](reviews/phase-8a2-permissions-review.md); whole Phase 8 remains incomplete.
 
 | Role | Own operations | Additional read references |
 | --- | --- | --- |

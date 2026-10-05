@@ -34,4 +34,4 @@ Existing reference APIs return owner DTOs; granted GET access is explicit, not a
 
 Permissions are function-based campus roles for currently implemented APIs. Per-organization row scoping, confidential-field redaction, multi-level financial approvals, event budgets/partners and delegation periods have no approved domain model yet. These cannot be advertised as implemented. No public registration or automatic administrator provisioning is added.
 
-Status: implementation in progress. Focused backend permissions and exact V25→V26 validation passed (18 tests). Client verification and whole-backend regression are still required; see [8A2 review](../reviews/phase-8a2-permissions-review.md).
+Status: PASS for 8A2; see [review](../reviews/phase-8a2-permissions-review.md) for backend, UI, contract and real-browser evidence. Docker setup, substantial data inventory and whole Phase 8 acceptance/regression remain incomplete.

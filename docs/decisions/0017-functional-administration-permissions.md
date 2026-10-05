@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted scope; backend verified PASS, frontend real-browser verification pending (Phase 8A2).
+Accepted and verified PASS (Phase 8A2); whole Phase 8 remains incomplete.
 
 ## Context
 
