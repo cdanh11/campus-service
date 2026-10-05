@@ -42,3 +42,4 @@ Create an ADR when a decision changes module boundaries, persistence strategy, s
 - [0013: Library Circulation and Retained History](0013-library-circulation-and-history.md)
 - [0014: Owner-scoped Retained Audit Viewing](0014-owner-scoped-audit-viewing.md)
 - [0015: Owner-scoped Current-state Reporting](0015-owner-scoped-current-state-reporting.md)
+- [ADR 0016 — Explicit administrator bootstrap](0016-explicit-administrator-bootstrap.md): portable non-web first-account provisioning and audit/guard invariants.

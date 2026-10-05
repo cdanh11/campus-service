@@ -1,5 +1,7 @@
 # Phase 1B Slice 2: Authentication and Token Lifecycle
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 ## Status
 
 Approved for implementation, subject to the production allowed-origin configuration being set before browser deployment.

@@ -1,5 +1,7 @@
 # Phase 3D — Academic Hardening
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 ## Scope and sequence
 
 Start from merged Phase 3C at `51b48b3` on `feature/academic-hardening`. Preserve V1–V17 and all unrelated local changes, including the untracked roadmap. No Phase 4, frontend, production deployment or new Academic workflow.

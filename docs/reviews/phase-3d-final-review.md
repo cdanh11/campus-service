@@ -1,5 +1,7 @@
 # Phase 3D — Final Review of Phase 1–3
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Status: PASS on 2026-10-04 for the approved Phase 1–3 scope. No unresolved blocker/major finding remains in this review; limitations below remain explicit.
 
 ## Verified results

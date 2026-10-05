@@ -1,5 +1,7 @@
 # Phase 5C — Library Catalog and Circulation
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Approved business scope on 2026-10-04: title catalog and physical copies; one open loan per copy; default due time 14 days; return retains history; no fines. ADMIN alone records loan/return. Implemented after Event 5B PASS; **5C review PASS** on 2026-10-04. See ../reviews/phase-5c-library-review.md and ../api/library.md. Audit viewing 5D and closure 5E remain incomplete.
 
 ## Proposed technical contract

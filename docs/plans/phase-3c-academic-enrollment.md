@@ -1,5 +1,7 @@
 # Phase 3C — Enrollment Foundation
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 ## Scope and implementation order
 
 Start from merged Phase 3B (`a903c3e`) on `feature/academic-enrollment`. Implement domain/schema, persistence/application, ADMIN HTTP APIs, then adversarial migration/concurrency/security verification. Preserve V1–V16; add V17. Student eligibility is obtained through the Student application contract, never through its persistence internals. No student self-service, waitlist, grades, tuition or scheduling is included.

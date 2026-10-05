@@ -1,5 +1,7 @@
 # Phase 5D — Read-only ADMIN Audit Viewing
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Approved on 2026-10-04: ADMIN reads retained audit history; no deletion or automated expiry. Implemented after Library 5C PASS; **5D review PASS** on 2026-10-04. See ../reviews/phase-5d-audit-viewing-review.md and ../api/audit-viewing.md.
 
 ## Actual historical schemas

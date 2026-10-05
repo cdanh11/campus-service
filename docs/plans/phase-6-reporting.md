@@ -1,5 +1,7 @@
 # Phase 6 — Reporting
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Scope approved by the user on 2026-10-04: ADMIN dashboard, Student VND debt, current accommodation, section enrollment, Event membership and open/overdue Library loan reports; bounded CSV export. No external paid integration, frontend or deployment.
 
 ## 6A — Dashboard and owner query contracts

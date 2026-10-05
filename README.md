@@ -1,6 +1,6 @@
 # Campus Service
 
-Campus Service is a production-oriented Intelligent Smart Campus Platform. It is being prepared as a Java backend that gives university operations a consistent, secure foundation rather than a collection of disconnected systems.
+Campus Service is the Java backend of a personal Campus Platform project. It provides secure, consistent campus operations through a modular monolith and is demonstrated locally with the separate Campus Client frontend.
 
 ## Problem Statement
 
@@ -8,11 +8,11 @@ University operations commonly span separate processes for identity, academic re
 
 ## Product Vision
 
-Build an extensible, maintainable platform that can support campus operations today and workflow and AI-assisted capabilities later, without introducing distributed-system complexity before it is justified.
+Build a maintainable campus platform with clear domain ownership, reliable business rules and a reproducible local demonstration backed by test evidence. Workflow/AI are optional future extensions, outside the approved completion roadmap.
 
 ## Implemented Scope
 
-The implemented backend covers platform/Identity, organization/people registries, Academic catalog/delivery/enrollment/audit, Dormitory inventory/current accommodation, Finance fee snapshots/manual receipts/reversal, Notification, Event membership, Library circulation, ADMIN audit viewing and Phase 6 Reporting/dashboard/CSV/operational observability. Each phase has separate review evidence. Frontend remains incomplete; production deployment is not a completion requirement for this local personal project.
+The implemented backend covers platform/Identity, organization/people registries, Academic catalog/delivery/enrollment/audit, Dormitory inventory/current accommodation, Finance fee snapshots/manual receipts/reversal, Notification, Event membership, Library circulation, ADMIN audit viewing and Phase 6 Reporting/dashboard/CSV/operational observability. Each phase has separate review evidence. The approved Phase 7 frontend is complete in [campus-client](https://github.com/cdanh11/campus-client). Phases 8 and 9 focus on end-to-end testing, local demo quality and portfolio handoff; production deployment is optional.
 
 ## Domain Roadmap
 
@@ -33,12 +33,7 @@ The implemented backend covers platform/Identity, organization/people registries
 - Audit
 - Reporting and Analytics
 
-**Advanced future domains**
-
-- Workflow Automation
-- AI Assistant
-- RAG
-- GraphRAG
+Workflow Automation and AI/RAG/GraphRAG are optional ideas after the current project is complete, not Phase 9 requirements.
 
 ## Technology Baseline
 
@@ -61,11 +56,13 @@ Campus Service will begin as a modular monolith: one deployable application with
 
 ## Status
 
-**Phase 6 — backend complete, review PASS.** Phase 5 is merged into main (38c7228). Phase 6 is delivered on feature/reporting: ADMIN eight-group dashboard, Student VND debt/current accommodation/section enrollment/Event membership/OPEN and overdue Library reports, typed owner contracts and bounded formula-safe CSV. Safe request correlation, structured completion events and in-process metrics are implemented; public Actuator remains health only. Final clean verify: **BUILD SUCCESS, 416 tests/74 suites, zero failures/errors/skips, 10m12s**, finished 2026-10-04T21:07:26+07:00; XML independently checked, 48 pools close cleanly. V1–V25 unchanged; no new schema/entity. See [Phase 6 plan](docs/plans/phase-6-reporting.md), [final review](docs/reviews/phase-6-final-review.md), [Reporting API](docs/api/reporting.md), [observability and measured limits](docs/runbooks/reporting-observability.md) and [Testing](docs/testing.md). Reports are current-state, not historical reconstruction; load evidence is local application/database evidence, not a production SLA. Phase 7 frontend requires its own approved stack and use cases.
+**Backend Phases 1–6 and the Phase 7 contract prerequisite are reviewed PASS.** Phase 6 is merged at 7d130f4; owner-qualified OpenAPI schemas are delivered at 795588e. The separate frontend Phase 7 and its documentation corrections are complete and merged. Historical Maven totals remain in [Testing](docs/testing.md) and the [contract review](docs/reviews/phase-7-api-contract-review.md).
+
+The approved remaining work is [Phase 8 testing/demo quality and Phase 9 portfolio handoff](docs/plans/phase-8-9-local-demo.md). These gates are not yet complete. Reports reflect current state, not historical reconstruction; manual receipts are not a payment gateway. Hosting and Workflow/AI are outside this completion scope.
 
 [Phase 3A catalog APIs](docs/plans/phase-3a-academic-catalog.md) remain available under `/api/v1/admin/academic/programs` and `/courses`, with normalized unique codes, credits 1–30 and paginated search. [Phase 3B delivery APIs](docs/plans/phase-3b-academic-offerings.md) manage terms, offerings and sections. [Phase 3C enrollment](docs/plans/phase-3c-academic-enrollment.md) supports withdrawal/re-enrollment with version and capacity protection. Academic Student self-service, waitlists, grading, automatic tuition calculation and schedules remain future scope.
 
-Administrator APIs require `ROLE_ADMIN`. Identity authentication, session revocation and admin management, plus organization/student/faculty-staff registries, remain available. Runtime administrator provisioning and production deployment stay outside this implementation scope.
+Administrator APIs require `ROLE_ADMIN`. Identity authentication, session revocation and admin management, plus organization/student/faculty-staff registries, remain available. On a new installation, create the first administrator with the [explicit CLI](docs/runbooks/initial-admin-provisioning.md). No public first-administrator endpoint is provided; production provisioning and deployment remain optional separate work.
 
 ## Planned Phases
 
@@ -75,10 +72,25 @@ Administrator APIs require `ROLE_ADMIN`. Identity authentication, session revoca
 4. Phase 3: Academic catalog (3A), terms/class sections (3B), enrollment (3C), and Academic hardening (3D).
 5. Phase 4: Dormitory inventory (4A1), accommodation assignment (4A2), Finance obligations (4B1), manual payments (4B2), operations hardening (4C).
 6. Phase 5: Notification (5A), Event (5B), Library (5C), ADMIN audit viewing (5D), regression closure (5E).
-7. Later: reporting; frontend; end-to-end release readiness; optional workflow/AI.
+7. Phase 6: Reporting/dashboard, bounded CSV and observability — complete.
+8. Phase 7: separate frontend, ADMIN surfaces and own inbox/Event portal — complete.
+9. Phase 8: local startup, API/UI acceptance and full regression — approved, not complete.
+10. Phase 9: demo walkthrough, screenshots/video, documentation/CV and final rehearsal — approved, not complete.
+
+## Run the local project
+
+Configure an ignored `.env` from `.env.example` with local database values and a real Base64 JWT key containing at least 32 random bytes. Keep passwords/keys private. In this repository, run:
+
+```powershell
+.\scripts\start-local.ps1
+```
+
+The script imports `.env` into its process, starts only the Compose PostgreSQL service with its existing volume, waits for readiness and runs Maven Spring Boot in the local profile. Normal startup does not create an ADMIN or delete data. For first-account setup, run it with `-BootstrapAdmin` to enter credentials privately. In a second terminal, run `npm run dev` from the sibling `campus-client` folder (after `npm ci` on first setup). Open http://localhost:3000; the backend uses port 8080 by default. See the [local demo guide](docs/runbooks/local-demo.md).
 
 ## Documentation Map
 
+- [Phase 8–9 scope](docs/plans/phase-8-9-local-demo.md): testing, demo and portfolio handoff.
+- [Local demo](docs/runbooks/local-demo.md): startup and checks.
 - [Architecture](docs/architecture.md): system boundaries and technical direction.
 - [Development](docs/development.md): local workflow and repository conventions.
 - [Testing](docs/testing.md): test strategy and evidence expectations.

@@ -8,7 +8,7 @@
 
 ## System Context
 
-Campus Service provides a backend platform for university operations. Implemented capabilities cover Identity, organization and people registries, Academic catalogs/delivery/enrollment, Dormitory inventory/accommodation and Finance fees/obligations/manual payments/reversal, in-app Notification, Event catalog/membership, Library circulation and ADMIN audit viewing. Per-slice verification and whole-phase scope are recorded in their reviews.
+Campus Service provides a backend platform for university operations. Implemented capabilities cover Identity, organization and people registries, Academic catalogs/delivery/enrollment, Dormitory inventory/accommodation and Finance fees/obligations/manual payments/reversal, in-app Notification, Event catalog/membership, Library circulation and ADMIN audit viewing. Reporting/dashboard/CSV is also implemented. The separate React Campus Client uses these owner APIs. Per-slice verification and whole-phase scope are recorded in their reviews. Phases 8–9 validate and demonstrate this existing architecture; they do not introduce Workflow/AI or distributed infrastructure.
 
 ```mermaid
 flowchart LR

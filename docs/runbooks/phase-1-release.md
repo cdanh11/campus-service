@@ -1,5 +1,7 @@
 # Phase 1 Release Runbook
 
+> Optional production reference from Phase 1. This is not the Phase 8–9 local-demo exit gate; see the [current plan](../plans/phase-8-9-local-demo.md).
+
 ## Purpose
 
 This runbook defines the repository-level release gate for the Phase 1 Campus Service application. It produces and verifies one deployable container image. Selecting a hosting provider, creating production infrastructure, supplying secrets, and provisioning the first administrator remain environment-owner responsibilities.

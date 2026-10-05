@@ -1,5 +1,7 @@
 # Phase 5 — Supporting Services Closure Review
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Status: **PASS for 5E and the approved whole Phase 5 backend scope**, 2026-10-04. All four selected modules have separate slice PASS; final requirement/source/schema/security/query/docs/Git review completed with no unresolved blocker/major. User PR/merge remains pending.
 
 Merged Phase 4 baseline: main 4d305db (PR #14). Branch feature/supporting-services, 5D PASS committed/pushed at 17f60fd. This review closes the approved local backend scope, not frontend/deployment/production provisioning or measured exhaustive coverage. See [5E gate](../plans/phase-5e-closure.md). Final closure changes documentation only after the successful full build; no subsequent source/test/schema change requires another run.

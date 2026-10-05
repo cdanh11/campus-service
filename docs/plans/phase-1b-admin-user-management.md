@@ -1,5 +1,7 @@
 # Phase 1B Slice 3: Administrator User Management
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 ## Status
 
 Approved on 2026-09-22. Implementation may begin only from this accepted version. V1 through V4 are immutable.

@@ -1,5 +1,7 @@
 # Phase 4B1 — Finance Obligations Review
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Status: PASS on 2026-10-04 for Phase 4B1. Finance payments and Phase 4C remain incomplete.
 
 Base 8182597 on feature/finance-obligations, dependent on the reviewed Dormitory feature branch; origin/main remains Phase 3D. V1–V20 unchanged, V21 only.

@@ -1,5 +1,9 @@
 # Testing Strategy
 
+## Current completion gates
+
+Frontend Phase 7 is complete in campus-client. The remaining [Phases 8–9](plans/phase-8-9-local-demo.md) require a traceable API/UI acceptance matrix, real-backend regression and demo rehearsal. Startup/health checks alone do not establish business acceptance. Keep mocked, real-browser and full Maven results distinct; retain actual test counts only after the corresponding command finishes. Historical evidence below remains tied to its checkpoint.
+
 ## Phase 7 OpenAPI contract prerequisite
 
 Full `./mvnw.cmd clean verify` on 2026-10-04: **BUILD SUCCESS, 417 tests/75 suites, zero failures/errors/skips, 10m35s**, finished 23:12:25+07:00. XML totals independently counted; Boot jar packaged and 49 pools close normally. The new production-document regression checks 104 DTO schema references against owner record signatures, including nested collections and generic pages. Base springdoc.use-fqn corrects duplicate nested DTO names; V1–V25, JSON fields and authorization remain unchanged. See [contract review](reviews/phase-7-api-contract-review.md). Earlier totals are historical checkpoints.

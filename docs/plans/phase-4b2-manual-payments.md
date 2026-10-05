@@ -1,5 +1,7 @@
 # Phase 4B2 — Manual Payments and Reversal
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Base: reviewed/pushed 4B1 ce5abce. Branch feature/finance-payments depends on feature/finance-obligations and Dormitory until their user PRs merge. V1–V21 immutable; V22 only. No merge/deploy/repair/deletion by agent.
 
 ## Approved business rules and technical contract

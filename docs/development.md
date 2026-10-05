@@ -2,7 +2,7 @@
 
 ## Current State
 
-Phase 1–4 are merged (Phase 4 PR #14). Phase 5 Notification/Event/Library/ADMIN audit viewing and whole-phase backend closure are reviewed PASS on feature/supporting-services; merged into main (38c7228). Phase 6 Reporting/dashboard/CSV/observability is reviewed PASS on feature/reporting; see phase-6-reporting.md and phase-6-final-review.md. Final Phase 6 clean verify: 416 tests/74 suites, zero failures/errors/skips, 10m12s, 2026-10-04T21:07:26+07:00. Final Phase 5 clean verify 393 tests/67 suites, zero failures/errors/skips, 7m36s on 2026-10-04. Follow phase-5-supporting-services.md and phase-5-final-review.md. All approved Phase 6 gates are PASS; Phase 7 requires separate scope/stack approval. The repository contains JWT authentication, Spring Security authorization, Identity persistence, and administrator user-management endpoints backed by PostgreSQL and Flyway. Phase 1 release readiness adds CI, a production profile, health probes, a container build, and a release runbook. Selecting production infrastructure and running the release remain environment-owner responsibilities.
+Backend Phases 1–6 and the Phase 7 OpenAPI contract prerequisite are complete and reviewed PASS; see the corresponding plans/reviews and [Testing](testing.md) for historical build evidence. Frontend Phase 7 is complete in the separate campus-client repository. Remaining Phases 8–9 follow the approved [local testing/demo plan](plans/phase-8-9-local-demo.md); no production infrastructure or Workflow/AI is required. Optional production configuration/runbooks remain reference material.
 
 ## Prerequisites
 
@@ -19,9 +19,9 @@ The bootstrap was verified with Java 21.0.12.1 and Maven Wrapper 3.9.14 on Windo
 
 ## Environment Variables
 
-Use `.env.example` as a list of safe local-development variable names. Its values are placeholders, not credentials. A future local `.env` must remain untracked and must not be copied into logs, issue descriptions, commits, or documentation.
+Use `.env.example` as a list of safe local-development variable names. Its values are placeholders, not credentials. A local `.env` must remain untracked and must not be copied into logs, issue descriptions, commits, or documentation.
 
-Expected variables cover the application profile, server port, PostgreSQL connection, JWT settings, and optional future Redis settings. Redis is not an initial requirement.
+Local variables cover the application profile, server port, PostgreSQL connection and JWT settings. Redis is not required; optional placeholder names do not imply a running dependency.
 
 ## Local Workflow
 
@@ -34,7 +34,7 @@ Expected variables cover the application profile, server port, PostgreSQL connec
    ```
 
 4. For local PostgreSQL, configure the values from `.env.example` in an untracked `.env`. Docker Compose reads this file, but Spring Boot does not.
-5. Start local PostgreSQL with `docker compose --env-file .env up -d postgres`, then configure the same variables in the IDE or shell before running the application.
+5. Run `.\scripts\start-local.ps1` to import the file into the process, start/wait for Compose PostgreSQL and run the backend. The script requires the local profile and a valid Base64 JWT key. Use `-SkipDatabase` only when the configured PostgreSQL is already running. See [local demo](runbooks/local-demo.md).
 6. Review migrations, logs, and the diff before opening a change for review.
 
 The Maven Wrapper command above is the required verification command on Windows. Testcontainers starts an isolated PostgreSQL instance; Docker Compose and a long-running local application are optional local-development workflows.

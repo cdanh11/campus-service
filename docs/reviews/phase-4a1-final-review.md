@@ -1,5 +1,7 @@
 # Phase 4A1 — Dormitory Inventory Review
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Status: PASS on 2026-10-04 for the approved inventory slice. No unresolved blocker/major finding remains in this review. Phase 4 as a whole is still in progress.
 
 Base: merged Phase 3D at e64cfc7, branch feature/dormitory-foundation. Scope is inventory only; Phase 4A2 allocation and Phase 4B finance are not implemented here.

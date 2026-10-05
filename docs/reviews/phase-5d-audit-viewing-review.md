@@ -1,5 +1,7 @@
 # Phase 5D Audit Viewing Review
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Status: PASS on 2026-10-04. No unresolved blocker/major within approved 5D scope. Base 4779b50, branch feature/supporting-services. [API](../api/audit-viewing.md), [ADR 0014](../decisions/0014-owner-scoped-audit-viewing.md). Whole Phase 5 closure is recorded separately in phase-5-final-review.md.
 
 | Requirement | Verified evidence |

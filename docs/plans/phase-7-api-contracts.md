@@ -1,5 +1,7 @@
 # Phase 7 prerequisite — reliable OpenAPI owner schemas
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Frontend Phase 7 is approved in the separate campus-client repository. Its 7A foundation/authentication gate passed. Before 7B1 typed business forms, production OpenAPI must represent the owner DTOs accurately.
 
 ## Finding and scope

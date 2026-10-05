@@ -1,5 +1,7 @@
 # Phase 7 prerequisite — OpenAPI contract review
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Result: **PASS**. Date: 2026-10-04. Branch: feature/api-contracts.
 
 Production OpenAPI previously merged unrelated nested DTOs sharing Request/UpdateRequest/Response/PageResponse names. The red regression reproduced Academic Program update with Student fields. Base `springdoc.use-fqn: true` now gives implicit schemas owner-qualified names. Explicit approved @Schema names stay unchanged. JSON fields, routes, HTTP behavior, authorization, domain code, entities and V1–V25 are unchanged.

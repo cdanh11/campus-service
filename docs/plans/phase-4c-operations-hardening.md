@@ -1,5 +1,7 @@
 # Phase 4C — Operations Hardening and Phase Closure
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Base 95e4efe, reviewed Phase 4B2. Branch feature/campus-operations-hardening depends on reviewed Dormitory/Finance feature history; origin/main remains Phase 3D unless the user merges. Do not merge, deploy, repair Flyway, delete databases/volumes or edit V1–V22. Keep local roadmap untracked.
 
 ## Inspect → implement → verify → review

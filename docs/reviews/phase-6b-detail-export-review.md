@@ -1,5 +1,7 @@
 # Phase 6B — Detail and CSV review
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Result: **PASS**, 2026-10-04, for 6B only. Whole Phase 6 closure remains pending.
 
 - Five typed owner projections: Student OPEN-charge debt, current accommodation, retained section enrollment, retained Event membership, OPEN Library loans. Each adapter's SQL joins only owner tables; foreign references stay UUIDs.
