@@ -21,7 +21,7 @@ public class AdminDormitoryInventoryController {
     public AdminDormitoryInventoryController(DormitoryInventoryService service) { this.service = service; }
 
     @PostMapping("/{resource:buildings|rooms|beds}")
-    @Operation(summary = "Create Dormitory inventory (ADMIN)", description = "ACTIVE initially; rooms/beds require immutable parentId and active ancestors.")
+    @Operation(summary = "Create Dormitory inventory (administrative permission)", description = "ACTIVE initially; rooms/beds require immutable parentId and active ancestors.")
     public ResponseEntity<InventoryItem> create(Authentication authentication, @PathVariable String resource, @Valid @RequestBody CreateRequest body) {
         var value = service.create((UUID) authentication.getPrincipal(), kind(resource), body.parentId(), body.code(), body.name());
         return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(value.id()).toUri()).body(value);
@@ -31,7 +31,7 @@ public class AdminDormitoryInventoryController {
     public InventoryItem get(@PathVariable String resource, @PathVariable UUID id) { return service.get(kind(resource), id); }
 
     @PutMapping("/{resource:buildings|rooms|beds}/{id}")
-    @Operation(summary = "Update Dormitory inventory (ADMIN)", description = "expectedVersion required; parents immutable; deactivate active children before their parent.")
+    @Operation(summary = "Update Dormitory inventory (administrative permission)", description = "expectedVersion required; parents immutable; deactivate active children before their parent.")
     public InventoryItem update(Authentication authentication, @PathVariable String resource, @PathVariable UUID id, @Valid @RequestBody UpdateRequest body) {
         return service.update((UUID) authentication.getPrincipal(), kind(resource), id, body.code(), body.name(), body.status(), body.expectedVersion());
     }

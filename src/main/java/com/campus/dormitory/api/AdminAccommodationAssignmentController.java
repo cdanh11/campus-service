@@ -18,13 +18,13 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 public class AdminAccommodationAssignmentController {
     private final AccommodationAssignmentService service;
     public AdminAccommodationAssignmentController(AccommodationAssignmentService service) { this.service = service; }
-    @PostMapping @Operation(summary = "Assign a current bed (ADMIN)")
+    @PostMapping @Operation(summary = "Assign a current bed (administrative permission)")
     public ResponseEntity<AccommodationAssignment> create(Authentication authentication, @Valid @RequestBody CreateRequest body) {
         var value = service.create((UUID) authentication.getPrincipal(), body.studentId(), body.bedId());
         return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(value.id()).toUri()).body(value);
     }
     @GetMapping("/{id}") public AccommodationAssignment get(@PathVariable UUID id) { return service.get(id); }
-    @PutMapping("/{id}") @Operation(summary = "Release accommodation (ADMIN)", description = "RELEASED is terminal; expectedVersion required; references immutable.")
+    @PutMapping("/{id}") @Operation(summary = "Release accommodation (administrative permission)", description = "RELEASED is terminal; expectedVersion required; references immutable.")
     public AccommodationAssignment release(Authentication authentication, @PathVariable UUID id, @Valid @RequestBody ReleaseRequest body) {
         if (body.status() != AssignmentStatus.RELEASED) throw new AccommodationAssignmentService.InvalidAssignmentStateException();
         return service.release((UUID) authentication.getPrincipal(), id, body.expectedVersion());

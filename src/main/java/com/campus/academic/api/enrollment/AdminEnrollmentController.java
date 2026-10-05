@@ -25,7 +25,7 @@ public class AdminEnrollmentController {
     public AdminEnrollmentController(EnrollmentService service, AcademicAdministrationService administration) { this.service = service; this.administration = administration; }
 
     @PostMapping
-    @Operation(summary = "Enroll an active student (ADMIN)", description = "Requires open section/offering, active term and available capacity. Duplicate membership returns 409; use PUT to re-enroll withdrawn membership.")
+    @Operation(summary = "Enroll an active student (administrative permission)", description = "Requires open section/offering, active term and available capacity. Duplicate membership returns 409; use PUT to re-enroll withdrawn membership.")
     public ResponseEntity<Enrollment> create(Authentication authentication, @Valid @RequestBody CreateRequest request) {
         var value = administration.create((UUID) authentication.getPrincipal(), request.studentId(), request.sectionId());
         return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(value.id()).toUri()).body(value);
@@ -35,13 +35,13 @@ public class AdminEnrollmentController {
     public Enrollment get(@PathVariable UUID id) { return service.get(id); }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Withdraw or re-enroll (ADMIN)", description = "Requires expectedVersion. Withdrawal releases capacity and is allowed after closure. Re-enrollment rechecks eligibility and capacity. Identifiers cannot change; repeating the current status returns 409.")
+    @Operation(summary = "Withdraw or re-enroll (administrative permission)", description = "Requires expectedVersion. Withdrawal releases capacity and is allowed after closure. Re-enrollment rechecks eligibility and capacity. Identifiers cannot change; repeating the current status returns 409.")
     public Enrollment update(Authentication authentication, @PathVariable UUID id, @Valid @RequestBody UpdateRequest request) {
         return administration.update((UUID) authentication.getPrincipal(), id, request.status(), request.expectedVersion());
     }
 
     @GetMapping
-    @Operation(summary = "Query enrollments (ADMIN)", description = "Page >= 0, size 1–100; studentId/sectionId/status filters; status/createdAt/updatedAt sort with stable ID tie-breaker.")
+    @Operation(summary = "Query enrollments (administrative permission)", description = "Page >= 0, size 1–100; studentId/sectionId/status filters; status/createdAt/updatedAt sort with stable ID tie-breaker.")
     public PageResponse<Enrollment> list(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size,
                                          @RequestParam(required = false) UUID studentId, @RequestParam(required = false) UUID sectionId,
                                          @RequestParam(required = false) EnrollmentStatus status,

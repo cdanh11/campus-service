@@ -27,7 +27,7 @@ public class AdminAcademicCourseController {
     }
 
     @PostMapping
-    @Operation(summary = "Create an academic course (ADMIN)")
+    @Operation(summary = "Create an academic course (administrative permission)")
     public ResponseEntity<Response> create(Authentication authentication, @Valid @RequestBody Request request) {
         var value = administration.createCourse((UUID) authentication.getPrincipal(), request.code(), request.title(), request.credits(), request.organizationUnitId(), request.status());
         return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
@@ -35,7 +35,7 @@ public class AdminAcademicCourseController {
     }
 
     @GetMapping
-    @Operation(summary = "Search academic courses (ADMIN)", description = "Zero-based page, size 1–100 (default 20), q up to 100 characters matched literally against code/title, optional ACTIVE/INACTIVE status; sort field,direction with id tie-breaker.")
+    @Operation(summary = "Search academic courses (administrative permission)", description = "Zero-based page, size 1–100 (default 20), q up to 100 characters matched literally against code/title, optional ACTIVE/INACTIVE status; sort field,direction with id tie-breaker.")
     public PageResponse list(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size,
                              @RequestParam(required = false) String q, @RequestParam(required = false) String status,
                              @RequestParam(defaultValue = "code,asc") String sort) {
@@ -52,7 +52,7 @@ public class AdminAcademicCourseController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update an academic course (ADMIN)", description = "Requires expectedVersion from the last read; stale versions and duplicate codes return 409.")
+    @Operation(summary = "Update an academic course (administrative permission)", description = "Requires expectedVersion from the last read; stale versions and duplicate codes return 409.")
     public Response update(Authentication authentication, @PathVariable UUID id, @Valid @RequestBody UpdateRequest request) {
         return out(administration.updateCourse((UUID) authentication.getPrincipal(), id, request.code(), request.title(), request.credits(), request.organizationUnitId(),
                 request.status(), request.expectedVersion()));

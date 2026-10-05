@@ -62,7 +62,7 @@ The approved remaining work is [Phase 8 testing/demo quality and Phase 9 portfol
 
 [Phase 3A catalog APIs](docs/plans/phase-3a-academic-catalog.md) remain available under `/api/v1/admin/academic/programs` and `/courses`, with normalized unique codes, credits 1–30 and paginated search. [Phase 3B delivery APIs](docs/plans/phase-3b-academic-offerings.md) manage terms, offerings and sections. [Phase 3C enrollment](docs/plans/phase-3c-academic-enrollment.md) supports withdrawal/re-enrollment with version and capacity protection. Academic Student self-service, waitlists, grading, automatic tuition calculation and schedules remain future scope.
 
-Administrator APIs require `ROLE_ADMIN`. Identity authentication, session revocation and admin management, plus organization/student/faculty-staff registries, remain available. On a new installation, create the first administrator with the [explicit CLI](docs/runbooks/initial-admin-provisioning.md). No public first-administrator endpoint is provided; production provisioning and deployment remain optional separate work.
+Administrator APIs use the [functional permission matrix](docs/permissions.md): global ADMIN manages accounts/roles; scoped operators manage their own domain with explicit read references. Phase 8A2 verification is in progress. Identity authentication, session revocation and admin management, plus organization/student/faculty-staff registries, remain available. On a new installation, create the first administrator with the [explicit CLI](docs/runbooks/initial-admin-provisioning.md). No public first-administrator endpoint is provided; production provisioning and deployment remain optional separate work.
 
 ## Planned Phases
 

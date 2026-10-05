@@ -19,13 +19,13 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 public class AdminManualPaymentController {
     private final ManualPaymentService service;
     public AdminManualPaymentController(ManualPaymentService service) { this.service=service; }
-    @PostMapping("/payments") @Operation(summary="Record a manual VND payment (ADMIN)")
+    @PostMapping("/payments") @Operation(summary="Record a manual VND payment (administrative permission)")
     public ResponseEntity<ManualPayment> record(Authentication authentication,@Valid @RequestBody PaymentCreate body) {
         var value=service.record((UUID)authentication.getPrincipal(),body.receiptNumber(),body.chargeId(),body.amount(),body.expectedChargeVersion());
         return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(value.id()).toUri()).body(value);
     }
     @GetMapping("/payments/{id}") public ManualPayment get(@PathVariable UUID id) { return service.get(id); }
-    @PutMapping("/payments/{id}") @Operation(summary="Reverse an entire receipt (ADMIN)",description="REVERSED is terminal; original amount/references remain immutable.")
+    @PutMapping("/payments/{id}") @Operation(summary="Reverse an entire receipt (administrative permission)",description="REVERSED is terminal; original amount/references remain immutable.")
     public ManualPayment reverse(Authentication authentication,@PathVariable UUID id,@Valid @RequestBody PaymentReverse body) {
         if(body.status()!=PaymentStatus.REVERSED) throw new FinanceObligationService.InvalidStateException();
         return service.reverse((UUID)authentication.getPrincipal(),id,body.expectedVersion(),body.expectedChargeVersion(),body.reason());

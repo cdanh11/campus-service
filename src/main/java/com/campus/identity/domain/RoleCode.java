@@ -2,5 +2,16 @@ package com.campus.identity.domain;
 
 public enum RoleCode {
     USER,
-    ADMIN
+    ADMIN,
+    ORGANIZATION_ADMIN,
+    STUDENT_ADMIN,
+    PERSONNEL_ADMIN,
+    ACADEMIC_ADMIN,
+    DORMITORY_ADMIN,
+    FINANCE_ADMIN,
+    NOTIFICATION_ADMIN,
+    EVENT_ADMIN,
+    LIBRARY_ADMIN,
+    AUDIT_VIEWER,
+    REPORTING_VIEWER
 }

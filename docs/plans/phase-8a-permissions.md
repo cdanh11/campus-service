@@ -17,10 +17,10 @@ ADMIN is the global administrator and the only role allowed to create accounts, 
 | NOTIFICATION_ADMIN | Templates/drafts/publication | Identity account references |
 | EVENT_ADMIN | Event catalog, membership and attendance | Students |
 | LIBRARY_ADMIN | Titles/copies/borrowing/return | Students |
-| AUDIT_VIEWER | Read selected-source audit | Read-only owner resource/actor labels needed by the audit interface |
-| REPORTING_VIEWER | Dashboard/reports/CSV | Read-only owner references needed by report filters/labels |
+| AUDIT_VIEWER | Read selected-source audit | None; the existing audit UI uses UUID inputs |
+| REPORTING_VIEWER | Dashboard/reports/CSV | Students; section, bed, copy and Event list/UUID detail |
 
-Existing reference APIs return owner DTOs; granted GET access is explicit, not a claim of field-level redaction. Non-GET calls to reference owners are denied. Audit/report viewers cannot mutate any owner or manage Identity accounts. Unlisted ADMIN paths remain global-ADMIN-only. Personal ownership rules stay unchanged.
+Existing reference APIs return owner DTOs; granted GET access is explicit, not a claim of field-level redaction. Methods other than GET/HEAD on reference owners are denied. Audit/report viewers cannot mutate any owner or manage Identity accounts. Unlisted ADMIN paths remain global-ADMIN-only. Personal ownership rules stay unchanged.
 
 ## Implementation and verification
 
@@ -34,4 +34,4 @@ Existing reference APIs return owner DTOs; granted GET access is explicit, not a
 
 Permissions are function-based campus roles for currently implemented APIs. Per-organization row scoping, confidential-field redaction, multi-level financial approvals, event budgets/partners and delegation periods have no approved domain model yet. These cannot be advertised as implemented. No public registration or automatic administrator provisioning is added.
 
-Status: approved scope, not implemented or PASS yet.
+Status: implementation in progress. Focused backend permissions and exact V25→V26 validation passed (18 tests). Client verification and whole-backend regression are still required; see [8A2 review](../reviews/phase-8a2-permissions-review.md).

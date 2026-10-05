@@ -2,6 +2,8 @@
 
 ## Current completion gates
 
+Phase 8A2 functional permission checks and exact V25→V26 upgrade evidence are recorded in the [permissions review](reviews/phase-8a2-permissions-review.md). Whole Phase 8 is incomplete. Latest backend clean verification on 2026-10-05: BUILD SUCCESS, 440 tests / 78 suites, zero failures/errors/skips, 25m27s, finished 22:56:53 +07; independently checked against Surefire XML. Includes Phase 1–6 regression, administrator bootstrap and functional permission/V25→V26 upgrade coverage. Frontend and demo acceptance gates remain unresolved, so this is not whole Phase 8 PASS. Older totals below retain their historical checkpoints.
+
 Frontend Phase 7 is complete in campus-client. The remaining [Phases 8–9](plans/phase-8-9-local-demo.md) require a traceable API/UI acceptance matrix, real-backend regression and demo rehearsal. Startup/health checks alone do not establish business acceptance. Keep mocked, real-browser and full Maven results distinct; retain actual test counts only after the corresponding command finishes. Historical evidence below remains tied to its checkpoint.
 
 ## Phase 7 OpenAPI contract prerequisite

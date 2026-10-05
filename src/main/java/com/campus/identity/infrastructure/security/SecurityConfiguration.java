@@ -13,6 +13,7 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 public class SecurityConfiguration {
@@ -29,8 +30,17 @@ public class SecurityConfiguration {
                 .formLogin(form -> form.disable()).httpBasic(basic -> basic.disable())
                 .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint((request, response, exception) -> errors.write(request, response, 401, "MISSING_ACCESS_TOKEN", "Access token is required"))
                         .accessDeniedHandler(denied))
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/actuator/health", "/actuator/health/**", "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/logout", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN").anyRequest().authenticated())
+                .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers("/actuator/health", "/actuator/health/**", "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/logout", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
+                    for (var rule : AdministrativeAccessPolicy.rules()) {
+                        String[] paths = rule.paths().toArray(String[]::new);
+                        String[] readers = rule.readers().toArray(String[]::new);
+                        auth.requestMatchers(HttpMethod.GET, paths).hasAnyRole(readers);
+                        auth.requestMatchers(HttpMethod.HEAD, paths).hasAnyRole(readers);
+                        auth.requestMatchers(paths).hasAnyRole(rule.writers().toArray(String[]::new));
+                    }
+                    auth.requestMatchers("/api/v1/admin/**").hasRole("ADMIN").anyRequest().authenticated();
+                })
                 .addFilterBefore(new OriginProtectionFilter(tokenService.properties(), errors), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new JwtAuthenticationFilter(tokenService, errors), UsernamePasswordAuthenticationFilter.class)
                 .build();
