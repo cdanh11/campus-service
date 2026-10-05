@@ -2,6 +2,8 @@
 
 This guide runs the two existing repositories locally. The [Phase 8–9 plan](../plans/phase-8-9-local-demo.md) defines the remaining test/demo gates; running the servers is only the startup step.
 
+For a new demo machine, use [the Docker route](docker-demo.md): `scripts/start-demo.ps1 -Seed` builds both repositories without host Java/Node, creates private per-installation accounts and loads the substantial fixtures. The native development route below remains available.
+
 ## Prerequisites
 
 - Sibling campus-service and campus-client checkouts, Java 21, Node >=24.13 within major 24, npm, Docker Desktop running.

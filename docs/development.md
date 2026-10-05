@@ -43,6 +43,8 @@ Application integration tests pair `@SpringBootTest` with test-only `@PostgresAp
 
 ## Production Profile And Container Build
 
+For the separate local demonstration, see [Docker demo](runbooks/docker-demo.md). `scripts/start-demo.ps1 -Seed` builds both sibling repositories, retains a dedicated volume and generates private per-installation credentials; it does not require host Java/Node. This local profile/HTTP setup is separate from the optional production profile below.
+
 Use `SPRING_PROFILES_ACTIVE=production` only when the deployment platform supplies the PostgreSQL connection values, `JWT_SECRET`, and exact `ALLOWED_ORIGINS`. The production profile has no local datasource fallback, keeps Hibernate at `validate`, enables Flyway, and forces Secure refresh cookies.
 
 Build the neutral deployment artifact with `docker build --tag campus-service:<version> .`. The image runs the Spring Boot jar as a non-root user. Complete release steps, deployment checks, and recovery guidance are in [Phase 1 Release](runbooks/phase-1-release.md).

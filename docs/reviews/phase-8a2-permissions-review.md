@@ -39,4 +39,4 @@ Latest frontend verification after contract regeneration: contract/lint/build an
 
 Backend functional implementation is committed at 3420a28. User configuration files and the local roadmap are excluded. No released migration, database or volume was repaired/deleted. Native demo accounts were created through the authorized ADMIN API; no public provisioning endpoint was added.
 
-Portable Docker setup, approximately 200 Students and the wider demo inventory, acceptance matrix and Phase 8 closure remain separate unfinished gates.
+At this 8A2 checkpoint, portable Docker setup, approximately 200 Students and the wider demo inventory, acceptance matrix and Phase 8 closure were separate unfinished gates. Docker/data subsequently passed [8A3 review](phase-8a3-demo-review.md); 8B/8C remain incomplete.

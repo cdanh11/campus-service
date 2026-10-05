@@ -79,6 +79,16 @@ Administrator APIs use the [functional permission matrix](docs/permissions.md): 
 
 ## Run the local project
 
+For the portable demo, clone the compatible `campus-client` beside this repository, start Docker Desktop and run in PowerShell 7:
+
+```powershell
+.\scripts\start-demo.ps1 -Seed
+```
+
+Open http://localhost:3300. The script builds both applications without host Java/Node, uses a separate persistent database, provisions accounts explicitly and loads substantial fictional data through owner APIs. Per-installation login credentials stay in ignored `.demo/docker/accounts.json`. [Docker demo setup](docs/runbooks/docker-demo.md) covers restart, safe resume and native development. This slice is [reviewed PASS](docs/reviews/phase-8a3-demo-review.md); whole Phase 8 acceptance/regression remains incomplete. The implementation is on `feature/local-demo-test-plan` until merged.
+
+For native Java/Node development:
+
 Configure an ignored `.env` from `.env.example` with local database values and a real Base64 JWT key containing at least 32 random bytes. Keep passwords/keys private. In this repository, run:
 
 ```powershell
