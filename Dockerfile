@@ -11,6 +11,7 @@ FROM eclipse-temurin:21-jre-jammy
 RUN groupadd --system campus && useradd --system --gid campus --home-dir /app campus
 WORKDIR /app
 COPY --from=build --chown=campus:campus /workspace/target/campus-service-*.jar app.jar
+COPY --chown=campus:campus scripts/docker-backend-health.sh /app/health.sh
 USER campus
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
