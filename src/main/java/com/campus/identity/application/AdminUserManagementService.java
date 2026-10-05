@@ -68,7 +68,7 @@ public class AdminUserManagementService {
         try { return normalized.stream().map(RoleCode::valueOf).map(code -> roles.findByCode(code).orElseThrow(UnknownRoleException::new)).collect(java.util.stream.Collectors.toUnmodifiableSet()); }
         catch (IllegalArgumentException exception) { throw new UnknownRoleException(); }
     }
-    private static String validPassword(String value) {
+    static String validPassword(String value) {
         if (value == null || value.isBlank() || value.codePointCount(0, value.length()) < 12 || value.codePointCount(0, value.length()) > 64 || value.getBytes(StandardCharsets.UTF_8).length > 72) throw new RequestValidationException();
         return value;
     }

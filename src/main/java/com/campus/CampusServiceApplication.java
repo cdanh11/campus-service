@@ -10,6 +10,10 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 public class CampusServiceApplication {
 
     public static void main(String[] args) {
+        if (java.util.Arrays.asList(args).contains("--bootstrap-admin")) {
+            com.campus.identity.infrastructure.bootstrap.AdministratorBootstrapCommand.run(args);
+            return;
+        }
         SpringApplication.run(CampusServiceApplication.class, args);
     }
 }
