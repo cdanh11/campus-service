@@ -198,6 +198,22 @@ class AdminUserControllerIntegrationTest {
     }
 
     @Test
+    void rejectsCoercedExpectedVersionsWithoutChangingTheUserOrAudit() throws Exception {
+        UserAccount admin = user("version-json-admin@campus.example", RoleCode.ADMIN);
+        UserAccount createdTarget = user("version-json-target@campus.example", RoleCode.USER);
+        UserAccount target = users.findById(createdTarget.id()).orElseThrow();
+        String token = tokens.accessToken(admin);
+        for (String version : List.of(target.rowVersion() + ".9", "\"" + target.rowVersion() + "\"", "1e0")) {
+            mockMvc.perform(patch("/api/v1/admin/users/" + target.id() + "/status")
+                            .header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"status\":\"SUSPENDED\",\"expectedVersion\":" + version + "}"))
+                    .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("MALFORMED_REQUEST"));
+            assertUnchanged(target.id(), target);
+            assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM identity_admin_audit_events WHERE target_user_id=?", Long.class, target.id())).isZero();
+        }
+    }
+
+    @Test
     void protectsUnknownRoutesAndRejectsInvalidBearerTokens() throws Exception {
         mockMvc.perform(get("/api/v1/not-registered"))
                 .andExpect(status().isUnauthorized()).andExpect(jsonPath("$.code").value("MISSING_ACCESS_TOKEN"));

@@ -86,6 +86,8 @@ The implemented modules follow API, application, domain and infrastructure packa
 
 ## Security Direction
 
+Integer JSON request fields require integer tokens: fractional/scientific numbers and numeric strings are rejected before use-case execution. This preserves optimistic version preconditions and integer credit/capacity values instead of allowing Jackson to truncate or coerce them. Decimal money retains BigDecimal parsing and owner validation; query-string pagination is converted by MVC separately. Serialization, DTO schemas and int64 version precision are unchanged.
+
 Spring Security with JWT-based authentication is implemented for Identity. The HTTP boundary enforces `ROLE_ADMIN` for `/api/v1/admin/**`; administrative application entry points receive the validated JWT subject UUID as the mutation actor. Internal provisioning/fixture entry points are trusted server-side calls, not client interfaces. Token signing, expiry, refresh, and revocation follow accepted ADR 0003; administrator management follows ADR 0004.
 
 ## Database Ownership
