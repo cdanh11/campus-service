@@ -28,4 +28,13 @@ class OrganizationUnitTest {
     void canonicalizesCodes() {
         assertThat(OrganizationUnit.create(UUID.randomUUID(), " eng ", "Engineering", OrganizationUnitType.FACULTY, OrganizationUnitStatus.ACTIVE, Instant.now()).code()).isEqualTo("ENG");
     }
+
+    @Test
+    void boundsTheCanonicalCodeAfterUnicodeUppercaseExpansion() {
+        assertThat(OrganizationUnit.create(UUID.randomUUID(), "ß".repeat(16), "Engineering", OrganizationUnitType.FACULTY,
+                OrganizationUnitStatus.ACTIVE, Instant.now()).code()).isEqualTo("SS".repeat(16));
+        assertThatThrownBy(() -> OrganizationUnit.create(UUID.randomUUID(), "ß".repeat(17), "Engineering",
+                OrganizationUnitType.FACULTY, OrganizationUnitStatus.ACTIVE, Instant.now()))
+                .isInstanceOf(OrganizationUnit.InvalidOrganizationUnitException.class);
+    }
 }
