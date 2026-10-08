@@ -2,7 +2,7 @@
 
 ## Current State
 
-Backend Phases 1–6 and the Phase 7 OpenAPI contract prerequisite are complete and reviewed PASS; see the corresponding plans/reviews and [Testing](testing.md) for historical build evidence. Frontend Phase 7 is complete in the separate campus-client repository. Remaining Phases 8–9 follow the approved [local testing/demo plan](plans/phase-8-9-local-demo.md); no production infrastructure or Workflow/AI is required. Optional production configuration/runbooks remain reference material.
+Backend Phases 1–6 and the Phase 7 OpenAPI contract prerequisite are complete and reviewed PASS; see the corresponding plans/reviews and [Testing](testing.md) for historical build evidence. Frontend Phase 7 is complete in the separate campus-client repository. Phase 8 is [reviewed PASS locally](reviews/phase-8-acceptance-review.md). Phase 9 portfolio handoff follows the approved [local testing/demo plan](plans/phase-8-9-local-demo.md); no production infrastructure or Workflow/AI is required. Optional production configuration/runbooks remain reference material.
 
 ## Prerequisites
 
@@ -69,6 +69,6 @@ V1–V18 are the merged baseline and must not be edited. Delivered Phase 4A1 add
 
 Campus Service supports native Windows development and WSL-based development. WSL is optional. Use paths, line endings, Docker access, and shell commands consistently within the chosen environment. If Maven or Docker runs in WSL, avoid mixing its generated files with tools configured against a different Windows path unless that workflow has been verified.
 
-Delivered Phase 5 adds V23 (Notification), V24 (Event) and V25 (Library). Preserve V1–V25 for subsequent slices. Historical V24 validation freezes its original 32 entity packages; exact V25 validates 36; future exact upgrades must validate the full new entity set against that same upgraded database/schema with Flyway disabled, never repair migration metadata.
+Delivered Phase 5 adds V23 (Notification), V24 (Event) and V25 (Library). Preserve V1–V25 for subsequent slices. Phase 8A2 adds V26 functional roles and validates all 36 production entities on the exact V25→V26 upgrade; V1–V26 now remain immutable. Historical V24 validation freezes its original 32 entity packages; exact V25 validates 36; future exact upgrades must validate the full new entity set against that same upgraded database/schema with Flyway disabled, never repair migration metadata.
 
 Audit viewing adds owner query ports without a migration/entity. Before future entities are added, freeze historical V25 scanning to its original 36 production entities. Use feature/<function-or-phase> branches and per-slice PASS/FAIL reviews; commit by function only after PASS and authorization. Keep project-roadmap.md local/untracked. Frontend, deployment and next-phase features are not part of Phase 5 backend completion.

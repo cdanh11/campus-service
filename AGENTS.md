@@ -2,7 +2,7 @@
 
 ## Purpose and Phase
 
-Campus Service is the backend of a personal Campus Platform project. Backend Phases 1–6 and the Phase 7 OpenAPI prerequisite are reviewed PASS. Phase 6 is merged at 7d130f4; contract correction is at 795588e. Approved frontend Phase 7 is complete in the sibling campus-client repository. Phases 8 and 9 now focus on local end-to-end validation, demo quality and portfolio handoff; follow docs/plans/phase-8-9-local-demo.md. Workflow/AI and production operations are optional future work, not completion requirements. Read README.md, current plans/reviews and Git for authoritative evidence. Never mark an unverified gate complete or provision a first administrator opportunistically.
+Campus Service is the backend of a personal Campus Platform project. Backend Phases 1–6 and the Phase 7 OpenAPI prerequisite are reviewed PASS. Phase 6 is merged at 7d130f4; contract correction is at 795588e. Approved frontend Phase 7 is complete in the sibling campus-client repository. Phase 8 is reviewed PASS locally in docs/reviews/phase-8-acceptance-review.md; Phase 9 now focuses on portfolio handoff and final rehearsal; follow docs/plans/phase-8-9-local-demo.md. Workflow/AI and production operations are optional future work, not completion requirements. Read README.md, current plans/reviews and Git for authoritative evidence. Never mark an unverified gate complete or provision a first administrator opportunistically.
 
 ## Repository Structure
 

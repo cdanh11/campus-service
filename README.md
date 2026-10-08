@@ -52,17 +52,17 @@ Redis is not a baseline dependency. It will be introduced only for a concrete ca
 
 ## Architecture
 
-Campus Service will begin as a modular monolith: one deployable application with explicit module boundaries and controlled dependencies. This keeps the first release straightforward to develop and operate while allowing proven modules to be extracted later if required. See [Architecture](docs/architecture.md) and [ADR 0001](docs/decisions/0001-modular-monolith-first.md).
+Campus Service uses a modular monolith: one deployable application with explicit module boundaries and controlled dependencies. This keeps the first release straightforward to develop and operate while allowing proven modules to be extracted later if required. See [Architecture](docs/architecture.md) and [ADR 0001](docs/decisions/0001-modular-monolith-first.md).
 
 ## Status
 
 **Backend Phases 1–6 and the Phase 7 contract prerequisite are reviewed PASS.** Phase 6 is merged at 7d130f4; owner-qualified OpenAPI schemas are delivered at 795588e. The separate frontend Phase 7 and its documentation corrections are complete and merged. Historical Maven totals remain in [Testing](docs/testing.md) and the [contract review](docs/reviews/phase-7-api-contract-review.md).
 
-The approved remaining work is [Phase 8 testing/demo quality and Phase 9 portfolio handoff](docs/plans/phase-8-9-local-demo.md). These gates are not yet complete. Reports reflect current state, not historical reconstruction; manual receipts are not a payment gateway. Hosting and Workflow/AI are outside this completion scope.
+The completion roadmap covers [Phase 8 testing/demo quality and Phase 9 portfolio handoff](docs/plans/phase-8-9-local-demo.md). Phase 8 is reviewed [PASS locally](docs/reviews/phase-8-acceptance-review.md) with substantial fictional data and backend/frontend/demo regression; Phase 9 portfolio handoff is next. Reports reflect current state, not historical reconstruction; manual receipts are not a payment gateway. Hosting and Workflow/AI are outside this completion scope.
 
 [Phase 3A catalog APIs](docs/plans/phase-3a-academic-catalog.md) remain available under `/api/v1/admin/academic/programs` and `/courses`, with normalized unique codes, credits 1–30 and paginated search. [Phase 3B delivery APIs](docs/plans/phase-3b-academic-offerings.md) manage terms, offerings and sections. [Phase 3C enrollment](docs/plans/phase-3c-academic-enrollment.md) supports withdrawal/re-enrollment with version and capacity protection. Academic Student self-service, waitlists, grading, automatic tuition calculation and schedules remain future scope.
 
-Administrator APIs use the [functional permission matrix](docs/permissions.md): global ADMIN manages accounts/roles; scoped operators manage their own domain with explicit read references. Phase 8A2 is [reviewed PASS](docs/reviews/phase-8a2-permissions-review.md); whole Phase 8 remains incomplete. Identity authentication, session revocation and admin management, plus organization/student/faculty-staff registries, remain available. On a new installation, create the first administrator with the [explicit CLI](docs/runbooks/initial-admin-provisioning.md). No public first-administrator endpoint is provided; production provisioning and deployment remain optional separate work.
+Administrator APIs use the [functional permission matrix](docs/permissions.md): global ADMIN manages accounts/roles; scoped operators manage their own domain with explicit read references. Phase 8A2 is [reviewed PASS](docs/reviews/phase-8a2-permissions-review.md); whole Phase 8 is [reviewed PASS locally](docs/reviews/phase-8-acceptance-review.md). Identity authentication, session revocation and admin management, plus organization/student/faculty-staff registries, remain available. On a new installation, create the first administrator with the [explicit CLI](docs/runbooks/initial-admin-provisioning.md). No public first-administrator endpoint is provided; production provisioning and deployment remain optional separate work.
 
 ## Planned Phases
 
@@ -74,7 +74,7 @@ Administrator APIs use the [functional permission matrix](docs/permissions.md): 
 6. Phase 5: Notification (5A), Event (5B), Library (5C), ADMIN audit viewing (5D), regression closure (5E).
 7. Phase 6: Reporting/dashboard, bounded CSV and observability — complete.
 8. Phase 7: separate frontend, ADMIN surfaces and own inbox/Event portal — complete.
-9. Phase 8: local startup, API/UI acceptance and full regression — approved, not complete.
+9. Phase 8: local startup, substantial fictional data, API/UI acceptance and full regression — PASS locally.
 10. Phase 9: demo walkthrough, screenshots/video, documentation/CV and final rehearsal — approved, not complete.
 
 ## Run the local project
@@ -85,7 +85,7 @@ For the portable demo, clone the compatible `campus-client` beside this reposito
 .\scripts\start-demo.ps1 -Seed
 ```
 
-Open http://localhost:3300. The script builds both applications without host Java/Node, uses a separate persistent database, provisions accounts explicitly and loads substantial fictional data through owner APIs. Per-installation login credentials stay in ignored `.demo/docker/accounts.json`. [Docker demo setup](docs/runbooks/docker-demo.md) covers restart, safe resume and native development. This slice is [reviewed PASS](docs/reviews/phase-8a3-demo-review.md); whole Phase 8 acceptance/regression remains incomplete. The implementation is on `feature/local-demo-test-plan` until merged.
+Open http://localhost:3300. The script builds both applications without host Java/Node, uses a separate persistent database, provisions accounts explicitly and loads substantial fictional data through owner APIs. Per-installation login credentials stay in ignored `.demo/docker/accounts.json`. [Docker demo setup](docs/runbooks/docker-demo.md) covers restart, safe resume and native development. This slice is [reviewed PASS](docs/reviews/phase-8a3-demo-review.md); whole Phase 8 acceptance/regression is [reviewed PASS locally](docs/reviews/phase-8-acceptance-review.md). The implementation is on `feature/local-demo-test-plan` until merged.
 
 For native Java/Node development:
 
