@@ -57,6 +57,17 @@ class AdminUserControllerIntegrationTest {
     @LocalServerPort int port;
 
     @Test
+    void boundsSearchOffsetsBeforeJpaAndAcceptsLargestSupportedOffset() throws Exception {
+        String token = tokens.accessToken(user("offset-admin@campus.example", RoleCode.ADMIN));
+        for (String query : List.of("page=2147483647&size=2", "page=21474837&size=100", "page=1073741824&size=2")) {
+            mockMvc.perform(get("/api/v1/admin/users?" + query).header("Authorization", "Bearer " + token))
+                    .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("INVALID_QUERY_PARAMETER"));
+        }
+        mockMvc.perform(get("/api/v1/admin/users?page=2147483647&size=1").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content").isEmpty());
+    }
+
+    @Test
     void restrictsAdminEndpointsAndCreatesThenSearchesUsers() throws Exception {
         mockMvc.perform(get("/api/v1/admin/users")).andExpect(status().isUnauthorized()).andExpect(jsonPath("$.code").value("MISSING_ACCESS_TOKEN"));
         String studentToken = tokens.accessToken(user("student@campus.example", RoleCode.USER));

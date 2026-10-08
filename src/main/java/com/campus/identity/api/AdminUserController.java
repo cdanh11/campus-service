@@ -47,7 +47,8 @@ public class AdminUserController {
     public AdminUserPageResponse search(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String q, @RequestParam(required = false) String status, @RequestParam(required = false) String role,
             @RequestParam(defaultValue = "createdAt,desc") String sort) {
-        if (page < 0 || size < 1 || size > 100 || (q != null && q.trim().codePointCount(0, q.trim().length()) > 100)) throw new InvalidQueryParameterException();
+        if (page < 0 || size < 1 || size > 100 || (long) page * size > Integer.MAX_VALUE
+                || (q != null && q.trim().codePointCount(0, q.trim().length()) > 100)) throw new InvalidQueryParameterException();
         String[] parts = sort.split(",", -1);
         if (parts.length != 2 || !Set.of("email", "displayName", "status", "createdAt", "updatedAt").contains(parts[0]) || !(parts[1].equals("asc") || parts[1].equals("desc"))) throw new InvalidQueryParameterException();
         UserAccountPage result = service.search(new UserAccountSearch(page, size, q == null || q.trim().isEmpty() ? null : q.trim(), queryEnum(status, AccountStatus.class), queryEnum(role, RoleCode.class), parts[0], parts[1].equals("asc")));
