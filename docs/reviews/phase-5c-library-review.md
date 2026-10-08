@@ -1,5 +1,7 @@
 # Phase 5C Library Review
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Status: PASS on 2026-10-04. No unresolved blocker/major finding within approved 5C scope. Source/schema/security/query/docs and working diff reviewed; git diff --check passed. Audit viewing 5D and closure 5E remain incomplete; this is not a whole Phase 5 PASS.
 
 Approved scope: titles/physical copies, one OPEN loan per copy, default 14 days, retained returns, ADMIN circulation, no fines. Base for this slice: 51c744f on feature/supporting-services. [ADR 0013](../decisions/0013-library-circulation-and-history.md) and [API contract](../api/library.md).

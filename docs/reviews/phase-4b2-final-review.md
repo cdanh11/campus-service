@@ -1,5 +1,7 @@
 # Phase 4B2 — Manual Payments Review
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Status: PASS on 2026-10-04 for Phase 4B2. Phase 4C and final Phase 4 closure remain incomplete.
 
 Base ce5abce; feature/finance-payments depends on Finance obligations/Dormitory reviewed branches. V22 only; V1–V21 unchanged.

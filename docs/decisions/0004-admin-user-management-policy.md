@@ -8,6 +8,8 @@ Accepted on 2026-09-22. Implementation may begin only from this accepted decisio
 
 Only JWT-authenticated `ROLE_ADMIN` actors manage Identity users. Actor identity is the validated JWT subject UUID. Public registration, deletion, self-administration, email delivery, and temporary-password generation are excluded.
 
+[ADR 0017](0017-functional-administration-permissions.md) adds functional operators and explicit account reference reads in Phase 8A2. Those read grants do not authorize account/status/password/role management or count as global ADMIN for the final-active-admin invariant. Initial provisioning now follows [ADR 0016](0016-explicit-administrator-bootstrap.md).
+
 Administrators supply initial/reset passwords subject to Slice 3 password validation. Security-sensitive status, role, and password changes revoke every target session family transactionally and increment `securityVersion`; short-lived JWTs remain valid until their existing expiry.
 
 The service preserves at least one active administrator using PostgreSQL singleton guard-row locking. Every reducing operation locks `identity_admin_guard.guard_id = 1 FOR UPDATE`, locks the target, recounts active users assigned `ADMIN`, rejects `LAST_ACTIVE_ADMIN_REQUIRED` when needed, and retains the guard lock through commit/rollback. This is not an in-memory or target-only lock.

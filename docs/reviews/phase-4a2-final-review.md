@@ -1,5 +1,7 @@
 # Phase 4A2 — Accommodation Review
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Status: PASS on 2026-10-04 for Phase 4A2. Phase 4 remains active; Finance and operations hardening have separate gates.
 
 Base: 4A1 ba76a28 on feature/dormitory-foundation. Main still contains Phase 3D; no user PR was merged by the agent. V1–V19 unchanged, V20 only.

@@ -1,5 +1,7 @@
 # Phase 4A2 — Accommodation Assignment
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Base: reviewed/pushed 4A1 ba76a28 on feature/dormitory-foundation. Main currently contains Phase 3D; continue on this Dormitory branch without merging it ourselves. V1–V19 are immutable. Phase 4 remains active after this slice; Finance and 4C still require gates.
 
 ## Contract

@@ -1,5 +1,7 @@
 # Phase 5B Event Review
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Status: PASS for Phase 5B on 2026-10-04. No unresolved blocker/major finding within approved scope. Notification 5A and Event 5B are complete; Library, audit viewing and whole Phase 5 closure remain incomplete.
 
 Base main 4d305db; branch feature/supporting-services. User approved linked Student self-service plus ADMIN, same-record restoration with expectedVersion/audit, and OPEN-only admission with manual ADMIN closure. [ADR 0012](../decisions/0012-event-membership-ownership-and-capacity.md) records the contract.

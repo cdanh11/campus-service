@@ -4,6 +4,7 @@
 .vscode
 .env
 .env.*
+.demo
 target
 *.log
 docs

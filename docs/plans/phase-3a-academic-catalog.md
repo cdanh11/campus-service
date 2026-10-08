@@ -1,5 +1,7 @@
 # Phase 3A — Program and Course Catalog
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 ## Scope and ownership
 
 Academic owns programs and courses. Each has a UUID, normalized unique code (2–32 PostgreSQL characters), name/title (2–160 characters), ACTIVE/INACTIVE status, organization unit UUID, row version and timestamps. Course credits are integers 1–30. Creating or updating requires an active organization unit checked through its application service; Academic never imports Organization persistence internals.

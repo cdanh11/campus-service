@@ -71,7 +71,8 @@ public class SecurityMutationCoordinator {
         if (noOp.test(target)) {
             return target;
         }
-        if (reducesAdmins.test(target) && userAccountRepository.countActiveAdministrators() <= 1) {
+        if (target.status() == AccountStatus.ACTIVE && hasAdmin(target)
+                && reducesAdmins.test(target) && userAccountRepository.countActiveAdministrators() <= 1) {
             throw new LastActiveAdministratorRequiredException();
         }
         mutation.accept(target);

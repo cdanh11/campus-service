@@ -1,5 +1,7 @@
 # Phase 5E — Supporting-services closure
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Approved umbrella gate in phase-5-supporting-services.md; no extra features. All 5A–5D have separate slice PASS. **5E and whole Phase 5 backend review PASS** on 2026-10-04; every gate below is evidenced in ../reviews/phase-5-final-review.md. Final clean verify BUILD SUCCESS, 393 tests/67 suites, zero failures/errors/skips, 7m36s, finished 2026-10-04T17:14:15+07:00; all 44 pools close. Source/schema/security/query/docs/diff review completed; PR/merge remains user's responsibility.
 
 ## Requirements to close

@@ -6,12 +6,14 @@ import com.campus.identity.api.SecurityErrorResponseWriter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 public class SecurityConfiguration {
@@ -20,14 +22,25 @@ public class SecurityConfiguration {
     @Bean TokenService tokenService(SecurityProperties properties, Clock clock) { return new TokenService(properties, clock); }
     @Bean SecurityErrorResponseWriter securityErrorResponseWriter(ObjectMapper objectMapper) { return new SecurityErrorResponseWriter(objectMapper); }
     @Bean JsonAccessDeniedHandler jsonAccessDeniedHandler(SecurityErrorResponseWriter errors) { return new JsonAccessDeniedHandler(errors); }
-    @Bean SecurityFilterChain securityFilterChain(HttpSecurity http, TokenService tokenService, SecurityErrorResponseWriter errors, JsonAccessDeniedHandler denied) throws Exception {
+    @Bean
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+    SecurityFilterChain securityFilterChain(HttpSecurity http, TokenService tokenService, SecurityErrorResponseWriter errors, JsonAccessDeniedHandler denied) throws Exception {
         // Bearer access tokens are stateless; refresh endpoints validate their cookie in the controller.
         return http.csrf(csrf -> csrf.disable()).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .formLogin(form -> form.disable()).httpBasic(basic -> basic.disable())
                 .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint((request, response, exception) -> errors.write(request, response, 401, "MISSING_ACCESS_TOKEN", "Access token is required"))
                         .accessDeniedHandler(denied))
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/actuator/health", "/actuator/health/**", "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/logout", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN").anyRequest().authenticated())
+                .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers("/actuator/health", "/actuator/health/**", "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/logout", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
+                    for (var rule : AdministrativeAccessPolicy.rules()) {
+                        String[] paths = rule.paths().toArray(String[]::new);
+                        String[] readers = rule.readers().toArray(String[]::new);
+                        auth.requestMatchers(HttpMethod.GET, paths).hasAnyRole(readers);
+                        auth.requestMatchers(HttpMethod.HEAD, paths).hasAnyRole(readers);
+                        auth.requestMatchers(paths).hasAnyRole(rule.writers().toArray(String[]::new));
+                    }
+                    auth.requestMatchers("/api/v1/admin/**").hasRole("ADMIN").anyRequest().authenticated();
+                })
                 .addFilterBefore(new OriginProtectionFilter(tokenService.properties(), errors), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new JwtAuthenticationFilter(tokenService, errors), UsernamePasswordAuthenticationFilter.class)
                 .build();

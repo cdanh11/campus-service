@@ -21,7 +21,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 public class AdminFinanceController {
     private final FinanceObligationService service;
     public AdminFinanceController(FinanceObligationService service) { this.service = service; }
-    @PostMapping("/fees") @Operation(summary = "Create a VND fee definition (ADMIN)")
+    @PostMapping("/fees") @Operation(summary = "Create a VND fee definition (administrative permission)")
     public ResponseEntity<FeeDefinition> createFee(Authentication authentication, @Valid @RequestBody FeeCreate body) {
         var value = service.createFee(actor(authentication), body.code(), body.name(), body.amount());
         return created(value.id(), value);
@@ -30,13 +30,13 @@ public class AdminFinanceController {
     @PutMapping("/fees/{id}") public FeeDefinition updateFee(Authentication authentication, @PathVariable UUID id, @Valid @RequestBody FeeUpdate body) {
         return service.updateFee(actor(authentication), id, body.code(), body.name(), body.amount(), body.status(), body.expectedVersion());
     }
-    @PostMapping("/charges") @Operation(summary = "Create a Student obligation from an active fee snapshot (ADMIN)")
+    @PostMapping("/charges") @Operation(summary = "Create a Student obligation from an active fee snapshot (administrative permission)")
     public ResponseEntity<StudentCharge> createCharge(Authentication authentication, @Valid @RequestBody ChargeCreate body) {
         var value = service.createCharge(actor(authentication), body.chargeNumber(), body.studentId(), body.feeId(), body.dueDate());
         return created(value.id(), value);
     }
     @GetMapping("/charges/{id}") public StudentCharge charge(@PathVariable UUID id) { return service.charge(id); }
-    @PutMapping("/charges/{id}") @Operation(summary = "Cancel an obligation (ADMIN)", description = "CANCELLED is terminal; financial snapshot is immutable.")
+    @PutMapping("/charges/{id}") @Operation(summary = "Cancel an obligation (administrative permission)", description = "CANCELLED is terminal; financial snapshot is immutable.")
     public StudentCharge cancel(Authentication authentication, @PathVariable UUID id, @Valid @RequestBody ChargeCancel body) {
         if (body.status() != ChargeStatus.CANCELLED) throw new FinanceObligationService.InvalidStateException();
         return service.cancelCharge(actor(authentication), id, body.expectedVersion());

@@ -1,5 +1,7 @@
 # Phase 4 — Campus Operations
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Base: merged Phase 3D, PR #11, main e64cfc7. Follow inspect → plan → implement → build/test → review → PASS/FAIL; no next slice before the current slice passes. Keep the local roadmap untracked. Never edit V1–V18, deploy, repair Flyway or delete databases/volumes.
 
 ## Sequence and gates

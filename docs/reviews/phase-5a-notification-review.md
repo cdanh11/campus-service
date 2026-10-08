@@ -1,5 +1,7 @@
 # Phase 5A — Notification Review
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Status: PASS for Phase 5A. No unresolved blocker or major finding in this review. Phase 5B–5E are incomplete; this is not whole-Phase-5 closure.
 
 Base main 4d305db, merged Phase 4 PR #14; branch feature/supporting-services. User approved all Phase 5 modules, local in-app notifications, Event Student self-service plus ADMIN, Library ADMIN circulation and retained ADMIN-only audit viewing on 2026-10-04.

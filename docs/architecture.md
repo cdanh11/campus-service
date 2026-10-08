@@ -8,7 +8,9 @@
 
 ## System Context
 
-Campus Service provides a backend platform for university operations. Implemented capabilities cover Identity, organization and people registries, Academic catalogs/delivery/enrollment, Dormitory inventory/accommodation and Finance fees/obligations/manual payments/reversal, in-app Notification, Event catalog/membership, Library circulation and ADMIN audit viewing. Per-slice verification and whole-phase scope are recorded in their reviews.
+Phase 8A2 extends the original global-ADMIN boundary with nine functional operators and separate audit/report viewers. Identity's Spring Security policy enforces HTTP method/path grants before controllers; domain ownership and application ports remain unchanged. Frontend route visibility mirrors those grants. Only global ADMIN controls accounts/roles. Reference GET/HEAD grants, stateless token limits and the absence of per-unit row isolation are explicit in the [permission matrix](permissions.md) and [ADR 0017](decisions/0017-functional-administration-permissions.md). 8A2 verification passed; earlier phase descriptions below retain their historical ADMIN baseline.
+
+Campus Service provides a backend platform for university operations. Implemented capabilities cover Identity, organization and people registries, Academic catalogs/delivery/enrollment, Dormitory inventory/accommodation and Finance fees/obligations/manual payments/reversal, in-app Notification, Event catalog/membership, Library circulation and ADMIN audit viewing. Reporting/dashboard/CSV is also implemented. The separate React Campus Client uses these owner APIs. Per-slice verification and whole-phase scope are recorded in their reviews. Phases 8–9 validate and demonstrate this existing architecture; they do not introduce Workflow/AI or distributed infrastructure.
 
 ```mermaid
 flowchart LR
@@ -83,6 +85,8 @@ Dependencies point inward: API and infrastructure code depend on application and
 The implemented modules follow API, application, domain and infrastructure packages. Future modules must preserve the same ownership boundaries.
 
 ## Security Direction
+
+Integer JSON request fields require integer tokens: fractional/scientific numbers and numeric strings are rejected before use-case execution. This preserves optimistic version preconditions and integer credit/capacity values instead of allowing Jackson to truncate or coerce them. Decimal money retains BigDecimal parsing and owner validation; query-string pagination is converted by MVC separately. Serialization, DTO schemas and int64 version precision are unchanged.
 
 Spring Security with JWT-based authentication is implemented for Identity. The HTTP boundary enforces `ROLE_ADMIN` for `/api/v1/admin/**`; administrative application entry points receive the validated JWT subject UUID as the mutation actor. Internal provisioning/fixture entry points are trusted server-side calls, not client interfaces. Token signing, expiry, refresh, and revocation follow accepted ADR 0003; administrator management follows ADR 0004.
 

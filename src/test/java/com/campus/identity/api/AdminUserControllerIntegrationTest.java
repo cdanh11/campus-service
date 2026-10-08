@@ -57,6 +57,17 @@ class AdminUserControllerIntegrationTest {
     @LocalServerPort int port;
 
     @Test
+    void boundsSearchOffsetsBeforeJpaAndAcceptsLargestSupportedOffset() throws Exception {
+        String token = tokens.accessToken(user("offset-admin@campus.example", RoleCode.ADMIN));
+        for (String query : List.of("page=2147483647&size=2", "page=21474837&size=100", "page=1073741824&size=2")) {
+            mockMvc.perform(get("/api/v1/admin/users?" + query).header("Authorization", "Bearer " + token))
+                    .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("INVALID_QUERY_PARAMETER"));
+        }
+        mockMvc.perform(get("/api/v1/admin/users?page=2147483647&size=1").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content").isEmpty());
+    }
+
+    @Test
     void restrictsAdminEndpointsAndCreatesThenSearchesUsers() throws Exception {
         mockMvc.perform(get("/api/v1/admin/users")).andExpect(status().isUnauthorized()).andExpect(jsonPath("$.code").value("MISSING_ACCESS_TOKEN"));
         String studentToken = tokens.accessToken(user("student@campus.example", RoleCode.USER));
@@ -184,6 +195,22 @@ class AdminUserControllerIntegrationTest {
         mockMvc.perform(patch("/api/v1/admin/users/" + target.id() + "/status").header("Authorization", "Bearer " + tokens.accessToken(admin)).contentType(MediaType.APPLICATION_JSON)
                 .content("{\"status\":\"SUSPENDED\",\"expectedVersion\":-1}"))
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+    }
+
+    @Test
+    void rejectsCoercedExpectedVersionsWithoutChangingTheUserOrAudit() throws Exception {
+        UserAccount admin = user("version-json-admin@campus.example", RoleCode.ADMIN);
+        UserAccount createdTarget = user("version-json-target@campus.example", RoleCode.USER);
+        UserAccount target = users.findById(createdTarget.id()).orElseThrow();
+        String token = tokens.accessToken(admin);
+        for (String version : List.of(target.rowVersion() + ".9", "\"" + target.rowVersion() + "\"", "1e0")) {
+            mockMvc.perform(patch("/api/v1/admin/users/" + target.id() + "/status")
+                            .header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"status\":\"SUSPENDED\",\"expectedVersion\":" + version + "}"))
+                    .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("MALFORMED_REQUEST"));
+            assertUnchanged(target.id(), target);
+            assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM identity_admin_audit_events WHERE target_user_id=?", Long.class, target.id())).isZero();
+        }
     }
 
     @Test

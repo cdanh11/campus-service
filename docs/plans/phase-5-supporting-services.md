@@ -1,5 +1,7 @@
 # Phase 5 — Supporting Services
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Base: main 4d305db (Phase 4 merged, PR #14). Branch feature/supporting-services. User approved all four modules and the rules below on 2026-10-04. Preserve V1–V22 and the local/untracked project-roadmap.md. No deployment, external delivery, database deletion or Flyway repair.
 
 **Current status: whole Phase 5 backend review PASS**, including 5A–5E, 2026-10-04. Final clean verify BUILD SUCCESS, 393 tests/67 suites, zero failures/errors/skips, 7m36s, all 44 pools closed. See ../reviews/phase-5-final-review.md. Historical per-slice status notes below record the gates at that time; this closure status supersedes their earlier pending statements. User PR/merge remains pending; Phase 6 needs a new approved scope.

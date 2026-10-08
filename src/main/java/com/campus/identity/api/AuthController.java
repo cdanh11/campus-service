@@ -33,14 +33,14 @@ public class AuthController {
     @PostMapping("/login") public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         AuthenticationService.AuthResult result = service.login(request.email(), request.password());
         return ResponseEntity.ok().header(HttpHeaders.CACHE_CONTROL, "no-store").header(HttpHeaders.PRAGMA, "no-cache")
-                .header(HttpHeaders.SET_COOKIE, cookie(result.refreshToken(), false).toString()).body(new LoginResponse(result.accessToken(), "Bearer", 900, user(result.user())));
+                .header(HttpHeaders.SET_COOKIE, cookie(result.refreshToken(), false).toString()).body(new LoginResponse(result.accessToken(), "Bearer", properties.jwt().accessTokenTtl().toSeconds(), user(result.user())));
     }
     @PostMapping("/refresh") public ResponseEntity<RefreshResponse> refresh(HttpServletRequest request) {
         String raw = cookieValue(request);
         if (raw == null) throw new AuthenticationService.RefreshTokenMissing();
         AuthenticationService.AuthResult result = service.refresh(raw);
         return ResponseEntity.ok().header(HttpHeaders.CACHE_CONTROL, "no-store").header(HttpHeaders.PRAGMA, "no-cache")
-                .header(HttpHeaders.SET_COOKIE, cookie(result.refreshToken(), false).toString()).body(new RefreshResponse(result.accessToken(), "Bearer", 900));
+                .header(HttpHeaders.SET_COOKIE, cookie(result.refreshToken(), false).toString()).body(new RefreshResponse(result.accessToken(), "Bearer", properties.jwt().accessTokenTtl().toSeconds()));
     }
     @PostMapping("/logout") public ResponseEntity<Void> logout(HttpServletRequest request) {
         service.logout(cookieValue(request));

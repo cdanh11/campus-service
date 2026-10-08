@@ -1,5 +1,7 @@
 # Phase 5B — Campus Events
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Status: PASS on 2026-10-04; see [final review](../reviews/phase-5b-event-review.md). Base main 4d305db, branch feature/supporting-services. No whole-Phase-5 completion: Library 5C, audit viewing 5D and closure 5E remain incomplete.
 
 ## Approved contract

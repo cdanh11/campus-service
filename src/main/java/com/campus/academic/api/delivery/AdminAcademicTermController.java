@@ -24,7 +24,7 @@ public class AdminAcademicTermController {
     public AdminAcademicTermController(AcademicDeliveryService service, AcademicAdministrationService administration) { this.service = service; this.administration = administration; }
 
     @PostMapping
-    @Operation(summary = "Create term (ADMIN)", description = "New resources start in PLANNED; lifecycle transitions require PUT and expectedVersion.")
+    @Operation(summary = "Create term (administrative permission)", description = "New resources start in PLANNED; lifecycle transitions require PUT and expectedVersion.")
     public ResponseEntity<AcademicTerm> create(Authentication authentication, @Valid @RequestBody CreateRequest request) {
         var value = administration.createTerm((UUID) authentication.getPrincipal(), request.code(), request.name(), request.startDate(), request.endDate());
         return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
@@ -35,13 +35,13 @@ public class AdminAcademicTermController {
     public AcademicTerm get(@PathVariable UUID id) { return service.term(id); }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update term (ADMIN)", description = "Requires expectedVersion; stale version, invalid lifecycle or unavailable references return 409. Parent identifiers are immutable.")
+    @Operation(summary = "Update term (administrative permission)", description = "Requires expectedVersion; stale version, invalid lifecycle or unavailable references return 409. Parent identifiers are immutable.")
     public AcademicTerm update(Authentication authentication, @PathVariable UUID id, @Valid @RequestBody UpdateRequest request) {
         return administration.updateTerm((UUID) authentication.getPrincipal(), id, request.code(), request.name(), request.startDate(), request.endDate(), request.status(), request.expectedVersion());
     }
 
     @GetMapping
-    @Operation(summary = "Query terms (ADMIN)", description = "Zero-based page; size 1–100; allowlisted field,asc/desc sort with ID tie-breaker.")
+    @Operation(summary = "Query terms (administrative permission)", description = "Zero-based page; size 1–100; allowlisted field,asc/desc sort with ID tie-breaker.")
     public PageResponse<AcademicTerm> list(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size,
                                     @RequestParam(required = false) String q, @RequestParam(required = false) String status,
                                     @RequestParam(defaultValue = "code,asc") String sort) {

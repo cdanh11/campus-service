@@ -1,5 +1,7 @@
 # Phase 4 — Campus Operations Closure Review
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Status: PASS on 2026-10-04 for 4C and the approved Phase 4 backend scope. No unresolved blocker/major remains in this review. User PR/merge is still pending.
 
 Branch `feature/campus-operations-hardening` builds on `95e4efe`, reviewed Phase 4B2. Phase 1–3 are merged at `origin/main` `e64cfc7`; Phase 4 is delivered on dependent feature branches. PR/merge remains the user's responsibility. This review certifies the approved backend scope, not production deployment or frontend completion.

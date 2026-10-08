@@ -24,7 +24,7 @@ public class AdminCourseOfferingController {
     public AdminCourseOfferingController(AcademicDeliveryService service, AcademicAdministrationService administration) { this.service = service; this.administration = administration; }
 
     @PostMapping
-    @Operation(summary = "Create offering (ADMIN)", description = "New resources start in DRAFT; lifecycle transitions require PUT and expectedVersion.")
+    @Operation(summary = "Create offering (administrative permission)", description = "New resources start in DRAFT; lifecycle transitions require PUT and expectedVersion.")
     public ResponseEntity<CourseOffering> create(Authentication authentication, @Valid @RequestBody CreateRequest request) {
         var value = administration.createOffering((UUID) authentication.getPrincipal(), request.termId(), request.courseId());
         return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
@@ -35,13 +35,13 @@ public class AdminCourseOfferingController {
     public CourseOffering get(@PathVariable UUID id) { return service.offering(id); }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update offering (ADMIN)", description = "Requires expectedVersion; stale version, invalid lifecycle or unavailable references return 409. Parent identifiers are immutable.")
+    @Operation(summary = "Update offering (administrative permission)", description = "Requires expectedVersion; stale version, invalid lifecycle or unavailable references return 409. Parent identifiers are immutable.")
     public CourseOffering update(Authentication authentication, @PathVariable UUID id, @Valid @RequestBody UpdateRequest request) {
         return administration.updateOffering((UUID) authentication.getPrincipal(), id, request.status(), request.expectedVersion());
     }
 
     @GetMapping
-    @Operation(summary = "Query offerings (ADMIN)", description = "Zero-based page; size 1–100; allowlisted field,asc/desc sort with ID tie-breaker.")
+    @Operation(summary = "Query offerings (administrative permission)", description = "Zero-based page; size 1–100; allowlisted field,asc/desc sort with ID tie-breaker.")
     public PageResponse<CourseOffering> list(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size,
                                     @RequestParam(required = false) UUID termId, @RequestParam(required = false) UUID courseId, @RequestParam(required = false) String status,
                                     @RequestParam(defaultValue = "createdAt,desc") String sort) {

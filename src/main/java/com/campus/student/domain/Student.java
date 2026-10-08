@@ -8,7 +8,7 @@ public record Student(UUID id, String studentNumber, String fullName, String ema
                       StudentStatus status, long rowVersion, Instant createdAt, Instant updatedAt) {
     public Student {
         Objects.requireNonNull(id, "id");
-        studentNumber = normalize(studentNumber, 32, "studentNumber").toUpperCase(java.util.Locale.ROOT);
+        studentNumber = normalize(normalize(studentNumber, 32, "studentNumber").toUpperCase(java.util.Locale.ROOT), 32, "studentNumber");
         fullName = normalize(fullName, 160, "fullName");
         email = email == null || email.isBlank() ? null : email.trim().toLowerCase(java.util.Locale.ROOT);
         if (email != null && (email.length() > 320 || !email.contains("@"))) throw new InvalidStudentException();

@@ -24,7 +24,7 @@ public class AdminClassSectionController {
     public AdminClassSectionController(AcademicDeliveryService service, AcademicAdministrationService administration) { this.service = service; this.administration = administration; }
 
     @PostMapping
-    @Operation(summary = "Create section (ADMIN)", description = "New resources start in DRAFT; lifecycle transitions require PUT and expectedVersion.")
+    @Operation(summary = "Create section (administrative permission)", description = "New resources start in DRAFT; lifecycle transitions require PUT and expectedVersion.")
     public ResponseEntity<ClassSection> create(Authentication authentication, @Valid @RequestBody CreateRequest request) {
         var value = administration.createSection((UUID) authentication.getPrincipal(), request.offeringId(), request.code(), request.capacity(), request.facultyId());
         return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
@@ -35,13 +35,13 @@ public class AdminClassSectionController {
     public ClassSection get(@PathVariable UUID id) { return service.section(id); }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update section (ADMIN)", description = "Requires expectedVersion; stale version, invalid lifecycle or unavailable references return 409. Parent identifiers are immutable.")
+    @Operation(summary = "Update section (administrative permission)", description = "Requires expectedVersion; stale version, invalid lifecycle or unavailable references return 409. Parent identifiers are immutable.")
     public ClassSection update(Authentication authentication, @PathVariable UUID id, @Valid @RequestBody UpdateRequest request) {
         return administration.updateSection((UUID) authentication.getPrincipal(), id, request.code(), request.capacity(), request.facultyId(), request.status(), request.expectedVersion());
     }
 
     @GetMapping
-    @Operation(summary = "Query sections (ADMIN)", description = "Zero-based page; size 1–100; allowlisted field,asc/desc sort with ID tie-breaker.")
+    @Operation(summary = "Query sections (administrative permission)", description = "Zero-based page; size 1–100; allowlisted field,asc/desc sort with ID tie-breaker.")
     public PageResponse<ClassSection> list(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size,
                                     @RequestParam(required = false) String q, @RequestParam(required = false) UUID offeringId, @RequestParam(required = false) String status,
                                     @RequestParam(defaultValue = "code,asc") String sort) {

@@ -1,25 +1,35 @@
-# Initial Administrator Provisioning
+# First administrator provisioning
 
-## Purpose
-
-This runbook defines the approval and handoff process for establishing the first administrator in a new Campus Service environment. It does not provide credentials, SQL, token material, or a runtime provisioning mechanism.
+The explicit portable CLI is approved in [ADR 0016](../decisions/0016-explicit-administrator-bootstrap.md) for Phase 8 setup. It creates the first ADMIN in the configured database, not on normal web startup. No public provisioning API is provided.
 
 ## Preconditions
 
-- The environment owner has approved the named administrator and verified their organizational identity through an approved out-of-band process.
-- The deployment has completed its approved database migration and application verification process.
-- A separate, authorized operational procedure or approved break-glass process is available to create the first active user with the `ADMIN` role. This repository does not implement that procedure.
+Confirm the intended database/environment and authorized administrator. Supply the same profile, PostgreSQL and JWT configuration as the application; Flyway and Hibernate validation run normally. Use private credentials, not shared examples. If any ADMIN already exists, including inactive accounts, this command refuses to run. Account recovery is a different approved procedure.
 
-## Procedure
+## Native Windows setup
 
-1. Record the approver, intended administrator identity, environment, and time in the organization's approved change record.
-2. Use the approved operational procedure to establish exactly one active administrator. Do not place passwords, hashes, refresh values, JWTs, or connection details in the change record.
-3. Have the administrator authenticate through the normal application flow and confirm access only to the permitted administrator capabilities.
-4. Create any additional administrators through the authenticated administrator user-management API, following least-privilege role assignment and the approved audit process.
-5. Close the change record with verification evidence that excludes credentials and other secret material.
+With an ignored .env configured for the local development profile:
 
-## Safety And Recovery
+```powershell
+.\scripts\start-local.ps1 -BootstrapAdmin
+```
 
-- Do not share, log, commit, or document passwords, token values, signing keys, database credentials, or connection strings.
-- Do not bypass the final-active-administrator safeguard when changing administrator status or roles.
-- If the initial administrator cannot authenticate or access is suspected to be compromised, stop and use the organization's approved incident or break-glass procedure. Do not improvise database changes from this runbook.
+The wrapper starts/waits for the existing Compose postgres, asks for email/display name and a hidden password plus confirmation, then invokes the offline CLI. To use an already running configured database, add -SkipDatabase. Secrets are process environment, never command-line arguments or logs; wrapper-created bootstrap variables are removed afterward.
+
+## Packaged application
+
+After building the current jar, run it with the intended environment supplied externally:
+
+```text
+java -jar target/campus-service-0.0.1-SNAPSHOT.jar --bootstrap-admin
+```
+
+An interactive console asks for credentials with hidden password entry. Without a console, a private setup wrapper may supply CAMPUS_BOOTSTRAP_EMAIL, CAMPUS_BOOTSTRAP_DISPLAY_NAME and CAMPUS_BOOTSTRAP_PASSWORD in process environment. Do not put these in tracked files, terminal history or public Compose configuration. Never pass a password as an argument. Docker one-command demo wrapping remains a separate Phase 8 slice until verified.
+
+## Behavior and verification
+
+The command runs no HTTP listener, obtains the existing ADMIN guard, validates email/display name/password using the existing Identity rules and delegating bcrypt encoder, and saves an ACTIVE ADMIN plus self-attributed USER_CREATED audit in one transaction. It closes its context/pool after completion. Failure rolls back account and role writes; no schema/volume deletion or Flyway repair is performed.
+
+Sign in through the normal application and verify authorized account access. Additional administrators are created through the authenticated ADMIN API. Record safe completion evidence without passwords, hashes, JWTs, cookies, signing keys or connection secrets. Do not bypass final-active-administrator protection for recovery.
+
+Demo setup generates per-installation credentials in ignored private files when automated fixture accounts are requested; these are fictional demonstration accounts, not a production seed policy. Scope and actual gate status are recorded in the [Phase 8 plan](../plans/phase-8-9-local-demo.md).

@@ -1,5 +1,7 @@
 # Phase 3B — Academic terms, offerings and sections
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 ## Implementation plan and boundaries
 
 Build in dependency order: AcademicTerm, CourseOffering, ClassSection. Use ADMIN-only POST/GET/list/PUT APIs, bounded database queries and expectedVersion on mutations. Academic owns all three resources and exchanges faculty information through the Personnel application service. No enrollment, schedules, rooms, grades, fees or frontend work is included. Preserve V1–V13; add V14/V15/V16 and exact V13→V16 upgrade validation.

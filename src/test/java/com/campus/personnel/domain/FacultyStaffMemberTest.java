@@ -1,3 +1,12 @@
 package com.campus.personnel.domain;
 import java.time.Instant; import java.util.UUID; import org.junit.jupiter.api.Test; import static org.assertj.core.api.Assertions.*;
-class FacultyStaffMemberTest { @Test void normalizesAndValidatesPersonnel(){ FacultyStaffMember member=FacultyStaffMember.create(UUID.randomUUID()," P001 "," Person One ","ONE@campus.example",null,PersonnelType.FACULTY,UUID.randomUUID(),PersonnelStatus.ACTIVE,Instant.now());assertThat(member.personnelNumber()).isEqualTo("P001");assertThat(member.email()).isEqualTo("one@campus.example");assertThat(member.identityUserId()).isNull();assertThatThrownBy(()->FacultyStaffMember.create(UUID.randomUUID(),"x","Name",null,null,PersonnelType.STAFF,UUID.randomUUID(),PersonnelStatus.ACTIVE,Instant.now())).isInstanceOf(FacultyStaffMember.InvalidFacultyStaffMemberException.class);}}
+class FacultyStaffMemberTest { @Test void normalizesAndValidatesPersonnel(){ FacultyStaffMember member=FacultyStaffMember.create(UUID.randomUUID()," P001 "," Person One ","ONE@campus.example",null,PersonnelType.FACULTY,UUID.randomUUID(),PersonnelStatus.ACTIVE,Instant.now());assertThat(member.personnelNumber()).isEqualTo("P001");assertThat(member.email()).isEqualTo("one@campus.example");assertThat(member.identityUserId()).isNull();assertThatThrownBy(()->FacultyStaffMember.create(UUID.randomUUID(),"x","Name",null,null,PersonnelType.STAFF,UUID.randomUUID(),PersonnelStatus.ACTIVE,Instant.now())).isInstanceOf(FacultyStaffMember.InvalidFacultyStaffMemberException.class);}
+    @Test
+    void boundsTheCanonicalNumberAfterUnicodeUppercaseExpansion() {
+        assertThat(FacultyStaffMember.create(UUID.randomUUID(), "ß".repeat(16), "Person One", null, null,
+                PersonnelType.FACULTY, UUID.randomUUID(), PersonnelStatus.ACTIVE, Instant.now()).personnelNumber()).isEqualTo("SS".repeat(16));
+        assertThatThrownBy(() -> FacultyStaffMember.create(UUID.randomUUID(), "ß".repeat(17), "Person One", null, null,
+                PersonnelType.FACULTY, UUID.randomUUID(), PersonnelStatus.ACTIVE, Instant.now()))
+                .isInstanceOf(FacultyStaffMember.InvalidFacultyStaffMemberException.class);
+    }
+}

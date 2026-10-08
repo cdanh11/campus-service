@@ -1,5 +1,7 @@
 # Phase 4B1 — Finance Obligations
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Base: reviewed 4A2, 8182597. Branch feature/finance-obligations depends on feature/dormitory-foundation until the user merges its PR. No automatic merge or history rewrite. V1–V20 immutable; V21 is new.
 
 ## Contract and scope

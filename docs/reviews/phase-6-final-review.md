@@ -1,5 +1,7 @@
 # Phase 6 — Reporting closure review
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Verdict: **PASS — Phase 6 backend complete**, 2026-10-04. Requirements below were audited against current code, tests, Maven/XML output and Git state; no unresolved blocker/major in the approved scope.
 
 Approved scope: ADMIN eight-group dashboard, Student VND debt, current accommodation, section enrollment, Event membership, OPEN/overdue Library loans, bounded CSV and operational hardening. No paid integrations, frontend, deployment or runtime first-admin provisioning.

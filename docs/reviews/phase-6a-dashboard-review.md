@@ -1,5 +1,7 @@
 # Phase 6A — Dashboard review
 
+> Phase-specific checkpoint document. Scope and results below belong to the named phase; current project status is in [README](../../README.md) and the approved remaining work is in the [Phase 8–9 plan](../plans/phase-8-9-local-demo.md). Historical results are not new verification.
+
 Result: **PASS for the 6A dashboard slice**, 2026-10-04. This is not Phase 6 closure or full-regression evidence.
 
 ## Requirements and evidence
