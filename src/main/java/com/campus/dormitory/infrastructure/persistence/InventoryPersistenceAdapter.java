@@ -18,6 +18,15 @@ class InventoryPersistenceAdapter implements InventoryRepository {
     }
 
     public Optional<InventoryItem> find(InventoryKind kind, UUID id) { return Optional.ofNullable(entities.find(type(kind), id)).map(InventoryEntity::domain); }
+    public List<InventoryItem> findAll(InventoryKind kind, Collection<UUID> ids) { return lookup(type(kind), ids); }
+    private <T extends InventoryEntity> List<InventoryItem> lookup(Class<T> type, Collection<UUID> ids) {
+        if (ids.isEmpty()) return List.of();
+        var builder = entities.getCriteriaBuilder();
+        var select = builder.createQuery(type);
+        var root = select.from(type);
+        select.where(root.get("id").in(ids));
+        return entities.createQuery(select).getResultList().stream().map(InventoryEntity::domain).toList();
+    }
     public InventoryItem lock(InventoryKind kind, UUID id) {
         var entity = entities.find(type(kind), id);
         if (entity == null) throw new DormitoryInventoryService.NotFoundException();

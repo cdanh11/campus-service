@@ -1,6 +1,8 @@
 package com.campus.dormitory.application;
 
 import java.time.Clock;
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 import com.campus.dormitory.domain.*;
 import com.campus.shared.application.PageResult;
@@ -53,6 +55,10 @@ public class DormitoryInventoryService {
     @Transactional(readOnly = true)
     public InventoryItem get(InventoryKind kind, UUID id) {
         return inventory.find(kind, id).orElseThrow(NotFoundException::new);
+    }
+    @Transactional(readOnly = true)
+    public List<InventoryItem> lookup(InventoryKind kind, Collection<UUID> ids) {
+        return inventory.findAll(kind, ids);
     }
 
     @Transactional(readOnly = true)

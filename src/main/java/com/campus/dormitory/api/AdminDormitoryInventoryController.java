@@ -36,6 +36,12 @@ public class AdminDormitoryInventoryController {
         return service.update((UUID) authentication.getPrincipal(), kind(resource), id, body.code(), body.name(), body.status(), body.expectedVersion());
     }
 
+    @GetMapping("/lookup/{resource:buildings|rooms|beds}")
+    public List<InventoryItem> lookup(@PathVariable String resource, @RequestParam List<UUID> ids) {
+        if (ids.size() > 100) throw new DormitoryInventoryService.InvalidQueryException();
+        return service.lookup(kind(resource), ids);
+    }
+
     @GetMapping("/{resource:buildings|rooms|beds}")
     public PageResponse list(@PathVariable String resource, @RequestParam(defaultValue = "0") int page,
                              @RequestParam(defaultValue = "20") int size, @RequestParam(required = false) String q,
