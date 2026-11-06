@@ -55,6 +55,7 @@ public class AdminUserController {
         return new AdminUserPageResponse(result.content().stream().map(AdminUserController::response).toList(), page, size, result.totalElements(), (int) Math.ceil((double) result.totalElements() / size));
     }
     @GetMapping("/{userId}") public AdminUserResponse get(@PathVariable UUID userId) { return response(service.get(userId)); }
+    @GetMapping("/lookup") public List<AdminUserResponse> lookup(@RequestParam List<UUID> ids) { if (ids.size() > 100) throw new InvalidQueryParameterException(); return service.lookup(ids).stream().map(AdminUserController::response).toList(); }
     @PatchMapping("/{userId}/status") public AdminUserResponse changeStatus(Authentication auth, @PathVariable UUID userId, @Valid @RequestBody StatusRequest request) { return response(service.changeStatus(actor(auth), userId, request.status(), request.expectedVersion())); }
     @PutMapping("/{userId}/roles") public AdminUserResponse replaceRoles(Authentication auth, @PathVariable UUID userId, @Valid @RequestBody RolesRequest request) { return response(service.replaceRoles(actor(auth), userId, request.roles(), request.expectedVersion())); }
     @PostMapping("/{userId}/password-reset") public ResponseEntity<Void> resetPassword(Authentication auth, @PathVariable UUID userId, @Valid @RequestBody PasswordResetRequest request) { service.resetPassword(actor(auth), userId, request.newPassword(), request.expectedVersion()); return ResponseEntity.noContent().build(); }

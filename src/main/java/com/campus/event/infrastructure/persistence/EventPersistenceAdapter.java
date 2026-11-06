@@ -16,6 +16,14 @@ class EventPersistenceAdapter implements EventRepository {
         var entity = new CampusEventEntity(value); entities.persist(entity); save(entity); return entity.domain();
     }
     public Optional<CampusEvent> find(UUID id) { return Optional.ofNullable(entities.find(CampusEventEntity.class,id)).map(CampusEventEntity::domain); }
+    public List<CampusEvent> findAllById(Collection<UUID> ids) {
+        if (ids.isEmpty()) return List.of();
+        var builder = entities.getCriteriaBuilder();
+        var select = builder.createQuery(CampusEventEntity.class);
+        var root = select.from(CampusEventEntity.class);
+        select.where(root.get("id").in(ids));
+        return entities.createQuery(select).getResultList().stream().map(CampusEventEntity::domain).toList();
+    }
     private CampusEventEntity locked(UUID id) {
         var entity = entities.find(CampusEventEntity.class,id);
         if (entity == null) throw new EventCatalogService.NotFoundException();

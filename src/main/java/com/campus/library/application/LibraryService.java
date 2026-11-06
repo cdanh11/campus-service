@@ -1,6 +1,8 @@
 package com.campus.library.application;
 
 import java.time.Clock;
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 import com.campus.library.domain.*;
 import com.campus.library.domain.LibrarySearch.Resource;
@@ -70,7 +72,9 @@ public class LibraryService {
         LibraryValues.version(expected); if (actual != expected) throw new StaleVersionException();
     }
     @Transactional(readOnly = true) public BookTitle title(UUID id) { return library.title(id).orElseThrow(NotFoundException::new); }
+    @Transactional(readOnly = true) public List<BookTitle> lookupTitles(Collection<UUID> ids) { return library.titlesByIds(ids); }
     @Transactional(readOnly = true) public BookCopy copy(UUID id) { return library.copy(id).orElseThrow(NotFoundException::new); }
+    @Transactional(readOnly = true) public List<BookCopy> lookupCopies(Collection<UUID> ids) { return library.copiesByIds(ids); }
     @Transactional(readOnly = true) public BookLoan loan(UUID id) { return library.loan(id).orElseThrow(NotFoundException::new); }
     @Transactional(readOnly = true) public PageResult<BookTitle> titles(LibrarySearch search) { return library.titles(search); }
     @Transactional(readOnly = true) public PageResult<BookCopy> copies(LibrarySearch search) { return library.copies(search); }

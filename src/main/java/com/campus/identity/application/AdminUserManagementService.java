@@ -55,6 +55,7 @@ public class AdminUserManagementService {
     }
 
     public UserAccount get(UUID id) { return users.findById(id).orElseThrow(UserNotFoundException::new); }
+    public java.util.List<UserAccount> lookup(java.util.Collection<UUID> ids) { return users.findAllById(ids); }
     public UserAccountPage search(UserAccountSearch search) { return users.search(search); }
     public UserAccount changeStatus(UUID actorId, UUID targetId, AccountStatus status, long version) { self(actorId, targetId); try { return mutations.changeStatus(actorId, targetId, status, version); } catch (java.util.NoSuchElementException e) { throw new UserNotFoundException(); } }
     public UserAccount replaceRoles(UUID actorId, UUID targetId, List<String> roleNames, long version) { self(actorId, targetId); try { return mutations.replaceRoles(actorId, targetId, roles(roleNames), version); } catch (java.util.NoSuchElementException e) { throw new UserNotFoundException(); } }

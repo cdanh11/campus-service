@@ -3,6 +3,8 @@ package com.campus.finance.application;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 import com.campus.finance.domain.*;
 import com.campus.shared.application.PageResult;
@@ -56,6 +58,8 @@ public class FinanceObligationService {
         event(actor, saved, "CANCELLED"); return saved;
     }
     @Transactional(readOnly = true) public FeeDefinition fee(UUID id) { return repository.fee(id).orElseThrow(NotFoundException::new); }
+    @Transactional(readOnly = true) public List<FeeDefinition> lookupFees(Collection<UUID> ids) { return repository.feesByIds(ids); }
+    @Transactional(readOnly = true) public List<StudentCharge> lookupCharges(Collection<UUID> ids) { return repository.chargesByIds(ids); }
     @Transactional(readOnly = true) public StudentCharge charge(UUID id) { return repository.charge(id).orElseThrow(NotFoundException::new); }
     @Transactional(readOnly = true) public PageResult<FeeDefinition> fees(FinanceSearch query) { query.fees(); return repository.fees(query); }
     @Transactional(readOnly = true) public PageResult<StudentCharge> charges(FinanceSearch query) { query.charges(); return repository.charges(query); }

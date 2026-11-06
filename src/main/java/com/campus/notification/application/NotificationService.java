@@ -64,6 +64,7 @@ public class NotificationService {
         event(actor, NotificationAudit.Resource.DELIVERY, id, "READ", saved.rowVersion(), saved.status().name()); return saved;
     }
     @Transactional(readOnly = true) public NotificationTemplate template(UUID id) { return repository.template(id).orElseThrow(NotFoundException::new); }
+    @Transactional(readOnly = true) public List<NotificationTemplate> lookupTemplates(Collection<UUID> ids) { return repository.templatesByIds(ids); }
     @Transactional(readOnly = true) public Notice notice(UUID id) { return repository.notice(id).orElseThrow(NotFoundException::new); }
     @Transactional(readOnly = true) public InboxItem delivery(UUID actor, UUID id) {
         actor(actor); var delivery = repository.ownedDelivery(id, actor).orElseThrow(NotFoundException::new);

@@ -25,6 +25,15 @@ class LibraryPersistenceAdapter implements LibraryRepository {
     }
     public BookTitle createTitle(BookTitle value) { return create(new BookTitleEntity(value)).domain(); }
     public Optional<BookTitle> title(UUID id) { return Optional.ofNullable(entities.find(BookTitleEntity.class, id)).map(BookTitleEntity::domain); }
+    public List<BookTitle> titlesByIds(Collection<UUID> ids) { return findAll(BookTitleEntity.class, ids).stream().map(BookTitleEntity::domain).toList(); }
+    private <T> List<T> findAll(Class<T> type, Collection<UUID> ids) {
+        if (ids.isEmpty()) return List.of();
+        var builder = entities.getCriteriaBuilder();
+        var select = builder.createQuery(type);
+        var root = select.from(type);
+        select.where(root.get("id").in(ids));
+        return entities.createQuery(select).getResultList();
+    }
     public BookTitle lockTitle(UUID id) { return lock(BookTitleEntity.class, id).domain(); }
     public BookTitle updateTitle(BookTitle value, long expectedVersion) {
         var entity = lock(BookTitleEntity.class, value.id()); version(entity.version, expectedVersion);
@@ -32,6 +41,7 @@ class LibraryPersistenceAdapter implements LibraryRepository {
     }
     public BookCopy createCopy(BookCopy value) { return create(new BookCopyEntity(value)).domain(); }
     public Optional<BookCopy> copy(UUID id) { return Optional.ofNullable(entities.find(BookCopyEntity.class, id)).map(BookCopyEntity::domain); }
+    public List<BookCopy> copiesByIds(Collection<UUID> ids) { return findAll(BookCopyEntity.class, ids).stream().map(BookCopyEntity::domain).toList(); }
     public BookCopy lockCopy(UUID id) { return lock(BookCopyEntity.class, id).domain(); }
     public BookCopy updateCopy(BookCopy value, long expectedVersion) {
         var entity = lock(BookCopyEntity.class, value.id()); version(entity.version, expectedVersion);

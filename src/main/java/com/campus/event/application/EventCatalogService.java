@@ -2,6 +2,8 @@ package com.campus.event.application;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 import com.campus.event.domain.*;
 import com.campus.shared.application.PageResult;
@@ -35,6 +37,7 @@ public class EventCatalogService {
         return saved;
     }
     @Transactional(readOnly=true) public CampusEvent get(UUID id) { return events.find(id).orElseThrow(NotFoundException::new); }
+    @Transactional(readOnly=true) public List<CampusEvent> lookup(Collection<UUID> ids) { return events.findAllById(ids); }
     @Transactional(readOnly=true) public PageResult<CampusEvent> search(EventSearch search) { return events.search(search); }
     private void actor(UUID actor) { if (actor == null) throw new IllegalArgumentException("Authenticated actor required"); }
     public static final class NotFoundException extends RuntimeException { }

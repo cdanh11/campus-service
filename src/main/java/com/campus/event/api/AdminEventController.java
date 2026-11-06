@@ -23,6 +23,7 @@ public class AdminEventController {
         return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(saved.id()).toUri()).body(saved);
     }
     @GetMapping("/{id}") public CampusEvent get(@PathVariable UUID id) { return events.get(id); }
+    @GetMapping("/lookup") public List<CampusEvent> lookup(@RequestParam List<UUID> ids) { if (ids.size() > 100) throw new InvalidQueryException(); return events.lookup(ids); }
     @PutMapping("/{id}") public CampusEvent update(Authentication auth,@PathVariable UUID id,@Valid @RequestBody UpdateRequest body) {
         return events.update((UUID)auth.getPrincipal(),id,body.code(),body.title(),body.description(),body.startsAt(),body.endsAt(),body.capacity(),body.status(),body.expectedVersion());
     }

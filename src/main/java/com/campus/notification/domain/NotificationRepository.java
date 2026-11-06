@@ -1,5 +1,6 @@
 package com.campus.notification.domain;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.List;
 import java.util.Set;
@@ -9,6 +10,7 @@ import com.campus.shared.application.PageResult;
 public interface NotificationRepository {
     NotificationTemplate createTemplate(NotificationTemplate value);
     Optional<NotificationTemplate> template(UUID id);
+    List<NotificationTemplate> templatesByIds(Collection<UUID> ids);
     NotificationTemplate lockTemplate(UUID id);
     NotificationTemplate updateTemplate(NotificationTemplate value, long expectedVersion);
     PageResult<NotificationTemplate> templates(NotificationSearch query);

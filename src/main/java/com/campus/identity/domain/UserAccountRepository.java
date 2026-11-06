@@ -1,5 +1,7 @@
 package com.campus.identity.domain;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,6 +14,8 @@ public interface UserAccountRepository {
     void recordLogin(UUID id, java.time.Instant at);
 
     Optional<UserAccount> findById(UUID id);
+
+    List<UserAccount> findAllById(Collection<UUID> ids);
 
     Optional<UserAccount> findByIdForUpdate(UUID id);
 

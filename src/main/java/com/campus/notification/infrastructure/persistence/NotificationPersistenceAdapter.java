@@ -15,6 +15,7 @@ class NotificationPersistenceAdapter implements NotificationRepository {
     NotificationPersistenceAdapter(EntityManager entities) { this.entities=entities; }
     public NotificationTemplate createTemplate(NotificationTemplate value) { var e=new NotificationTemplateEntity(value); insert(e); return e.domain(); }
     public Optional<NotificationTemplate> template(UUID id) { return Optional.ofNullable(entities.find(NotificationTemplateEntity.class,id)).map(NotificationTemplateEntity::domain); }
+    public List<NotificationTemplate> templatesByIds(Collection<UUID> ids) { if (ids.isEmpty()) return List.of(); return entities.createQuery("select t from NotificationTemplateEntity t where t.id in :ids", NotificationTemplateEntity.class).setParameter("ids", ids).getResultList().stream().map(NotificationTemplateEntity::domain).toList(); }
     public NotificationTemplate lockTemplate(UUID id) { return lock(NotificationTemplateEntity.class,id).domain(); }
     public NotificationTemplate updateTemplate(NotificationTemplate value,long expectedVersion) {
         var e=lock(NotificationTemplateEntity.class,value.id()); version(e.version,expectedVersion); e.update(value); save(e); return e.domain();

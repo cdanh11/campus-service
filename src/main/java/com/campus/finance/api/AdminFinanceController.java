@@ -27,6 +27,7 @@ public class AdminFinanceController {
         return created(value.id(), value);
     }
     @GetMapping("/fees/{id}") public FeeDefinition fee(@PathVariable UUID id) { return service.fee(id); }
+    @GetMapping("/fees/lookup") public List<FeeDefinition> lookupFees(@RequestParam List<UUID> ids) { if (ids.size() > 100) throw new InvalidQueryException(); return service.lookupFees(ids); }
     @PutMapping("/fees/{id}") public FeeDefinition updateFee(Authentication authentication, @PathVariable UUID id, @Valid @RequestBody FeeUpdate body) {
         return service.updateFee(actor(authentication), id, body.code(), body.name(), body.amount(), body.status(), body.expectedVersion());
     }
@@ -36,6 +37,7 @@ public class AdminFinanceController {
         return created(value.id(), value);
     }
     @GetMapping("/charges/{id}") public StudentCharge charge(@PathVariable UUID id) { return service.charge(id); }
+    @GetMapping("/charges/lookup") public List<StudentCharge> lookupCharges(@RequestParam List<UUID> ids) { if (ids.size() > 100) throw new InvalidQueryException(); return service.lookupCharges(ids); }
     @PutMapping("/charges/{id}") @Operation(summary = "Cancel an obligation (administrative permission)", description = "CANCELLED is terminal; financial snapshot is immutable.")
     public StudentCharge cancel(Authentication authentication, @PathVariable UUID id, @Valid @RequestBody ChargeCancel body) {
         if (body.status() != ChargeStatus.CANCELLED) throw new FinanceObligationService.InvalidStateException();

@@ -23,7 +23,17 @@ class FinancePersistenceAdapter implements FinanceRepository {
         if (entity.domain().rowVersion() != expectedVersion) throw new FinanceObligationService.StaleVersionException();
         entity.update(value); entities.flush(); entities.refresh(entity); return entity.domain();
     }
+    public List<FeeDefinition> feesByIds(Collection<UUID> ids) { return findAll(FeeDefinitionEntity.class, ids).stream().map(FeeDefinitionEntity::domain).toList(); }
     public Optional<StudentCharge> charge(UUID id) { return Optional.ofNullable(entities.find(StudentChargeEntity.class, id)).map(StudentChargeEntity::domain); }
+    public List<StudentCharge> chargesByIds(Collection<UUID> ids) { return findAll(StudentChargeEntity.class, ids).stream().map(StudentChargeEntity::domain).toList(); }
+    private <T> List<T> findAll(Class<T> type, Collection<UUID> ids) {
+        if (ids.isEmpty()) return List.of();
+        var builder = entities.getCriteriaBuilder();
+        var select = builder.createQuery(type);
+        var root = select.from(type);
+        select.where(root.get("id").in(ids));
+        return entities.createQuery(select).getResultList();
+    }
     public StudentCharge lockCharge(UUID id) { return lock(StudentChargeEntity.class, id).domain(); }
     public StudentCharge createCharge(StudentCharge value) {
         var entity = new StudentChargeEntity(value); entities.persist(entity); entities.flush(); entities.refresh(entity); return entity.domain();

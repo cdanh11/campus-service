@@ -22,6 +22,7 @@ public class AdminNotificationController {
         return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(saved.id()).toUri()).body(saved);
     }
     @GetMapping("/templates/{id}") public NotificationTemplate template(@PathVariable UUID id) { return service.template(id); }
+    @GetMapping("/templates/lookup") public List<NotificationTemplate> lookupTemplates(@RequestParam List<UUID> ids) { if (ids.size() > 100) throw new InvalidQueryException(); return service.lookupTemplates(ids); }
     @PutMapping("/templates/{id}") public NotificationTemplate updateTemplate(Authentication auth,@PathVariable UUID id,@Valid @RequestBody TemplateUpdate body) {
         return service.updateTemplate(actor(auth),id,body.code(),body.name(),body.title(),body.body(),body.status(),body.expectedVersion());
     }

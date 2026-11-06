@@ -80,6 +80,12 @@ class UserAccountPersistenceAdapter implements UserAccountRepository {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public java.util.List<UserAccount> findAllById(java.util.Collection<java.util.UUID> ids) {
+        return userAccountJpaRepository.findAllById(ids).stream().map(mapper::toDomain).toList();
+    }
+
+    @Override
     @Transactional
     public Optional<UserAccount> findByIdForUpdate(java.util.UUID id) {
         return userAccountJpaRepository.findByIdForUpdate(id).map(mapper::toDomain);

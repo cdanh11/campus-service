@@ -1,5 +1,7 @@
 package com.campus.event.domain;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import com.campus.shared.application.PageResult;
@@ -7,6 +9,7 @@ import com.campus.shared.application.PageResult;
 public interface EventRepository {
     CampusEvent create(CampusEvent event);
     Optional<CampusEvent> find(UUID id);
+    List<CampusEvent> findAllById(Collection<UUID> ids);
     CampusEvent lock(UUID id);
     CampusEvent update(CampusEvent event, long expectedVersion);
     PageResult<CampusEvent> search(EventSearch search);

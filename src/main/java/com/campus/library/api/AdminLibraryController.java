@@ -25,6 +25,7 @@ public class AdminLibraryController {
         return created(library.createTitle(actor(auth), body.code(), body.title(), body.author()), BookTitle::id);
     }
     @GetMapping("/titles/{id}") public BookTitle title(@PathVariable UUID id) { return library.title(id); }
+    @GetMapping("/titles/lookup") public List<BookTitle> lookupTitles(@RequestParam List<UUID> ids) { if (ids.size() > 100) throw new InvalidQueryException(); return library.lookupTitles(ids); }
     @PutMapping("/titles/{id}") public BookTitle updateTitle(Authentication auth, @PathVariable UUID id, @Valid @RequestBody TitleUpdate body) {
         return library.updateTitle(actor(auth), id, body.code(), body.title(), body.author(), body.status(), body.expectedVersion());
     }
@@ -37,6 +38,7 @@ public class AdminLibraryController {
         return created(library.createCopy(actor(auth), body.titleId(), body.code()), BookCopy::id);
     }
     @GetMapping("/copies/{id}") public BookCopy copy(@PathVariable UUID id) { return library.copy(id); }
+    @GetMapping("/copies/lookup") public List<BookCopy> lookupCopies(@RequestParam List<UUID> ids) { if (ids.size() > 100) throw new InvalidQueryException(); return library.lookupCopies(ids); }
     @PutMapping("/copies/{id}") public BookCopy updateCopy(Authentication auth, @PathVariable UUID id, @Valid @RequestBody CopyUpdate body) {
         return library.updateCopy(actor(auth), id, body.code(), body.status(), body.expectedVersion());
     }
