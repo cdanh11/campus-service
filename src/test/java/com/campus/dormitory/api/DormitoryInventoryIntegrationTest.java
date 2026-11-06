@@ -276,6 +276,20 @@ class DormitoryInventoryIntegrationTest {
         assertThat(create.path("properties").has("expectedVersion")).isFalse();
     }
 
+    @Test void looksUpOnlyRequestedInventoryIdsAndCapsBatchSize() throws Exception {
+        var bed = service.create(actor, InventoryKind.BED, room, prefix + "LK", "Lookup Bed");
+        var rooms = read(call(get(ROOT + "lookup/rooms").param("ids", room + "," + UUID.randomUUID()), null).andExpect(status().isOk()));
+        assertThat(rooms).hasSize(1);
+        assertThat(rooms.get(0).get("id").asText()).isEqualTo(room.toString());
+        var beds = read(call(get(ROOT + "lookup/beds").param("ids", bed.id().toString()), null).andExpect(status().isOk()));
+        assertThat(beds).hasSize(1);
+        assertThat(beds.get(0).get("parentId").asText()).isEqualTo(room.toString());
+        call(get(ROOT + "lookup/buildings").param("ids", String.join(",", Collections.nCopies(101, building.toString()))), null)
+                .andExpect(status().isBadRequest());
+        call(get(ROOT + "lookup/buildings").param("ids", "invalid"), null).andExpect(status().isBadRequest());
+        call(get(ROOT + "lookup/buildings"), null).andExpect(status().isBadRequest());
+    }
+
     private UserAccount account(RoleCode role) {
         return users.save(UserAccount.create(UUID.randomUUID(), UUID.randomUUID() + "@campus.example", "Inventory Admin",
                 passwords.encode("valid-password"), AccountStatus.ACTIVE, Set.of(roles.findByCode(role).orElseThrow()), Instant.now()));

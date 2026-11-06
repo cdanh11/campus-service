@@ -91,6 +91,12 @@ class FunctionalAdministrationAuthorizationIntegrationTest {
                     .contentType(MediaType.APPLICATION_JSON).content("{")).andExpect(status().isForbidden());
         }
         mvc.perform(get(BASE + "library/loans").header("Authorization", "Bearer " + report)).andExpect(status().isForbidden());
+        for (String lookup : new String[] {"academic/sections/lookup", "dormitory/lookup/beds", "library/copies/lookup", "students/lookup", "events/lookup"}) {
+            mvc.perform(get(BASE + lookup).header("Authorization", "Bearer " + report)).andExpect(status().isBadRequest());
+            mvc.perform(post(BASE + lookup).header("Authorization", "Bearer " + report)
+                    .contentType(MediaType.APPLICATION_JSON).content("{")).andExpect(status().isForbidden());
+        }
+        mvc.perform(get(BASE + "users/lookup").header("Authorization", "Bearer " + report)).andExpect(status().isForbidden());
         mvc.perform(get(BASE + "event-registrations").header("Authorization", "Bearer " + report)).andExpect(status().isForbidden());
         mvc.perform(get(BASE + "audits/IDENTITY").header("Authorization", "Bearer " + report)).andExpect(status().isForbidden());
         String audit = token(RoleCode.AUDIT_VIEWER);
@@ -103,6 +109,7 @@ class FunctionalAdministrationAuthorizationIntegrationTest {
             String token = token(role);
             mvc.perform(get(BASE + "users").header("Authorization", "Bearer " + token)).andExpect(status().isOk());
             mvc.perform(get(BASE + "users/" + UUID.randomUUID()).header("Authorization", "Bearer " + token)).andExpect(status().isNotFound());
+            mvc.perform(get(BASE + "users/lookup").header("Authorization", "Bearer " + token)).andExpect(status().isBadRequest());
             mvc.perform(get(BASE + "users/future-reference").header("Authorization", "Bearer " + token)).andExpect(status().isForbidden());
             mvc.perform(patch(BASE + "users/" + UUID.randomUUID() + "/status").header("Authorization", "Bearer " + token)
                     .contentType(MediaType.APPLICATION_JSON).content("{")).andExpect(status().isForbidden());
