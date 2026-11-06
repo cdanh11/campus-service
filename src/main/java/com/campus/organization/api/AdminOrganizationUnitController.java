@@ -42,6 +42,7 @@ public class AdminOrganizationUnitController {
         return new PageResponse(result.content().stream().map(AdminOrganizationUnitController::response).toList(), page, size, result.totalElements(), (int) Math.ceil((double) result.totalElements() / size));
     }
     @GetMapping("/{unitId}") public Response get(@PathVariable UUID unitId) { return response(service.get(unitId)); }
+    @GetMapping("/lookup") public List<Response> lookup(@RequestParam List<UUID> ids) { if (ids.size() > 100) throw new InvalidQueryParameterException(); return service.lookup(ids).stream().map(AdminOrganizationUnitController::response).toList(); }
     @PutMapping("/{unitId}") public Response update(Authentication authentication, @PathVariable UUID unitId, @Valid @RequestBody UpdateRequest request) { return response(service.update((UUID) authentication.getPrincipal(), unitId, request.code(), request.name(), request.unitType(), request.status(), request.expectedVersion())); }
     private static Response response(OrganizationUnit unit) { return new Response(unit.id(), unit.code(), unit.name(), unit.unitType().name(), unit.status().name(), unit.rowVersion(), unit.createdAt(), unit.updatedAt()); }
     public record Request(@NotBlank String code, @NotBlank String name, @NotNull OrganizationUnitType unitType, OrganizationUnitStatus status) { }

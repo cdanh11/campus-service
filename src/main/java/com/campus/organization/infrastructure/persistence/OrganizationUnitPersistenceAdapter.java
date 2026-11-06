@@ -33,6 +33,7 @@ class OrganizationUnitPersistenceAdapter implements OrganizationUnitRepository {
     @Override @Transactional(readOnly = true) public Optional<OrganizationUnit> findById(UUID id) { return repository.findById(id).map(this::map); }
     @Override @Transactional(readOnly = true) public boolean existsByCode(String code) { return repository.existsByCode(code); }
     @Override @Transactional(readOnly = true) public List<OrganizationUnit> findAll() { return repository.findAll(org.springframework.data.domain.Sort.by("code")).stream().map(this::map).toList(); }
+    @Override @Transactional(readOnly = true) public List<OrganizationUnit> findAllById(java.util.Collection<UUID> ids) { return repository.findAllById(ids).stream().map(this::map).toList(); }
     @Override @Transactional(readOnly = true) public PageResult<OrganizationUnit> search(OrganizationUnitSearch search) {
         org.springframework.data.jpa.domain.Specification<OrganizationUnitEntity> specification = (root, query, builder) -> {
             java.util.List<jakarta.persistence.criteria.Predicate> predicates = new java.util.ArrayList<>();

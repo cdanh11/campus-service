@@ -1,6 +1,7 @@
 package com.campus.organization.application;
 
 import java.time.Clock;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,6 +46,8 @@ public class OrganizationUnitManagementService {
 
     @Transactional(readOnly = true)
     public List<OrganizationUnit> list() { return units.findAll(); }
+    @Transactional(readOnly = true)
+    public List<OrganizationUnit> lookup(Collection<UUID> ids) { return units.findAllById(ids); }
     @Transactional(readOnly = true)
     public PageResult<OrganizationUnit> search(OrganizationUnitSearch search) { return units.search(search); }
 
