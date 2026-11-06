@@ -12,6 +12,11 @@ const units = ['Công nghệ thông tin', 'Kinh tế', 'Ngoại ngữ', 'Kỹ th
 const subjects = ['Nhập môn ngành', 'Phương pháp nghiên cứu', 'Thực hành chuyên ngành', 'Ứng dụng dữ liệu', 'Đồ án cơ sở']
 const events = ['Ngày hội việc làm', 'Tuần lễ định hướng', 'Cuộc thi lập trình', 'Hội thảo khởi nghiệp', 'Hiến máu tình nguyện', 'Ngày hội văn hóa', 'Giải chạy sinh viên', 'Tọa đàm doanh nghiệp', 'Triển lãm đồ án', 'Kỹ năng phỏng vấn', 'Ngày hội đọc sách', 'Bảo vệ môi trường', 'Sinh viên nghiên cứu khoa học', 'Giao lưu câu lạc bộ', 'Hội thảo học bổng', 'Kết nối cựu sinh viên']
 const scoped = ['ORGANIZATION_ADMIN', 'STUDENT_ADMIN', 'PERSONNEL_ADMIN', 'ACADEMIC_ADMIN', 'DORMITORY_ADMIN', 'FINANCE_ADMIN', 'NOTIFICATION_ADMIN', 'EVENT_ADMIN', 'LIBRARY_ADMIN', 'AUDIT_VIEWER', 'REPORTING_VIEWER']
+const meetings = [[2, '07:30', '09:30'], [2, '09:45', '11:45'], [3, '13:00', '15:00'], [4, '07:30', '09:30'], [5, '15:15', '17:15'], [6, '09:45', '11:45'], [7, '13:00', '15:00']]
+const meeting = (i) => {
+  const [weekday, startsAt, endsAt] = meetings[i % meetings.length]
+  return { weekday, startsAt, endsAt, room: `P.${101 + (i % 30)}` }
+}
 
 async function account(client, email, displayName, roles) {
   let value = client.accounts.accounts.find(a => a.email === email)
@@ -84,7 +89,7 @@ export async function seedInventory(c) {
     let section = await c.create(`section:${i}`, 'ACADEMIC_ADMIN', base + 'academic/sections', {
       offeringId: offerings[i % 90].id, code: code('CLASS', i), capacity: 40, facultyId: i < 140 ? personnel[i % 60].id : null,
     })
-    if (i < 130) section = await c.change(`section:open:${i}`, 'ACADEMIC_ADMIN', base + `academic/sections/${section.id}`, { ...fields(section, ['code', 'capacity', 'facultyId']), status: 'OPEN' }, { status: 'OPEN' })
+    if (i < 130) section = await c.change(`section:open:${i}`, 'ACADEMIC_ADMIN', base + `academic/sections/${section.id}`, { ...fields(section, ['code', 'capacity', 'facultyId']), ...meeting(i), status: 'OPEN' }, { status: 'OPEN' })
     if (i >= 140) section = await c.change(`section:cancel:${i}`, 'ACADEMIC_ADMIN', base + `academic/sections/${section.id}`, { ...fields(section, ['code', 'capacity', 'facultyId']), status: 'CANCELLED' }, { status: 'CANCELLED' })
     sections.push(section)
   }

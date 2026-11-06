@@ -100,16 +100,17 @@ public class AcademicDeliveryService {
         AcademicLifecycle.delivery(old.status(), status);
         if (old.status() != AcademicDeliveryStatus.DRAFT && (capacity != old.capacity() || !Objects.equals(facultyId, old.facultyId())
                 || !old.code().equals(ClassSection.normalizeCode(code)))) throw new InvalidStateException();
+        var nextSchedule = schedule == null ? old.schedule() : schedule;
         if (status == AcademicDeliveryStatus.OPEN) {
             if (term.status() != AcademicTermStatus.ACTIVE || offering.status() != AcademicDeliveryStatus.OPEN) throw new InvalidStateException();
             activeCourse(offering.courseId());
             unit(offering.organizationUnitId());
             faculty(facultyId, true);
-            if (schedule == null || !schedule.scheduled()) throw new InvalidStateException();
+            if (!nextSchedule.scheduled()) throw new InvalidStateException();
         } else if (!Objects.equals(old.facultyId(), facultyId)) {
             faculty(facultyId, false);
         }
-        return sections.update(new ClassSection(id, old.offeringId(), code, capacity, facultyId, schedule, status,
+        return sections.update(new ClassSection(id, old.offeringId(), code, capacity, facultyId, nextSchedule, status,
                 old.rowVersion(), old.createdAt(), clock.instant()), version);
     }
 
