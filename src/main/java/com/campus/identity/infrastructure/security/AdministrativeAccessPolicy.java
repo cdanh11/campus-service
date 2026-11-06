@@ -14,11 +14,11 @@ final class AdministrativeAccessPolicy {
     static List<Rule> rules() {
         return List.of(
                 // Exact reference paths precede owner wildcards. Report viewers cannot read unrelated owner data.
-                rule("ACADEMIC_ADMIN", List.of("REPORTING_VIEWER"), "academic/sections", "academic/sections" + UUID_REFERENCE),
-                rule("DORMITORY_ADMIN", List.of("REPORTING_VIEWER"), "dormitory/beds", "dormitory/beds" + UUID_REFERENCE),
-                rule("LIBRARY_ADMIN", List.of("REPORTING_VIEWER"), "library/copies", "library/copies" + UUID_REFERENCE),
-                rule("EVENT_ADMIN", List.of("REPORTING_VIEWER"), "events", "events" + UUID_REFERENCE),
-                rule("ADMIN", List.of("STUDENT_ADMIN", "PERSONNEL_ADMIN", "NOTIFICATION_ADMIN"), "users", "users" + UUID_REFERENCE),
+                rule("ACADEMIC_ADMIN", List.of("REPORTING_VIEWER"), "academic/sections", "academic/sections" + UUID_REFERENCE, "academic/sections/lookup"),
+                rule("DORMITORY_ADMIN", List.of("REPORTING_VIEWER"), "dormitory/beds", "dormitory/beds" + UUID_REFERENCE, "dormitory/lookup/beds"),
+                rule("LIBRARY_ADMIN", List.of("REPORTING_VIEWER"), "library/copies", "library/copies" + UUID_REFERENCE, "library/copies/lookup"),
+                rule("EVENT_ADMIN", List.of("REPORTING_VIEWER"), "events", "events" + UUID_REFERENCE, "events/lookup"),
+                rule("ADMIN", List.of("STUDENT_ADMIN", "PERSONNEL_ADMIN", "NOTIFICATION_ADMIN"), "users", "users" + UUID_REFERENCE, "users/lookup"),
                 rule("ORGANIZATION_ADMIN", List.of("STUDENT_ADMIN", "PERSONNEL_ADMIN", "ACADEMIC_ADMIN"), "organization-units", "organization-units/**"),
                 rule("STUDENT_ADMIN", List.of("ACADEMIC_ADMIN", "DORMITORY_ADMIN", "FINANCE_ADMIN", "EVENT_ADMIN", "LIBRARY_ADMIN", "REPORTING_VIEWER"), "students", "students/**"),
                 rule("PERSONNEL_ADMIN", List.of("ACADEMIC_ADMIN"), "faculty-staff", "faculty-staff/**"),
