@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -76,7 +77,8 @@ class AuthControllerIntegrationTest {
         mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content("{"))
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("MALFORMED_REQUEST"));
         mockMvc.perform(get("/api/v1/auth/me").header("Authorization", "Bearer invalid"))
-                .andExpect(status().isUnauthorized()).andExpect(jsonPath("$.code").value("INVALID_ACCESS_TOKEN"));
+                .andExpect(status().isUnauthorized()).andExpect(header().exists("X-Request-ID"))
+                .andExpect(jsonPath("$.code").value("INVALID_ACCESS_TOKEN")).andExpect(jsonPath("$.traceId").isNotEmpty());
     }
 
     @Test

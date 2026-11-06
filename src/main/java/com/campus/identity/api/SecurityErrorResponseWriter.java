@@ -15,6 +15,7 @@ public final class SecurityErrorResponseWriter {
     public void write(HttpServletRequest request, HttpServletResponse response, int status, String code, String message) throws IOException {
         response.setStatus(status);
         response.setContentType("application/json;charset=UTF-8");
-        objectMapper.writeValue(response.getWriter(), new AuthenticationErrorHandler.ErrorResponse(Instant.now(), status, code, message, request.getRequestURI(), null));
+        String traceId = request.getAttribute("campus.requestId") instanceof String id ? id : null;
+        objectMapper.writeValue(response.getWriter(), new AuthenticationErrorHandler.ErrorResponse(Instant.now(), status, code, message, request.getRequestURI(), traceId));
     }
 }
