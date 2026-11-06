@@ -1,5 +1,6 @@
 package com.campus.academic.application;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
@@ -22,11 +23,12 @@ public class StudentAcademicService {
     private final AcademicCourseRepository courses;
     private final AcademicTermRepository terms;
     private final FacultyStaffManagementService faculty;
+    private final Clock clock;
 
     public StudentAcademicService(StudentAccountDirectory accounts, EnrollmentRepository enrollments,
                                   ClassSectionRepository sections, CourseOfferingRepository offerings,
                                   AcademicCourseRepository courses, AcademicTermRepository terms,
-                                  FacultyStaffManagementService faculty) {
+                                  FacultyStaffManagementService faculty, Clock clock) {
         this.accounts = accounts;
         this.enrollments = enrollments;
         this.sections = sections;
@@ -34,6 +36,7 @@ public class StudentAcademicService {
         this.courses = courses;
         this.terms = terms;
         this.faculty = faculty;
+        this.clock = clock;
     }
 
     public Timetable timetable(UUID account, UUID termId) {
@@ -65,11 +68,19 @@ public class StudentAcademicService {
     }
 
     private TermView current(List<EnrollmentView> values) {
-        var latest = values.stream().map(EnrollmentView::term)
-                .filter(value -> value.status() == AcademicTermStatus.ACTIVE)
+        LocalDate today = LocalDate.now(clock);
+        var active = values.stream().map(EnrollmentView::term)
+                .filter(value -> value.status() == AcademicTermStatus.ACTIVE).toList();
+        var ongoing = active.stream()
+                .filter(value -> !value.startDate().isAfter(today) && !value.endDate().isBefore(today))
                 .max(Comparator.comparing(TermView::startDate));
-        return latest.orElseGet(() -> values.stream().map(EnrollmentView::term)
-                .max(Comparator.comparing(TermView::startDate)).orElse(null));
+        if (ongoing.isPresent()) return ongoing.get();
+        var upcoming = active.stream().filter(value -> value.startDate().isAfter(today))
+                .min(Comparator.comparing(TermView::startDate));
+        if (upcoming.isPresent()) return upcoming.get();
+        return active.stream().max(Comparator.comparing(TermView::startDate))
+                .orElseGet(() -> values.stream().map(EnrollmentView::term)
+                        .max(Comparator.comparing(TermView::startDate)).orElse(null));
     }
 
     private List<EnrollmentView> views(UUID studentId, EnrollmentStatus status) {

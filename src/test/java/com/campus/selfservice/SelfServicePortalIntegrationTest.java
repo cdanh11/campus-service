@@ -119,6 +119,21 @@ class SelfServicePortalIntegrationTest {
                 .andExpect(jsonPath("$.charges[2].outstanding").value(0));
     }
 
+    @Test void prefersTheOngoingTermForTheDefaultTimetable() throws Exception {
+        var today = LocalDate.now();
+        var ongoing = activeTerm(today.minusDays(5).toString(), today.plusDays(5).toString());
+        enrol(ongoing, "NOW101", "Current course", 3, 2, LocalTime.of(7, 30), LocalTime.of(9, 30), "A101");
+        var future = activeTerm("2099-01-01", "2099-06-01");
+        enrol(future, "NEXT101", "Future course", 3, 4, LocalTime.of(7, 30), LocalTime.of(9, 30), "B202");
+        var past = activeTerm("2020-01-01", "2020-06-01");
+        enrol(past, "PAST101", "Past course", 3, 6, LocalTime.of(7, 30), LocalTime.of(9, 30), "C303");
+
+        mvc.perform(get("/api/v1/me/timetable").header("Authorization", token())).andExpect(status().isOk())
+                .andExpect(jsonPath("$.term.id").value(ongoing.toString()))
+                .andExpect(jsonPath("$.meetings.length()").value(1))
+                .andExpect(jsonPath("$.meetings[0].course.code").value("NOW101"));
+    }
+
     private UUID activeTerm(String start, String end) {
         var term = delivery.createTerm(prefix + UUID.randomUUID().toString().substring(0, 4), "Term", LocalDate.parse(start), LocalDate.parse(end));
         return delivery.updateTerm(term.id(), term.code(), term.name(), term.startDate(), term.endDate(), AcademicTermStatus.ACTIVE, 0).id();
