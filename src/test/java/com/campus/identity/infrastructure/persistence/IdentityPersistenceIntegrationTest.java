@@ -113,6 +113,22 @@ class IdentityPersistenceIntegrationTest {
     }
 
     @Test
+    void recordLoginUpdatesOnlyLastLoginAndPreservesConcurrentStatusChange() {
+        UserAccount created = userAccountRepository.save(UserAccount.create(
+                UUID.randomUUID(), "login-race@campus.example", PASSWORD_HASH, Instant.now()));
+        UserAccount adminSnapshot = userAccountRepository.findById(created.id()).orElseThrow();
+        Instant loginAt = Instant.now().plusSeconds(5).truncatedTo(ChronoUnit.MICROS);
+
+        adminSnapshot.changeStatus(AccountStatus.SUSPENDED);
+        userAccountRepository.saveAdminMutation(adminSnapshot, adminSnapshot.rowVersion());
+        userAccountRepository.recordLogin(created.id(), loginAt);
+
+        UserAccount reloaded = userAccountRepository.findById(created.id()).orElseThrow();
+        assertThat(reloaded.status()).isEqualTo(AccountStatus.SUSPENDED);
+        assertThat(reloaded.lastLoginAt()).isEqualTo(loginAt);
+    }
+
+    @Test
     void rejectsDuplicateEmailIgnoringCase() {
         userAccountRepository.save(UserAccount.create(
                 UUID.randomUUID(), "duplicate@campus.example", PASSWORD_HASH, Instant.now()));

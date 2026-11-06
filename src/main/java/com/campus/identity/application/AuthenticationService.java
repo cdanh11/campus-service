@@ -41,8 +41,7 @@ public class AuthenticationService {
         boolean passwordMatches = passwordEncoder.matches(password, storedHash);
         if (user == null || !isActive(user) || !passwordMatches) throw new AuthenticationFailure();
         Instant now = clock.instant();
-        user.recordLogin(now);
-        users.save(user);
+        users.recordLogin(user.id(), now);
         AuthSession session = sessions.save(new AuthSession(UUID.randomUUID(), user.id(), now, now.plus(properties.refreshTokenTtl()), null, null));
         String raw = tokens.encodeRefreshToken(tokens.newRefreshToken());
         refreshTokens.save(new RefreshToken(UUID.randomUUID(), session.id(), tokens.hash(raw), now,

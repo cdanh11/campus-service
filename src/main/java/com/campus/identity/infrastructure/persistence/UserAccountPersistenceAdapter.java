@@ -41,6 +41,12 @@ class UserAccountPersistenceAdapter implements UserAccountRepository {
 
     @Override
     @Transactional
+    public void recordLogin(java.util.UUID id, java.time.Instant at) {
+        userAccountJpaRepository.updateLastLoginAt(id, at);
+    }
+
+    @Override
+    @Transactional
     public UserAccount saveAdminMutation(UserAccount userAccount, long expectedVersion) {
         UserAccountEntity entity = userAccountJpaRepository.findByIdForUpdate(userAccount.id()).orElseThrow();
         if (entity.getRowVersion() != expectedVersion) {

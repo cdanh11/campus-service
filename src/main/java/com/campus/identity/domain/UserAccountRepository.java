@@ -9,6 +9,8 @@ public interface UserAccountRepository {
 
     UserAccount saveAdminMutation(UserAccount userAccount, long expectedVersion);
 
+    void recordLogin(UUID id, java.time.Instant at);
+
     Optional<UserAccount> findById(UUID id);
 
     Optional<UserAccount> findByIdForUpdate(UUID id);

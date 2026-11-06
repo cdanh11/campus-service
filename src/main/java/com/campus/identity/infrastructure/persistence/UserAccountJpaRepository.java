@@ -15,6 +15,11 @@ interface UserAccountJpaRepository extends JpaRepository<UserAccountEntity, UUID
     Optional<UserAccountEntity> findByEmailIgnoreCase(String email);
     boolean existsByIdAndStatus(UUID id, com.campus.identity.domain.AccountStatus status);
 
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("update UserAccountEntity user set user.lastLoginAt = :at where user.id = :id")
+    int updateLastLoginAt(@org.springframework.data.repository.query.Param("id") UUID id,
+                          @org.springframework.data.repository.query.Param("at") java.time.Instant at);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select user from UserAccountEntity user where user.id = :id")
     Optional<UserAccountEntity> findByIdForUpdate(UUID id);
