@@ -19,11 +19,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthenticationService {
-    private static final String DUMMY_PASSWORD_HASH = "{bcrypt}$2b$12$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZabcde";
     private final UserAccountRepository users;
     private final AuthSessionRepository sessions;
     private final RefreshTokenRepository refreshTokens;
     private final PasswordEncoder passwordEncoder;
+    private final String dummyPasswordHash;
     private final TokenService tokens;
     private final SecurityProperties properties;
     private final Clock clock;
@@ -31,13 +31,14 @@ public class AuthenticationService {
     public AuthenticationService(UserAccountRepository users, AuthSessionRepository sessions, RefreshTokenRepository refreshTokens,
             PasswordEncoder passwordEncoder, TokenService tokens, SecurityProperties properties, Clock clock) {
         this.users = users; this.sessions = sessions; this.refreshTokens = refreshTokens; this.passwordEncoder = passwordEncoder;
+        this.dummyPasswordHash = passwordEncoder.encode(UUID.randomUUID().toString());
         this.tokens = tokens; this.properties = properties; this.clock = clock;
     }
 
     @Transactional
     public AuthResult login(String email, String password) {
         UserAccount user = users.findByEmail(email).orElse(null);
-        String storedHash = user == null ? DUMMY_PASSWORD_HASH : user.passwordHash();
+        String storedHash = user == null ? dummyPasswordHash : user.passwordHash();
         boolean passwordMatches = passwordEncoder.matches(password, storedHash);
         if (user == null || !isActive(user) || !passwordMatches) throw new AuthenticationFailure();
         Instant now = clock.instant();
