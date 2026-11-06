@@ -55,12 +55,12 @@ public class AcademicAdministrationService {
         actor(actor); var value = delivery.updateOffering(id, status, version);
         record(actor, COURSE_OFFERING, value.id(), UPDATED, value.rowVersion(), value.status().name()); return value;
     }
-    public ClassSection createSection(UUID actor, UUID offering, String code, int capacity, UUID faculty) {
-        actor(actor); var value = delivery.createSection(offering, code, capacity, faculty);
+    public ClassSection createSection(UUID actor, UUID offering, String code, int capacity, UUID faculty, SectionSchedule schedule) {
+        actor(actor); var value = delivery.createSection(offering, code, capacity, faculty, schedule);
         record(actor, CLASS_SECTION, value.id(), CREATED, value.rowVersion(), value.status().name()); return value;
     }
-    public ClassSection updateSection(UUID actor, UUID id, String code, int capacity, UUID faculty, AcademicDeliveryStatus status, long version) {
-        actor(actor); var value = delivery.updateSection(id, code, capacity, faculty, status, version);
+    public ClassSection updateSection(UUID actor, UUID id, String code, int capacity, UUID faculty, SectionSchedule schedule, AcademicDeliveryStatus status, long version) {
+        actor(actor); var value = delivery.updateSection(id, code, capacity, faculty, schedule, status, version);
         record(actor, CLASS_SECTION, value.id(), UPDATED, value.rowVersion(), value.status().name()); return value;
     }
     public Enrollment create(UUID actor, UUID student, UUID section) {

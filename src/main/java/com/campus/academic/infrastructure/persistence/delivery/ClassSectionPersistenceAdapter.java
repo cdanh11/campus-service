@@ -75,6 +75,8 @@ class ClassSectionPersistenceAdapter implements ClassSectionRepository {
     @Transactional(readOnly = true)
     public boolean hasOpenSections(UUID offeringId) { return repository.existsByOfferingIdAndStatus(offeringId, AcademicDeliveryStatus.OPEN); }
     private ClassSection map(ClassSectionEntity entity) {
-        return new ClassSection(entity.getId(), entity.getOfferingId(), entity.getCode(), entity.getCapacity(), entity.getFacultyId(), entity.getStatus(), entity.getRowVersion(), entity.getCreatedAt(), entity.getUpdatedAt());
+        return new ClassSection(entity.getId(), entity.getOfferingId(), entity.getCode(), entity.getCapacity(), entity.getFacultyId(),
+                SectionSchedule.of(entity.getWeekday(), entity.getStartsAt(), entity.getEndsAt(), entity.getRoom()),
+                entity.getStatus(), entity.getRowVersion(), entity.getCreatedAt(), entity.getUpdatedAt());
     }
 }

@@ -3,6 +3,7 @@ package com.campus.academic.api;
 import com.campus.testsupport.PostgresApplicationTest;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.*;
@@ -63,8 +64,8 @@ class EnrollmentIntegrationTest {
         term = delivery.updateTerm(term.id(), term.code(), term.name(), term.startDate(), term.endDate(), AcademicTermStatus.ACTIVE, 0);
         var offering = delivery.createOffering(term.id(), course.id());
         offering = delivery.updateOffering(offering.id(), AcademicDeliveryStatus.OPEN, 0);
-        var value = delivery.createSection(offering.id(), prefix, 1, faculty.id());
-        section = delivery.updateSection(value.id(), value.code(), value.capacity(), faculty.id(), AcademicDeliveryStatus.OPEN, 0).id();
+        var value = delivery.createSection(offering.id(), prefix, 1, faculty.id(), null);
+        section = delivery.updateSection(value.id(), value.code(), value.capacity(), faculty.id(), schedule(), AcademicDeliveryStatus.OPEN, 0).id();
         student = student(StudentStatus.ACTIVE);
     }
 
@@ -108,7 +109,7 @@ class EnrollmentIntegrationTest {
     @Test void permitsHistoricalWithdrawalButRejectsReenrollmentAfterClosure() {
         var value = enrollments.create(student, section);
         var current = delivery.section(section);
-        delivery.updateSection(section, current.code(), current.capacity(), current.facultyId(), AcademicDeliveryStatus.CLOSED, current.rowVersion());
+        delivery.updateSection(section, current.code(), current.capacity(), current.facultyId(), schedule(), AcademicDeliveryStatus.CLOSED, current.rowVersion());
         enrollments.update(value.id(), EnrollmentStatus.WITHDRAWN, 0);
         assertThatThrownBy(() -> enrollments.update(value.id(), EnrollmentStatus.ENROLLED, 1)).isInstanceOf(EnrollmentService.InvalidStateException.class);
         assertThat(enrollments.get(value.id()).rowVersion()).isEqualTo(1);
@@ -125,9 +126,9 @@ class EnrollmentIntegrationTest {
 
     @Test void rejectsSecondActiveSectionOfTheSameOfferingButAllowsReenrollmentAfterWithdrawal() {
         var current = delivery.section(section);
-        var other = delivery.createSection(current.offeringId(), prefix + "B", 1, null);
+        var other = delivery.createSection(current.offeringId(), prefix + "B", 1, null, null);
         var openOther = delivery.updateSection(other.id(), other.code(), other.capacity(), current.facultyId(),
-                AcademicDeliveryStatus.OPEN, 0);
+                schedule(), AcademicDeliveryStatus.OPEN, 0);
         var first = enrollments.create(student, section);
 
         assertThatThrownBy(() -> enrollments.create(student, openOther.id())).isInstanceOf(EnrollmentService.DuplicateException.class);
@@ -168,7 +169,7 @@ class EnrollmentIntegrationTest {
     @Test void closureAndEnrollmentHaveAConsistentSerializedOutcome() throws Exception {
         var current = delivery.section(section);
         var outcomes = race(() -> enrollments.create(student, section), () -> delivery.updateSection(section, current.code(),
-                current.capacity(), current.facultyId(), AcademicDeliveryStatus.CLOSED, current.rowVersion()));
+                current.capacity(), current.facultyId(), schedule(), AcademicDeliveryStatus.CLOSED, current.rowVersion()));
         assertThat(outcomes.get(1)).isNull();
         if (outcomes.get(0) == null) assertThat(occupied()).isEqualTo(1);
         else { assertThat(outcomes.get(0)).isInstanceOf(EnrollmentService.InvalidStateException.class); assertThat(occupied()).isZero(); }
@@ -206,7 +207,7 @@ class EnrollmentIntegrationTest {
                 var cached = delivery.section(section);
                 try {
                     pool.submit(() -> delivery.updateSection(section, cached.code(), cached.capacity(), cached.facultyId(),
-                            AcademicDeliveryStatus.CLOSED, cached.rowVersion())).get(10, TimeUnit.SECONDS);
+                            schedule(), AcademicDeliveryStatus.CLOSED, cached.rowVersion())).get(10, TimeUnit.SECONDS);
                 } catch (Exception exception) { throw new IllegalStateException(exception); }
                 assertThatThrownBy(() -> enrollments.create(student, section)).isInstanceOf(EnrollmentService.InvalidStateException.class);
                 // The expected rejection marks the joined transaction rollback-only.
@@ -218,6 +219,8 @@ class EnrollmentIntegrationTest {
     }
 
     private long occupied() { return jdbc.queryForObject("select count(*) from academic_enrollments where section_id = ? and status = 'ENROLLED'", Long.class, section); }
+
+    private SectionSchedule schedule() { return SectionSchedule.of(2, LocalTime.of(7, 30), LocalTime.of(9, 30), "A101"); }
 
     @Test void exposesAdminLifecycleAndConsistentErrorContract() throws Exception {
         var admin = token(RoleCode.ADMIN);
@@ -294,9 +297,9 @@ class EnrollmentIntegrationTest {
 
     @Test void closedAndDraftSectionsRejectNewEnrollment() {
         var old = delivery.section(section);
-        delivery.updateSection(section, old.code(), old.capacity(), old.facultyId(), AcademicDeliveryStatus.CLOSED, old.rowVersion());
+        delivery.updateSection(section, old.code(), old.capacity(), old.facultyId(), schedule(), AcademicDeliveryStatus.CLOSED, old.rowVersion());
         assertThatThrownBy(() -> enrollments.create(student, section)).isInstanceOf(EnrollmentService.InvalidStateException.class);
-        var draft = delivery.createSection(old.offeringId(), "DRAFT", 1, null);
+        var draft = delivery.createSection(old.offeringId(), "DRAFT", 1, null, null);
         assertThatThrownBy(() -> enrollments.create(student, draft.id())).isInstanceOf(EnrollmentService.InvalidStateException.class);
         assertThat(occupied()).isZero();
     }

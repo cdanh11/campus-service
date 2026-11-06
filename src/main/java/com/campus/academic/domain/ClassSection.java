@@ -6,12 +6,14 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 
-public record ClassSection(UUID id, UUID offeringId, String code, int capacity, UUID facultyId, AcademicDeliveryStatus status, long rowVersion, Instant createdAt, Instant updatedAt) {
+public record ClassSection(UUID id, UUID offeringId, String code, int capacity, UUID facultyId, SectionSchedule schedule,
+                           AcademicDeliveryStatus status, long rowVersion, Instant createdAt, Instant updatedAt) {
     public ClassSection {
         Objects.requireNonNull(id, "id");
         Objects.requireNonNull(offeringId, "offeringId");
         code = normalizeCode(code);
         if (capacity < 1) throw new IllegalArgumentException("capacity must be positive");
+        schedule = schedule == null ? SectionSchedule.empty() : schedule;
         Objects.requireNonNull(status, "status");
         Objects.requireNonNull(createdAt, "createdAt");
         Objects.requireNonNull(updatedAt, "updatedAt");

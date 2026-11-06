@@ -78,7 +78,7 @@ public class AcademicDeliveryService {
                 old.rowVersion(), old.createdAt(), clock.instant()), version);
     }
 
-    public ClassSection createSection(UUID offeringId, String code, int capacity, UUID facultyId) {
+    public ClassSection createSection(UUID offeringId, String code, int capacity, UUID facultyId, SectionSchedule schedule) {
         var known = offering(offeringId);
         editable(terms.lock(known.termId()));
         var offering = offerings.lock(offeringId);
@@ -87,10 +87,10 @@ public class AcademicDeliveryService {
         unit(offering.organizationUnitId());
         faculty(facultyId, false);
         var now = clock.instant();
-        return sections.create(new ClassSection(UUID.randomUUID(), offeringId, code, capacity, facultyId, AcademicDeliveryStatus.DRAFT, 0, now, now));
+        return sections.create(new ClassSection(UUID.randomUUID(), offeringId, code, capacity, facultyId, schedule, AcademicDeliveryStatus.DRAFT, 0, now, now));
     }
 
-    public ClassSection updateSection(UUID id, String code, int capacity, UUID facultyId, AcademicDeliveryStatus status, long version) {
+    public ClassSection updateSection(UUID id, String code, int capacity, UUID facultyId, SectionSchedule schedule, AcademicDeliveryStatus status, long version) {
         var known = section(id);
         var knownOffering = offering(known.offeringId());
         var term = terms.lock(knownOffering.termId());
@@ -105,10 +105,11 @@ public class AcademicDeliveryService {
             activeCourse(offering.courseId());
             unit(offering.organizationUnitId());
             faculty(facultyId, true);
+            if (schedule == null || !schedule.scheduled()) throw new InvalidStateException();
         } else if (!Objects.equals(old.facultyId(), facultyId)) {
             faculty(facultyId, false);
         }
-        return sections.update(new ClassSection(id, old.offeringId(), code, capacity, facultyId, status,
+        return sections.update(new ClassSection(id, old.offeringId(), code, capacity, facultyId, schedule, status,
                 old.rowVersion(), old.createdAt(), clock.instant()), version);
     }
 

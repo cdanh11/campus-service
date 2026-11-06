@@ -1,10 +1,12 @@
 package com.campus.academic.infrastructure.persistence.delivery;
 
 import java.time.Instant;
-import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.UUID;
 import com.campus.academic.domain.*;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -24,6 +26,15 @@ public class ClassSectionEntity {
     private int capacity;
     @Column(name = "faculty_id", nullable = true)
     private UUID facultyId;
+    @JdbcTypeCode(SqlTypes.SMALLINT)
+    @Column(name = "weekday")
+    private Integer weekday;
+    @Column(name = "starts_at")
+    private LocalTime startsAt;
+    @Column(name = "ends_at")
+    private LocalTime endsAt;
+    @Column(name = "room", length = 32)
+    private String room;
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     private AcademicDeliveryStatus status;
@@ -44,6 +55,10 @@ public class ClassSectionEntity {
     public String getCode() { return code; }
     public int getCapacity() { return capacity; }
     public UUID getFacultyId() { return facultyId; }
+    public Integer getWeekday() { return weekday; }
+    public LocalTime getStartsAt() { return startsAt; }
+    public LocalTime getEndsAt() { return endsAt; }
+    public String getRoom() { return room; }
     public AcademicDeliveryStatus getStatus() { return status; }
     public long getRowVersion() { return rowVersion; }
     public Instant getCreatedAt() { return createdAt; }
@@ -54,6 +69,10 @@ public class ClassSectionEntity {
         this.code = value.code();
         this.capacity = value.capacity();
         this.facultyId = value.facultyId();
+        this.weekday = value.schedule().weekday();
+        this.startsAt = value.schedule().startsAt();
+        this.endsAt = value.schedule().endsAt();
+        this.room = value.schedule().room();
         this.status = value.status();
     }
 }

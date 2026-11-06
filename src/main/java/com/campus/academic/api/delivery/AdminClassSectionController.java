@@ -5,6 +5,7 @@ import org.springframework.security.core.Authentication;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 import com.campus.academic.application.AcademicDeliveryService;
@@ -27,7 +28,8 @@ public class AdminClassSectionController {
     @PostMapping
     @Operation(summary = "Create section (administrative permission)", description = "New resources start in DRAFT; lifecycle transitions require PUT and expectedVersion.")
     public ResponseEntity<ClassSection> create(Authentication authentication, @Valid @RequestBody CreateRequest request) {
-        var value = administration.createSection((UUID) authentication.getPrincipal(), request.offeringId(), request.code(), request.capacity(), request.facultyId());
+        var value = administration.createSection((UUID) authentication.getPrincipal(), request.offeringId(), request.code(), request.capacity(), request.facultyId(),
+                SectionSchedule.of(request.weekday(), request.startsAt(), request.endsAt(), request.room()));
         return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(value.id()).toUri()).body(value);
     }
@@ -40,7 +42,8 @@ public class AdminClassSectionController {
     @PutMapping("/{id}")
     @Operation(summary = "Update section (administrative permission)", description = "Requires expectedVersion; stale version, invalid lifecycle or unavailable references return 409. Parent identifiers are immutable.")
     public ClassSection update(Authentication authentication, @PathVariable UUID id, @Valid @RequestBody UpdateRequest request) {
-        return administration.updateSection((UUID) authentication.getPrincipal(), id, request.code(), request.capacity(), request.facultyId(), request.status(), request.expectedVersion());
+        return administration.updateSection((UUID) authentication.getPrincipal(), id, request.code(), request.capacity(), request.facultyId(),
+                SectionSchedule.of(request.weekday(), request.startsAt(), request.endsAt(), request.room()), request.status(), request.expectedVersion());
     }
 
     @GetMapping
@@ -57,6 +60,9 @@ public class AdminClassSectionController {
         return PageResponse.from(result, page, size);
     }
 
-    public record CreateRequest(@NotNull UUID offeringId, @NotBlank String code, @Min(1) int capacity, UUID facultyId) { }
-    public record UpdateRequest(@NotBlank String code, @Min(1) int capacity, UUID facultyId, @NotNull AcademicDeliveryStatus status, @NotNull @PositiveOrZero Long expectedVersion) { }
+    public record CreateRequest(@NotNull UUID offeringId, @NotBlank String code, @Min(1) int capacity, UUID facultyId,
+                                @Min(1) @Max(7) Integer weekday, LocalTime startsAt, LocalTime endsAt, @Size(max = 32) String room) { }
+    public record UpdateRequest(@NotBlank String code, @Min(1) int capacity, UUID facultyId,
+                                @Min(1) @Max(7) Integer weekday, LocalTime startsAt, LocalTime endsAt, @Size(max = 32) String room,
+                                @NotNull AcademicDeliveryStatus status, @NotNull @PositiveOrZero Long expectedVersion) { }
 }

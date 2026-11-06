@@ -44,15 +44,35 @@ class AcademicDeliveryTest {
     void allowsUnassignedDraftAndRequiresFacultyForOpen() {
         assertThat(section("cs01", 30, null, AcademicDeliveryStatus.DRAFT).code()).isEqualTo("CS01");
         assertThatThrownBy(() -> section("CS01", 30, null, AcademicDeliveryStatus.OPEN)).isInstanceOf(IllegalArgumentException.class);
-        assertThatCode(() -> section("CS01", 30, UUID.randomUUID(), AcademicDeliveryStatus.OPEN)).doesNotThrowAnyException();
+        assertThatCode(() -> section("CS01", 30, UUID.randomUUID(), schedule(), AcademicDeliveryStatus.OPEN)).doesNotThrowAnyException();
         assertThatThrownBy(() -> section("ß".repeat(32), 30, null, AcademicDeliveryStatus.DRAFT)).isInstanceOf(IllegalArgumentException.class);
+    }
+    @Test
+    void validatesSectionScheduleAsAnAllOrNothingMeeting() {
+        assertThat(SectionSchedule.empty().scheduled()).isFalse();
+        var slot = SectionSchedule.of(2, java.time.LocalTime.of(7, 30), java.time.LocalTime.of(9, 30), " A101 ");
+        assertThat(slot.scheduled()).isTrue();
+        assertThat(slot.room()).isEqualTo("A101");
+        var time = java.time.LocalTime.of(7, 30);
+        assertThatThrownBy(() -> SectionSchedule.of(0, time, time.plusHours(1), null)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> SectionSchedule.of(8, time, time.plusHours(1), null)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> SectionSchedule.of(2, time, time, null)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> SectionSchedule.of(null, time, time.plusHours(1), null)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> SectionSchedule.of(null, null, null, "A101")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> SectionSchedule.of(2, time, time.plusHours(1), "A".repeat(33))).isInstanceOf(IllegalArgumentException.class);
     }
     private AcademicTerm term(String code, LocalDate start, LocalDate end) {
         var now = Instant.now();
         return new AcademicTerm(UUID.randomUUID(), code, "Term", start, end, AcademicTermStatus.PLANNED, 0, now, now);
     }
     private ClassSection section(String code, int capacity, UUID faculty, AcademicDeliveryStatus status) {
+        return section(code, capacity, faculty, SectionSchedule.empty(), status);
+    }
+    private ClassSection section(String code, int capacity, UUID faculty, SectionSchedule schedule, AcademicDeliveryStatus status) {
         var now = Instant.now();
-        return new ClassSection(UUID.randomUUID(), UUID.randomUUID(), code, capacity, faculty, status, 0, now, now);
+        return new ClassSection(UUID.randomUUID(), UUID.randomUUID(), code, capacity, faculty, schedule, status, 0, now, now);
+    }
+    private SectionSchedule schedule() {
+        return SectionSchedule.of(2, java.time.LocalTime.of(7, 30), java.time.LocalTime.of(9, 30), "A101");
     }
 }

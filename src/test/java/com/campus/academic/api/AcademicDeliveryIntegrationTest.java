@@ -303,7 +303,8 @@ class AcademicDeliveryIntegrationTest {
     private Map<String, Object> termBody() { return new LinkedHashMap<>(Map.of("code", prefix, "name", "Semester", "startDate", "2027-01-01", "endDate", "2027-04-30")); }
     private Map<String, Object> termUpdate(String status, long version) { var value = termBody(); value.put("status", status); value.put("expectedVersion", version); return value; }
     private Map<String, Object> sectionBody(UUID offering, UUID faculty) {
-        var value = new LinkedHashMap<String, Object>(); value.put("offeringId", offering); value.put("code", "CS01"); value.put("capacity", 30); value.put("facultyId", faculty); return value;
+        var value = new LinkedHashMap<String, Object>(); value.put("offeringId", offering); value.put("code", "CS01"); value.put("capacity", 30); value.put("facultyId", faculty);
+        value.put("weekday", 2); value.put("startsAt", "07:30"); value.put("endsAt", "09:30"); value.put("room", "A101"); return value;
     }
     private Map<String, Object> sectionUpdate(JsonNode section, String status, UUID faculty, long version) {
         var value = sectionBody(UUID.fromString(section.get("offeringId").asText()), faculty); value.put("status", status); value.put("expectedVersion", version); return value;

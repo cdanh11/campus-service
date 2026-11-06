@@ -4,6 +4,7 @@ import com.campus.testsupport.PostgresApplicationTest;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.*;
 import com.campus.academic.application.*;
@@ -67,8 +68,8 @@ class AcademicAuditIntegrationTest {
         term = delivery.updateTerm(value.id(), value.code(), value.name(), value.startDate(), value.endDate(), AcademicTermStatus.ACTIVE, 0).id();
         var open = delivery.createOffering(term, course);
         offering = delivery.updateOffering(open.id(), AcademicDeliveryStatus.OPEN, 0).id();
-        var draft = delivery.createSection(offering, prefix, 1, faculty);
-        section = delivery.updateSection(draft.id(), draft.code(), 1, faculty, AcademicDeliveryStatus.OPEN, 0).id();
+        var draft = delivery.createSection(offering, prefix, 1, faculty, null);
+        section = delivery.updateSection(draft.id(), draft.code(), 1, faculty, schedule(), AcademicDeliveryStatus.OPEN, 0).id();
     }
 
     @ParameterizedTest @ValueSource(strings = {"programs", "courses", "terms", "offerings", "sections", "enrollments"})
@@ -299,7 +300,8 @@ class AcademicAuditIntegrationTest {
             case "courses" -> body.putAll(Map.of("code", value.get("code").asText(), "title", "Updated Course", "credits", 4, "organizationUnitId", unit, "status", "ACTIVE"));
             case "terms" -> body.putAll(Map.of("code", value.get("code").asText(), "name", "Updated Term", "startDate", "2026-01-01", "endDate", "2026-06-01", "status", "ACTIVE"));
             case "offerings" -> body.put("status", "OPEN");
-            case "sections" -> body.putAll(Map.of("code", value.get("code").asText(), "capacity", 1, "facultyId", faculty, "status", "OPEN"));
+            case "sections" -> body.putAll(Map.of("code", value.get("code").asText(), "capacity", 1, "facultyId", faculty, "status", "OPEN",
+                    "weekday", 3, "startsAt", "09:00", "endsAt", "11:00", "room", "B202"));
             case "enrollments" -> body.put("status", "WITHDRAWN");
             default -> throw new IllegalArgumentException(route);
         }
@@ -313,6 +315,7 @@ class AcademicAuditIntegrationTest {
         if (body != null) request.content(json.writeValueAsString(body));
         return mvc.perform(request);
     }
+    private SectionSchedule schedule() { return SectionSchedule.of(2, LocalTime.of(7, 30), LocalTime.of(9, 30), "A101"); }
     private void rejectAudit() {
         jdbc.execute("CREATE OR REPLACE FUNCTION reject_academic_audit_test() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'forced audit failure'; END $$");
         jdbc.execute("CREATE TRIGGER reject_academic_audit_test BEFORE INSERT ON academic_audit_events FOR EACH ROW EXECUTE FUNCTION reject_academic_audit_test()");
