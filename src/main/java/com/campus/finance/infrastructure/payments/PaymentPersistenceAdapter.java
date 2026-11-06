@@ -38,6 +38,12 @@ class PaymentPersistenceAdapter implements PaymentRepository {
                 where c.id=:id group by c.id,c.amount,c.currency,c.status,c.version
                 """,ChargeBalance.class).setParameter("id",id).setParameter("status",PaymentStatus.RECORDED).getResultStream().findFirst();
     }
+    public List<ManualPayment> findByCharges(Collection<UUID> chargeIds) {
+        if (chargeIds.isEmpty()) return List.of();
+        return entities.createQuery("select p from ManualPaymentEntity p where p.chargeId in :ids order by p.recordedAt desc, p.id",
+                        ManualPaymentEntity.class)
+                .setParameter("ids", chargeIds).getResultList().stream().map(ManualPaymentEntity::domain).toList();
+    }
     public PageResult<ManualPayment> search(PaymentSearch query) {
         var cb=entities.getCriteriaBuilder(); var select=cb.createQuery(ManualPaymentEntity.class); var root=select.from(ManualPaymentEntity.class);
         select.where(filters(cb,root,query)); var field=root.get(query.sortField());

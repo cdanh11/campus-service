@@ -1,6 +1,8 @@
 package com.campus.finance.domain;
 
 import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import com.campus.shared.application.PageResult;
@@ -12,5 +14,6 @@ public interface PaymentRepository {
     ManualPayment update(ManualPayment value, long expectedVersion);
     BigDecimal totalRecorded(UUID chargeId);
     Optional<ChargeBalance> balance(UUID chargeId);
+    List<ManualPayment> findByCharges(Collection<UUID> chargeIds);
     PageResult<ManualPayment> search(PaymentSearch query);
 }
