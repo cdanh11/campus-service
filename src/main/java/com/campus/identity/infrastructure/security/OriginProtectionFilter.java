@@ -11,12 +11,20 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.UrlPathHelper;
 
 public class OriginProtectionFilter extends OncePerRequestFilter {
+    private static final String REFRESH_PATH = "/api/v1/auth/refresh";
+    private static final String LOGOUT_PATH = "/api/v1/auth/logout";
+    private static final UrlPathHelper PATHS = new UrlPathHelper();
     private final Set<String> allowed;
     private final SecurityErrorResponseWriter errors;
     public OriginProtectionFilter(SecurityProperties properties, SecurityErrorResponseWriter errors) { this.allowed = properties.allowedOrigins().stream().map(OriginProtectionFilter::normalize).collect(Collectors.toUnmodifiableSet()); this.errors = errors; }
-    @Override protected boolean shouldNotFilter(HttpServletRequest request) { return !(request.getMethod().equals("POST") && (request.getRequestURI().equals("/api/v1/auth/refresh") || request.getRequestURI().equals("/api/v1/auth/logout"))); }
+    @Override protected boolean shouldNotFilter(HttpServletRequest request) {
+        if (!"POST".equalsIgnoreCase(request.getMethod())) return true;
+        String path = PATHS.getPathWithinApplication(request);
+        return !(path.equals(REFRESH_PATH) || path.equals(LOGOUT_PATH));
+    }
     @Override protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
         try { if (!allowed.contains(normalize(request.getHeader("Origin")))) { errors.write(request, response, 403, "INVALID_REQUEST_ORIGIN", "Request origin is not allowed"); return; } }
         catch (RuntimeException exception) { errors.write(request, response, 403, "INVALID_REQUEST_ORIGIN", "Request origin is not allowed"); return; }
