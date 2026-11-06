@@ -37,7 +37,7 @@ class OrganizationUnitPersistenceAdapter implements OrganizationUnitRepository {
     @Override @Transactional(readOnly = true) public PageResult<OrganizationUnit> search(OrganizationUnitSearch search) {
         org.springframework.data.jpa.domain.Specification<OrganizationUnitEntity> specification = (root, query, builder) -> {
             java.util.List<jakarta.persistence.criteria.Predicate> predicates = new java.util.ArrayList<>();
-            if (search.query() != null) { String value = "%" + search.query().toLowerCase(java.util.Locale.ROOT) + "%"; predicates.add(builder.or(builder.like(builder.lower(root.get("code")), value), builder.like(builder.lower(root.get("name")), value))); }
+            if (search.query() != null) { String value = "%" + search.query().toLowerCase(java.util.Locale.ROOT).replace("!", "!!").replace("%", "!%").replace("_", "!_") + "%"; predicates.add(builder.or(builder.like(builder.lower(root.get("code")), value, '!'), builder.like(builder.lower(root.get("name")), value, '!'))); }
             if (search.status() != null) predicates.add(builder.equal(root.get("status"), search.status()));
             return builder.and(predicates.toArray(jakarta.persistence.criteria.Predicate[]::new));
         };

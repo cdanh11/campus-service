@@ -109,8 +109,8 @@ class UserAccountPersistenceAdapter implements UserAccountRepository {
         org.springframework.data.jpa.domain.Specification<UserAccountEntity> specification = (root, query, builder) -> {
             java.util.List<jakarta.persistence.criteria.Predicate> predicates = new java.util.ArrayList<>();
             if (search.query() != null) {
-                String value = "%" + search.query().toLowerCase(Locale.ROOT) + "%";
-                predicates.add(builder.or(builder.like(builder.lower(root.get("email")), value), builder.like(builder.lower(root.get("displayName")), value)));
+                String value = "%" + search.query().toLowerCase(Locale.ROOT).replace("!", "!!").replace("%", "!%").replace("_", "!_") + "%";
+                predicates.add(builder.or(builder.like(builder.lower(root.get("email")), value, '!'), builder.like(builder.lower(root.get("displayName")), value, '!')));
             }
             if (search.status() != null) predicates.add(builder.equal(root.get("status"), search.status()));
             if (search.role() != null) predicates.add(builder.equal(root.join("roles").get("code"), search.role()));
