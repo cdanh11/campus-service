@@ -5,6 +5,7 @@ import org.springframework.security.core.Authentication;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 import com.campus.academic.application.AcademicDeliveryService;
 import com.campus.academic.domain.*;
@@ -33,6 +34,8 @@ public class AdminClassSectionController {
 
     @GetMapping("/{id}")
     public ClassSection get(@PathVariable UUID id) { return service.section(id); }
+    @GetMapping("/lookup")
+    public List<ClassSection> lookup(@RequestParam List<UUID> ids) { if (ids.size() > 100) throw new AcademicDeliveryService.InvalidQueryException(); return service.lookupSections(ids); }
 
     @PutMapping("/{id}")
     @Operation(summary = "Update section (administrative permission)", description = "Requires expectedVersion; stale version, invalid lifecycle or unavailable references return 409. Parent identifiers are immutable.")

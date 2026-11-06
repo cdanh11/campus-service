@@ -40,6 +40,10 @@ class CourseOfferingPersistenceAdapter implements CourseOfferingRepository {
     @Transactional(readOnly = true)
     public Optional<CourseOffering> findById(UUID id) { return repository.findById(id).map(this::map); }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<CourseOffering> findAllById(Collection<UUID> ids) { return repository.findAllById(ids).stream().map(this::map).toList(); }
+
     @Transactional
     public CourseOffering lock(UUID id) { return map(locked(id)); }
 

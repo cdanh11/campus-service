@@ -50,6 +50,10 @@ class AcademicCoursePersistenceAdapter implements AcademicCourseRepository {
         return repository.findById(id).map(this::map);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<AcademicCourse> findAllById(Collection<UUID> ids) { return repository.findAllById(ids).stream().map(this::map).toList(); }
+
     @Transactional(readOnly = true)
     public boolean existsByCode(String code) {
         return repository.existsByCode(code);

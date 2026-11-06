@@ -5,6 +5,7 @@ import org.springframework.security.core.Authentication;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 import com.campus.academic.application.AcademicDeliveryService;
 import com.campus.academic.domain.*;
@@ -33,6 +34,8 @@ public class AdminAcademicTermController {
 
     @GetMapping("/{id}")
     public AcademicTerm get(@PathVariable UUID id) { return service.term(id); }
+    @GetMapping("/lookup")
+    public List<AcademicTerm> lookup(@RequestParam List<UUID> ids) { if (ids.size() > 100) throw new AcademicDeliveryService.InvalidQueryException(); return service.lookupTerms(ids); }
 
     @PutMapping("/{id}")
     @Operation(summary = "Update term (administrative permission)", description = "Requires expectedVersion; stale version, invalid lifecycle or unavailable references return 409. Parent identifiers are immutable.")

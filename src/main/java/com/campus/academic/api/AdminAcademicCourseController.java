@@ -50,6 +50,11 @@ public class AdminAcademicCourseController {
     public Response get(@PathVariable UUID id) {
         return out(service.course(id));
     }
+    @GetMapping("/lookup")
+    public List<Response> lookup(@RequestParam List<UUID> ids) {
+        if (ids.size() > 100) throw new AcademicCatalogQuery.InvalidQueryParameterException();
+        return service.lookupCourses(ids).stream().map(AdminAcademicCourseController::out).toList();
+    }
 
     @PutMapping("/{id}")
     @Operation(summary = "Update an academic course (administrative permission)", description = "Requires expectedVersion from the last read; stale versions and duplicate codes return 409.")

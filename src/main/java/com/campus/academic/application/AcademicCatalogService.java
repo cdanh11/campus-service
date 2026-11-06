@@ -2,6 +2,8 @@ package com.campus.academic.application;
 
 import java.time.Clock;
 import java.sql.SQLException;
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 import com.campus.academic.domain.*;
 import com.campus.organization.application.OrganizationUnitManagementService;
@@ -98,6 +100,8 @@ public class AcademicCatalogService {
     public AcademicCourse course(UUID id) {
         return courses.findById(id).orElseThrow(CourseNotFoundException::new);
     }
+    @Transactional(readOnly = true)
+    public List<AcademicCourse> lookupCourses(Collection<UUID> ids) { return courses.findAllById(ids); }
 
     @Transactional(readOnly = true)
     public PageResult<AcademicCourse> courses(AcademicCatalogSearch search) {

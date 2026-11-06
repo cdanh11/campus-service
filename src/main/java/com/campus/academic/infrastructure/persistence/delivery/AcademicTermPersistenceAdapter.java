@@ -40,6 +40,10 @@ class AcademicTermPersistenceAdapter implements AcademicTermRepository {
     @Transactional(readOnly = true)
     public Optional<AcademicTerm> findById(UUID id) { return repository.findById(id).map(this::map); }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<AcademicTerm> findAllById(Collection<UUID> ids) { return repository.findAllById(ids).stream().map(this::map).toList(); }
+
     @Transactional
     public AcademicTerm lock(UUID id) { return map(locked(id)); }
 

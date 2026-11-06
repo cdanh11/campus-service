@@ -2,6 +2,8 @@ package com.campus.academic.application;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -116,6 +118,12 @@ public class AcademicDeliveryService {
     public CourseOffering offering(UUID id) { return offerings.findById(id).orElseThrow(ResourceNotFoundException::new); }
     @Transactional(readOnly = true)
     public ClassSection section(UUID id) { return sections.findById(id).orElseThrow(ResourceNotFoundException::new); }
+    @Transactional(readOnly = true)
+    public List<AcademicTerm> lookupTerms(Collection<UUID> ids) { return terms.findAllById(ids); }
+    @Transactional(readOnly = true)
+    public List<CourseOffering> lookupOfferings(Collection<UUID> ids) { return offerings.findAllById(ids); }
+    @Transactional(readOnly = true)
+    public List<ClassSection> lookupSections(Collection<UUID> ids) { return sections.findAllById(ids); }
 
     @Transactional(readOnly = true)
     public PageResult<AcademicTerm> terms(AcademicDeliverySearch query) {
