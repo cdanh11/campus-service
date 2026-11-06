@@ -15,6 +15,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import com.campus.testsupport.LatestSchemaDatabase;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.*;
 import static org.assertj.core.api.Assertions.*;
@@ -148,7 +149,7 @@ class FlywayV20ToV21FinanceUpgradeIntegrationTest {
         var before=jdbc.queryForList("SELECT * FROM flyway_schema_history ORDER BY installed_rank");
         new ApplicationContextRunner().withConfiguration(AutoConfigurations.of(DataSourceAutoConfiguration.class,HibernateJpaAutoConfiguration.class,FlywayAutoConfiguration.class))
                 .withUserConfiguration(ValidationConfiguration.class)
-                .withPropertyValues("spring.datasource.url="+postgres.getJdbcUrl(),"spring.datasource.username="+postgres.getUsername(),
+                .withPropertyValues("spring.datasource.url="+LatestSchemaDatabase.migrate(postgres),"spring.datasource.username="+postgres.getUsername(),
                         "spring.datasource.password="+postgres.getPassword(),"spring.flyway.enabled=false","spring.jpa.hibernate.ddl-auto=validate","spring.jpa.properties.hibernate.default_schema=public")
                 .run(context -> {
                     assertThat(context).hasNotFailed().hasSingleBean(EntityManagerFactory.class).doesNotHaveBean(Flyway.class);
