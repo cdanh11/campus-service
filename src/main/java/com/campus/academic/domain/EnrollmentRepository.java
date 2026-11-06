@@ -10,6 +10,7 @@ public interface EnrollmentRepository {
     Optional<Enrollment> findById(UUID id);
     Enrollment lock(UUID id);
     boolean exists(UUID studentId, UUID sectionId);
+    boolean hasActiveEnrollmentInOffering(UUID studentId, UUID offeringId);
     long occupied(UUID sectionId);
     PageResult<Enrollment> search(EnrollmentSearch query);
 }

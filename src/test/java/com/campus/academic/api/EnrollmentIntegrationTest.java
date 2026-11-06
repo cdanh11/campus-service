@@ -123,6 +123,20 @@ class EnrollmentIntegrationTest {
         assertThat(occupied()).isEqualTo(1);
     }
 
+    @Test void rejectsSecondActiveSectionOfTheSameOfferingButAllowsReenrollmentAfterWithdrawal() {
+        var current = delivery.section(section);
+        var other = delivery.createSection(current.offeringId(), prefix + "B", 1, null);
+        var openOther = delivery.updateSection(other.id(), other.code(), other.capacity(), current.facultyId(),
+                AcademicDeliveryStatus.OPEN, 0);
+        var first = enrollments.create(student, section);
+
+        assertThatThrownBy(() -> enrollments.create(student, openOther.id())).isInstanceOf(EnrollmentService.DuplicateException.class);
+        assertThat(jdbc.queryForObject("select count(*) from academic_enrollments where student_id = ? and status = 'ENROLLED'", Long.class, student)).isEqualTo(1);
+
+        enrollments.update(first.id(), EnrollmentStatus.WITHDRAWN, 0);
+        assertThat(enrollments.create(student, openOther.id()).status()).isEqualTo(EnrollmentStatus.ENROLLED);
+    }
+
     @Test void duplicateRaceCreatesOnlyOneMembership() throws Exception {
         var outcomes = race(() -> enrollments.create(student, section), () -> enrollments.create(student, section));
         assertThat(outcomes).filteredOn(Objects::isNull).hasSize(1);

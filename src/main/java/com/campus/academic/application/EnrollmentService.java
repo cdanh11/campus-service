@@ -27,7 +27,10 @@ public class EnrollmentService {
 
     public Enrollment create(UUID studentId, UUID sectionId) {
         var parents = lockParents(sectionId);
-        if (enrollments.exists(studentId, sectionId)) throw new DuplicateException();
+        if (enrollments.exists(studentId, sectionId)
+                || enrollments.hasActiveEnrollmentInOffering(studentId, parents.offering().id())) {
+            throw new DuplicateException();
+        }
         eligible(studentId, parents);
         var now = clock.instant();
         return enrollments.create(new Enrollment(UUID.randomUUID(), studentId, sectionId, EnrollmentStatus.ENROLLED, 0, now, now));

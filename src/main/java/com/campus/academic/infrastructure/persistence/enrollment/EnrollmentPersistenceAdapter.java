@@ -40,6 +40,9 @@ class EnrollmentPersistenceAdapter implements EnrollmentRepository {
         return entity.domain();
     }
     public boolean exists(UUID studentId, UUID sectionId) { return repository.existsByStudentIdAndSectionId(studentId, sectionId); }
+    public boolean hasActiveEnrollmentInOffering(UUID studentId, UUID offeringId) {
+        return repository.countActiveByStudentIdAndOfferingId(studentId, offeringId) > 0;
+    }
     public long occupied(UUID sectionId) { return repository.countBySectionIdAndStatus(sectionId, EnrollmentStatus.ENROLLED); }
 
     public PageResult<Enrollment> search(EnrollmentSearch search) {
