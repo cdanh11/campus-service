@@ -9,6 +9,7 @@ $taskConfig = Join-Path $taskPrivate 'config.json'
 $taskAccounts = Join-Path $taskPrivate 'accounts.json'
 $taskEnvironment = Join-Path $taskPrivate 'config.env'
 $taskCompose = @('compose', '--project-name', 'campus-platform-demo', '--env-file', $taskEnvironment, '-f', (Join-Path $taskRoot 'compose.demo.yaml'))
+$taskAdminPassword = 'admin@AA1234'
 if (-not (Test-Path -LiteralPath (Join-Path $taskClient 'Dockerfile'))) { throw 'Clone campus-client beside campus-service, including its Dockerfile.' }
 & docker info --format '{{.ServerVersion}}' | Out-Null
 if ($LASTEXITCODE -ne 0) { throw 'Docker engine must be running.' }
@@ -39,7 +40,7 @@ if (-not (Test-Path -LiteralPath $taskConfig)) {
     }
     $taskSettings = @{ baseUrl = 'http://backend:8080'; issuer = "campus-demo-$([Guid]::NewGuid())"; audience = 'campus-demo-client'; jwtSecret = (New-DemoSecret); databasePassword = (New-DemoSecret); fixtureVersion = 1 }
     Write-PrivateJson $taskConfig $taskSettings
-    Write-PrivateJson $taskAccounts @{ accounts = @(@{ email = 'admin.primary@example.test'; password = (New-DemoSecret); roles = @('ADMIN'); displayName = 'Quản trị hệ thống 1' }) }
+    Write-PrivateJson $taskAccounts @{ accounts = @(@{ email = 'admin.primary@example.test'; password = $taskAdminPassword; roles = @('ADMIN'); displayName = 'Quản trị hệ thống 1' }) }
 }
 if (-not (Test-Path -LiteralPath $taskAccounts)) { throw 'Restore the private account manifest before starting this installation.' }
 $taskSettings = Get-Content -LiteralPath $taskConfig -Raw | ConvertFrom-Json
@@ -62,6 +63,8 @@ if (-not (Test-Path -LiteralPath (Join-Path $taskPrivate 'bootstrap.complete')))
     }
 }
 Invoke-DemoCompose -taskArguments @('up', '-d', '--wait', '--wait-timeout', '240', 'backend', 'frontend')
+& docker run --rm --network campus-platform-demo_default --mount "type=bind,source=$taskPrivate,target=/state" --mount "type=bind,source=$PSScriptRoot,target=/scripts,readonly" node:24.13.0-alpine node /scripts/reset-demo-passwords.mjs --state-dir /state
+if ($LASTEXITCODE -ne 0) { throw 'Demo password standardization failed. Inspect the reported account state before retrying; do not delete data.' }
 $taskPrimary = (Get-Content -LiteralPath $taskAccounts -Raw | ConvertFrom-Json).accounts[0]
 try {
     $taskLogin = Invoke-RestMethod 'http://127.0.0.1:28080/api/v1/auth/login' -Method Post -ContentType 'application/json' -TimeoutSec 30 -Body (@{email=$taskPrimary.email; password=$taskPrimary.password} | ConvertTo-Json)
@@ -73,5 +76,6 @@ if ($Seed) {
     & docker run --rm --network campus-platform-demo_default --mount "type=bind,source=$taskPrivate,target=/state" --mount "type=bind,source=$PSScriptRoot,target=/scripts,readonly" node:24.13.0-alpine node /scripts/seed-demo.mjs --state-dir /state
     if ($LASTEXITCODE -ne 0) { throw 'Demo fixtures are incomplete. Follow the reported safe resume instructions; do not reset the database.' }
 }
-Write-Host 'Demo ready: http://localhost:3300. Private login credentials: .demo/docker/accounts.json.'
-Write-Host 'Normal restart preserves data. Do not share the private files.'
+Write-Host 'Demo ready: http://localhost:3300. Administrators: admin@AA1234; students: sv@SV1231234.'
+Write-Host 'Account emails: .demo/docker/accounts.json. Normal restart preserves data.'
+Write-Host 'Do not reuse these demo credentials outside the local stack.'

@@ -27,5 +27,7 @@ if (Test-Path -LiteralPath $taskConfigPath) {
 }
 else { $taskConfiguration | ConvertTo-Json | Set-Content -LiteralPath $taskConfigPath -Encoding utf8 }
 $taskValues.Clear(); $taskConfiguration = $null; $taskPrevious = $null
+& node (Join-Path $PSScriptRoot 'reset-demo-passwords.mjs') --state-dir $taskDirectory
+if ($LASTEXITCODE -ne 0) { throw 'Demo password standardization failed; inspect the reported account state.' }
 & node (Join-Path $PSScriptRoot 'seed-demo.mjs') --state-dir $taskDirectory
 if ($LASTEXITCODE -ne 0) { throw 'Native demo seed is incomplete; inspect the safe loader message and private journal.' }

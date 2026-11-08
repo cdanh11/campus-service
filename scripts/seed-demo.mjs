@@ -1,9 +1,12 @@
-import { randomBytes, createHash } from 'node:crypto'
+import { createHash } from 'node:crypto'
 import { open, unlink } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { DemoClient, DemoError, readJson, writeJson } from './demo-client.mjs'
 
+export const ADMIN_PASSWORD = 'admin@AA1234'
+export const STUDENT_PASSWORD = 'sv@SV1231234'
+export const demoPassword = roles => roles.length === 1 && roles[0] === 'USER' ? STUDENT_PASSWORD : ADMIN_PASSWORD
 const fields = (value, keys) => Object.fromEntries(keys.map(key => [key, value[key]]))
 const base = '/api/v1/admin/'
 const code = (kind, i) => `CD-${kind}-${String(i + 1).padStart(3, '0')}`
@@ -21,7 +24,7 @@ const meeting = (i) => {
 async function account(client, email, displayName, roles) {
   let value = client.accounts.accounts.find(a => a.email === email)
   if (!value) {
-    value = { email, displayName, roles, password: randomBytes(32).toString('base64') }
+    value = { email, displayName, roles, password: demoPassword(roles) }
     client.accounts.accounts.push(value)
     await writeJson(join(client.directory, 'accounts.json'), client.accounts)
   }
