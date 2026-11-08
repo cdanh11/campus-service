@@ -31,7 +31,7 @@ public class SecurityConfiguration {
                 .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint((request, response, exception) -> errors.write(request, response, 401, "MISSING_ACCESS_TOKEN", "Access token is required"))
                         .accessDeniedHandler(denied))
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/actuator/health", "/actuator/health/**", "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/logout", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
+                    auth.requestMatchers("/actuator/health", "/actuator/health/**", "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/logout", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/error").permitAll();
                     for (var rule : AdministrativeAccessPolicy.rules()) {
                         String[] paths = rule.paths().toArray(String[]::new);
                         String[] readers = rule.readers().toArray(String[]::new);
