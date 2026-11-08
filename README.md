@@ -85,7 +85,7 @@ For the portable demo, clone the compatible `campus-client` beside this reposito
 .\scripts\start-demo.ps1 -Seed
 ```
 
-Open http://localhost:3300. The script builds both applications without host Java/Node, uses a separate persistent database, provisions accounts explicitly and loads substantial fictional data through owner APIs. Per-installation login credentials stay in ignored `.demo/docker/accounts.json`. [Docker demo setup](docs/runbooks/docker-demo.md) covers restart, safe resume and native development. This slice is [reviewed PASS](docs/reviews/phase-8a3-demo-review.md); whole Phase 8 acceptance/regression is [reviewed PASS locally](docs/reviews/phase-8-acceptance-review.md). The implementation is on `feature/local-demo-test-plan` until merged.
+Open http://localhost:3300. The script builds both applications without host Java/Node, uses a separate persistent database, provisions accounts explicitly and loads substantial fictional data through owner APIs. Demo accounts use fixed passwords for local testing: every administrator account signs in with `admin@AA1234` and every student account with `sv@SV1231234`; the full email list is in ignored `.demo/docker/accounts.json`, and PostgreSQL stores only BCrypt hashes. Do not reuse these credentials outside the demo. [Docker demo setup](docs/runbooks/docker-demo.md) covers restart, safe resume and native development. This slice is [reviewed PASS](docs/reviews/phase-8a3-demo-review.md); whole Phase 8 acceptance/regression is [reviewed PASS locally](docs/reviews/phase-8-acceptance-review.md). The implementation is on `feature/local-demo-test-plan` until merged.
 
 For native Java/Node development:
 

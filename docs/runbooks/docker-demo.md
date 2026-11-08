@@ -12,7 +12,18 @@ From `campus-service`:
 
 The first run downloads/builds the images, starts a dedicated PostgreSQL database, invokes the offline first-ADMIN CLI, starts the backend/frontend and loads substantial fictional fixtures through owner APIs. It can take several minutes. Open http://localhost:3300. API access for local diagnostics is http://127.0.0.1:28080; PostgreSQL has no host port. Both published ports bind only to loopback.
 
-Each installation generates a private database password, JWT signing key and random account passwords. Open `.demo/docker/accounts.json` locally to obtain a login; do not copy it into chat, screenshots, Git or public logs. There are two global ADMIN, eleven functional/viewer accounts and 200 linked Student USER accounts. The role matrix is in [Permissions](../permissions.md). The Student portal provides its existing inbox/Event capabilities, not unimplemented Academic or Finance self-service.
+Each installation generates a private database password and JWT signing key. Demo account passwords are fixed so the local stack is predictable: every administrator account (global or functional) signs in with `admin@AA1234`, every student account with `sv@SV1231234`. PostgreSQL stores only BCrypt hashes and no API returns them. The account email list is in `.demo/docker/accounts.json`; do not reuse these demo credentials outside the local stack. There are two global ADMIN, eleven functional/viewer accounts and 200 linked Student USER accounts. The role matrix is in [Permissions](../permissions.md). The Student portal provides its existing inbox/Event capabilities, not unimplemented Academic or Finance self-service.
+
+`start-demo.ps1` applies the standard passwords on every start without touching business data; accounts already recorded as standard are left untouched. To reapply them manually against a running stack:
+
+```powershell
+docker run --rm --network campus-platform-demo_default `
+  --mount "type=bind,source=$PWD/.demo/docker,target=/state" `
+  --mount "type=bind,source=$PWD/scripts,target=/scripts,readonly" `
+  node:24.13.0-alpine node /scripts/reset-demo-passwords.mjs --state-dir /state
+```
+
+Add `--force` to rewrite every account even when the manifest already holds the standard value. The script authenticates through the normal login API and resets passwords through the administrator API, so hashes, session revocation and audit entries follow the same path as the UI.
 
 ## Persistence and restart
 
