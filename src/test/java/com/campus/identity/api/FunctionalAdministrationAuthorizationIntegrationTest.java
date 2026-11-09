@@ -1,6 +1,7 @@
 package com.campus.identity.api;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -29,27 +30,23 @@ class FunctionalAdministrationAuthorizationIntegrationTest {
     private static final String BASE = "/api/v1/admin/";
     private static final String HASH = "{bcrypt}$2b$12$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZabcde";
     // Independent expected contract, not imported from the production access policy.
-    private static final Map<RoleCode, String> OWNERS = Map.ofEntries(
-            Map.entry(RoleCode.ORGANIZATION_ADMIN, "organization-units"),
-            Map.entry(RoleCode.STUDENT_ADMIN, "students"),
-            Map.entry(RoleCode.PERSONNEL_ADMIN, "faculty-staff"),
-            Map.entry(RoleCode.ACADEMIC_ADMIN, "academic/programs"),
-            Map.entry(RoleCode.DORMITORY_ADMIN, "dormitory/buildings"),
-            Map.entry(RoleCode.FINANCE_ADMIN, "finance/fees"),
-            Map.entry(RoleCode.NOTIFICATION_ADMIN, "notifications/templates"),
-            Map.entry(RoleCode.EVENT_ADMIN, "events"),
-            Map.entry(RoleCode.LIBRARY_ADMIN, "library/titles"),
-            Map.entry(RoleCode.AUDIT_VIEWER, "audits/IDENTITY"),
-            Map.entry(RoleCode.REPORTING_VIEWER, "reports/dashboard"));
-    private static final Map<RoleCode, Set<String>> REFERENCES = Map.ofEntries(
-            Map.entry(RoleCode.STUDENT_ADMIN, Set.of("organization-units")),
-            Map.entry(RoleCode.PERSONNEL_ADMIN, Set.of("organization-units")),
-            Map.entry(RoleCode.ACADEMIC_ADMIN, Set.of("organization-units", "students", "faculty-staff")),
-            Map.entry(RoleCode.DORMITORY_ADMIN, Set.of("students")),
-            Map.entry(RoleCode.FINANCE_ADMIN, Set.of("students")),
-            Map.entry(RoleCode.EVENT_ADMIN, Set.of("students")),
-            Map.entry(RoleCode.LIBRARY_ADMIN, Set.of("students")),
-            Map.entry(RoleCode.REPORTING_VIEWER, Set.of("students", "events")));
+    private static final List<String> OWNER_PATHS = List.of(
+            "organization-units", "students", "faculty-staff", "academic/programs",
+            "dormitory/buildings", "notifications/templates", "events", "library/titles",
+            "finance/fees", "audits/IDENTITY", "reports/dashboard");
+    // Independent expected contract, not imported from the production access policy.
+    private static final Map<RoleCode, Set<String>> WRITABLE = Map.of(
+            RoleCode.ACADEMIC_AFFAIRS, Set.of("organization-units", "students", "faculty-staff", "academic/programs"),
+            RoleCode.CAMPUS_SERVICES, Set.of("dormitory/buildings", "notifications/templates", "events", "library/titles"),
+            RoleCode.FINANCE, Set.of("finance/fees"),
+            RoleCode.AUDITOR, Set.of());
+    private static final Map<RoleCode, Set<String>> READABLE = Map.of(
+            RoleCode.ACADEMIC_AFFAIRS, Set.of("organization-units", "students", "faculty-staff", "academic/programs", "users"),
+            RoleCode.CAMPUS_SERVICES, Set.of("dormitory/buildings", "notifications/templates", "events", "library/titles", "students", "users"),
+            RoleCode.FINANCE, Set.of("finance/fees", "students"),
+            RoleCode.AUDITOR, Set.of("audits/IDENTITY", "reports/dashboard", "students", "academic/sections",
+                    "dormitory/beds", "library/copies", "events"),
+            RoleCode.USER, Set.of());
     @Autowired MockMvc mvc;
     @Autowired UserAccountRepository users;
     @Autowired RoleRepository roles;
@@ -59,15 +56,14 @@ class FunctionalAdministrationAuthorizationIntegrationTest {
     @ParameterizedTest @EnumSource(RoleCode.class)
     void everyRoleHasOnlyItsOwnMutationAndApprovedReads(RoleCode role) throws Exception {
         String token = token(role);
-        for (var owner : OWNERS.entrySet()) {
-            boolean read = role == RoleCode.ADMIN || owner.getKey() == role
-                    || REFERENCES.getOrDefault(role, Set.of()).contains(owner.getValue());
-            mvc.perform(get(BASE + owner.getValue()).header("Authorization", "Bearer " + token))
+        for (String owner : OWNER_PATHS) {
+            boolean read = role == RoleCode.ADMIN || READABLE.getOrDefault(role, Set.of()).contains(owner);
+            mvc.perform(get(BASE + owner).header("Authorization", "Bearer " + token))
                     .andExpect(status().is(read ? 200 : 403));
-            if (owner.getKey() != RoleCode.AUDIT_VIEWER && owner.getKey() != RoleCode.REPORTING_VIEWER) {
-                boolean write = role == RoleCode.ADMIN || owner.getKey() == role;
+            if (!owner.startsWith("audits/") && !owner.startsWith("reports/")) {
+                boolean write = role == RoleCode.ADMIN || WRITABLE.getOrDefault(role, Set.of()).contains(owner);
                 // Malformed input exercises the real filter before controller validation, with no fixture mutation.
-                mvc.perform(post(BASE + owner.getValue()).header("Authorization", "Bearer " + token)
+                mvc.perform(post(BASE + owner).header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON).content("{"))
                         .andExpect(status().is(write ? 400 : 403));
             }
@@ -82,30 +78,32 @@ class FunctionalAdministrationAuthorizationIntegrationTest {
                 .andExpect(status().is(role == RoleCode.ADMIN ? 404 : 403));
     }
 
-    @Test void viewersHaveMinimalReferenceReadsAndCannotMutateReferencesOrEachOthersSources() throws Exception {
-        String report = token(RoleCode.REPORTING_VIEWER);
+    @Test void auditorReadsOversightAndApprovedReferencesWithoutAnyMutation() throws Exception {
+        String auditor = token(RoleCode.AUDITOR);
         for (String reference : new String[] {"academic/sections", "dormitory/beds", "library/copies", "students", "events"}) {
-            mvc.perform(get(BASE + reference).header("Authorization", "Bearer " + report)).andExpect(status().isOk());
-            mvc.perform(head(BASE + reference).header("Authorization", "Bearer " + report)).andExpect(status().isOk());
-            mvc.perform(post(BASE + reference).header("Authorization", "Bearer " + report)
+            mvc.perform(get(BASE + reference).header("Authorization", "Bearer " + auditor)).andExpect(status().isOk());
+            mvc.perform(head(BASE + reference).header("Authorization", "Bearer " + auditor)).andExpect(status().isOk());
+            mvc.perform(post(BASE + reference).header("Authorization", "Bearer " + auditor)
                     .contentType(MediaType.APPLICATION_JSON).content("{")).andExpect(status().isForbidden());
         }
-        mvc.perform(get(BASE + "library/loans").header("Authorization", "Bearer " + report)).andExpect(status().isForbidden());
         for (String lookup : new String[] {"academic/sections/lookup", "dormitory/lookup/beds", "library/copies/lookup", "students/lookup", "events/lookup"}) {
-            mvc.perform(get(BASE + lookup).header("Authorization", "Bearer " + report)).andExpect(status().isBadRequest());
-            mvc.perform(post(BASE + lookup).header("Authorization", "Bearer " + report)
+            mvc.perform(get(BASE + lookup).header("Authorization", "Bearer " + auditor)).andExpect(status().isBadRequest());
+            mvc.perform(post(BASE + lookup).header("Authorization", "Bearer " + auditor)
                     .contentType(MediaType.APPLICATION_JSON).content("{")).andExpect(status().isForbidden());
         }
-        mvc.perform(get(BASE + "users/lookup").header("Authorization", "Bearer " + report)).andExpect(status().isForbidden());
-        mvc.perform(get(BASE + "event-registrations").header("Authorization", "Bearer " + report)).andExpect(status().isForbidden());
-        mvc.perform(get(BASE + "audits/IDENTITY").header("Authorization", "Bearer " + report)).andExpect(status().isForbidden());
-        String audit = token(RoleCode.AUDIT_VIEWER);
-        mvc.perform(get(BASE + "users").header("Authorization", "Bearer " + audit)).andExpect(status().isForbidden());
-        mvc.perform(get(BASE + "reports/dashboard").header("Authorization", "Bearer " + audit)).andExpect(status().isForbidden());
+        mvc.perform(get(BASE + "reports/dashboard").header("Authorization", "Bearer " + auditor)).andExpect(status().isOk());
+        mvc.perform(get(BASE + "audits/IDENTITY").header("Authorization", "Bearer " + auditor)).andExpect(status().isOk());
+        for (String forbidden : new String[] {"library/loans", "event-registrations", "users", "users/lookup",
+                "notifications/notices", "finance/fees", "dormitory/buildings"}) {
+            mvc.perform(get(BASE + forbidden).header("Authorization", "Bearer " + auditor)).andExpect(status().isForbidden());
+        }
+        String finance = token(RoleCode.FINANCE);
+        mvc.perform(get(BASE + "reports/dashboard").header("Authorization", "Bearer " + finance)).andExpect(status().isForbidden());
+        mvc.perform(get(BASE + "audits/IDENTITY").header("Authorization", "Bearer " + finance)).andExpect(status().isForbidden());
     }
 
-    @Test void accountReferenceReadsNeverAuthorizeIdentityMutationOrAnonymousAccess() throws Exception {
-        for (RoleCode role : new RoleCode[] {RoleCode.STUDENT_ADMIN, RoleCode.PERSONNEL_ADMIN, RoleCode.NOTIFICATION_ADMIN}) {
+    @Test void departmentRolesReachAccountReferencesWithoutIdentityMutation() throws Exception {
+        for (RoleCode role : new RoleCode[] {RoleCode.ACADEMIC_AFFAIRS, RoleCode.CAMPUS_SERVICES}) {
             String token = token(role);
             mvc.perform(get(BASE + "users").header("Authorization", "Bearer " + token)).andExpect(status().isOk());
             mvc.perform(get(BASE + "users/" + UUID.randomUUID()).header("Authorization", "Bearer " + token)).andExpect(status().isNotFound());
@@ -116,21 +114,24 @@ class FunctionalAdministrationAuthorizationIntegrationTest {
             mvc.perform(post(BASE + "users/" + UUID.randomUUID() + "/password-reset").header("Authorization", "Bearer " + token)
                     .contentType(MediaType.APPLICATION_JSON).content("{")).andExpect(status().isForbidden());
         }
-        for (String owner : OWNERS.values()) mvc.perform(get(BASE + owner)).andExpect(status().isUnauthorized());
+        for (String owner : OWNER_PATHS) mvc.perform(get(BASE + owner)).andExpect(status().isUnauthorized());
     }
 
-    @Test void multipleFunctionalRolesCombineAccessWithoutBecomingGlobalAdministrator() throws Exception {
-        String token = token(RoleCode.EVENT_ADMIN, RoleCode.LIBRARY_ADMIN);
-        mvc.perform(get(BASE + "events").header("Authorization", "Bearer " + token)).andExpect(status().isOk());
-        mvc.perform(get(BASE + "library/titles").header("Authorization", "Bearer " + token)).andExpect(status().isOk());
-        mvc.perform(post(BASE + "events").header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON).content("{")).andExpect(status().isBadRequest());
-        mvc.perform(post(BASE + "library/titles").header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON).content("{")).andExpect(status().isBadRequest());
+    @Test void multipleDepartmentRolesCombineAccessWithoutBecomingGlobalAdministrator() throws Exception {
+        String token = token(RoleCode.ACADEMIC_AFFAIRS, RoleCode.FINANCE);
+        mvc.perform(get(BASE + "students").header("Authorization", "Bearer " + token)).andExpect(status().isOk());
+        mvc.perform(get(BASE + "finance/fees").header("Authorization", "Bearer " + token)).andExpect(status().isOk());
+        mvc.perform(post(BASE + "students").header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON).content("{")).andExpect(status().isBadRequest());
+        mvc.perform(post(BASE + "finance/fees").header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON).content("{")).andExpect(status().isBadRequest());
         mvc.perform(get(BASE + "reports/dashboard").header("Authorization", "Bearer " + token)).andExpect(status().isForbidden());
+        mvc.perform(get(BASE + "notifications/templates").header("Authorization", "Bearer " + token)).andExpect(status().isForbidden());
+        mvc.perform(post(BASE + "users").header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON).content("{")).andExpect(status().isForbidden());
     }
 
     @ParameterizedTest
     @EnumSource(value = RoleCode.class, names = {"USER", "ADMIN"}, mode = EnumSource.Mode.EXCLUDE)
-    void globalAdminCanProvisionEveryScopedRoleAndReplacementRevokesRefreshButNotIssuedJwt(RoleCode role) throws Exception {
+    void globalAdminCanProvisionEveryDepartmentRoleAndReplacementRevokesRefreshButNotIssuedJwt(RoleCode role) throws Exception {
         String administrator = token(RoleCode.ADMIN);
         String email = UUID.randomUUID() + "@example.test";
         String password = "functional-test-password";
@@ -145,7 +146,7 @@ class FunctionalAdministrationAuthorizationIntegrationTest {
                 .andExpect(status().isOk()).andExpect(jsonPath("$.user.roles[0]").value(role.name()))
                 .andReturn().getResponse();
         String access = mapper.readTree(login.getContentAsString()).path("accessToken").asText();
-        String owner = BASE + OWNERS.get(role);
+        String owner = BASE + sampleOwner(role);
         mvc.perform(get(owner).header("Authorization", "Bearer " + access)).andExpect(status().isOk());
         var current = mvc.perform(get(BASE + "users/" + id).header("Authorization", "Bearer " + administrator))
                 .andExpect(status().isOk()).andReturn().getResponse();
@@ -166,6 +167,16 @@ class FunctionalAdministrationAuthorizationIntegrationTest {
                 .andExpect(status().isOk()).andExpect(jsonPath("$.user.roles[0]").value("USER")).andReturn().getResponse();
         String newAccess = mapper.readTree(newLogin.getContentAsString()).path("accessToken").asText();
         mvc.perform(get(owner).header("Authorization", "Bearer " + newAccess)).andExpect(status().isForbidden());
+    }
+
+    private String sampleOwner(RoleCode role) {
+        return switch (role) {
+            case ACADEMIC_AFFAIRS -> "academic/programs";
+            case CAMPUS_SERVICES -> "events";
+            case FINANCE -> "finance/fees";
+            case AUDITOR -> "reports/dashboard";
+            default -> throw new IllegalArgumentException("No sample owner for " + role);
+        };
     }
 
     private String token(RoleCode... codes) {

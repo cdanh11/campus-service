@@ -40,7 +40,7 @@ class FinalActiveAdminScopeIntegrationTest {
     @Autowired EntityManager entityManager;
 
     static Stream<Arguments> nonAdministratorChanges() {
-        return Stream.of(RoleCode.USER, RoleCode.FINANCE_ADMIN, RoleCode.AUDIT_VIEWER)
+        return Stream.of(RoleCode.USER, RoleCode.FINANCE, RoleCode.AUDITOR)
                 .flatMap(role -> Stream.of(AccountStatus.SUSPENDED, AccountStatus.DISABLED)
                         .map(target -> Arguments.of(role, target)));
     }

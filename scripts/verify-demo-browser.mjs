@@ -63,10 +63,11 @@ async function main() {
     report.steps.push('Refresh rotation/reload, denied Origin and cross-tab logout PASS')
     await context.close()
 
-    const finance = await contextFor('demo.finance_admin@example.test')
+    const finance = await contextFor('demo.finance@example.test')
     checkpoint = 'scoped menu, direct route and HTTP permissions'
     await expect(finance.page.getByRole('link', { name: 'Tài khoản', exact: true })).toHaveCount(0)
-    await expect(finance.page.getByRole('link', { name: 'Ký túc xá & tài chính', exact: true })).toBeVisible()
+    await expect(finance.page.getByRole('link', { name: 'Tài chính', exact: true })).toBeVisible()
+    await expect(finance.page.getByRole('link', { name: 'Ký túc xá', exact: true })).toHaveCount(0)
     const status = await finance.page.evaluate(async () => navigator.locks.request('campus-auth-cookie', async () => {
       const login = await (await fetch('/api/v1/auth/refresh', { method: 'POST', credentials: 'include' })).json()
       const headers = { Authorization: 'Bearer ' + login.accessToken }
@@ -80,7 +81,7 @@ async function main() {
     await finance.page.goto('/admin/users')
     await expect(finance.page.getByText('Bạn không có quyền truy cập', { exact: true })).toBeVisible()
     assert.equal(accountRequests.length, 0)
-    report.steps.push('FINANCE_ADMIN functional menu/API and forbidden account UI/API PASS')
+    report.steps.push('FINANCE department menu/API and forbidden account UI/API PASS')
     await finance.context.close()
 
     const student = await contextFor('student.001@example.test', { width: 390, height: 844 })

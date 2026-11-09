@@ -84,7 +84,7 @@ async function main() {
   }
   await writeJson(join(directory, 'accounts.json'), accounts)
 
-  const checks = [PRIMARY_EMAIL, SECONDARY_EMAIL, 'demo.academic_admin@example.test', 'student.001@example.test', 'student.200@example.test']
+  const checks = [PRIMARY_EMAIL, SECONDARY_EMAIL, 'demo.academic_affairs@example.test', 'student.001@example.test', 'student.200@example.test']
   for (const email of checks) {
     const entry = saved.get(email)
     if (!entry) continue

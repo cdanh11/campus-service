@@ -27,7 +27,7 @@ async function main() {
     return response
   }
   const client = new DemoClient(config, accounts, state, directory, transport)
-  const actor = (await client.session('LIBRARY_ADMIN')).user.id
+  const actor = (await client.session('CAMPUS_SERVICES')).user.id
   if (state.actor && state.actor !== actor) throw new DemoError('Resume verification journal belongs to a different target.')
   state.actor = actor
   if (process.argv.includes('--reconcile-existing') && state.operations['verify:resume']?.done) {
@@ -36,11 +36,11 @@ async function main() {
     await client.save()
   }
   const first = !state.operations['verify:resume']
-  if (first) await assert.rejects(client.create('verify:resume', 'LIBRARY_ADMIN', path, body), /Controlled lost acknowledgement/)
+  if (first) await assert.rejects(client.create('verify:resume', 'CAMPUS_SERVICES', path, body), /Controlled lost acknowledgement/)
   const recovered = new DemoClient(config, accounts, state, directory)
-  const saved = await recovered.create('verify:resume', 'LIBRARY_ADMIN', path, body)
+  const saved = await recovered.create('verify:resume', 'CAMPUS_SERVICES', path, body)
   assert.equal(saved.code, body.code)
-  assert.equal((await recovered.list('LIBRARY_ADMIN', path, true)).filter(row => row.code === body.code).length, 1)
+  assert.equal((await recovered.list('CAMPUS_SERVICES', path, true)).filter(row => row.code === body.code).length, 1)
   assert.equal(recovered.writes, 0)
   assert.equal(posts, first ? 1 : 0)
   let puts = 0
@@ -53,18 +53,18 @@ async function main() {
     return response
   })
   const firstMutation = !state.operations['verify:inactive']
-  if (firstMutation) await assert.rejects(mutator.change('verify:inactive', 'LIBRARY_ADMIN', detail, { ...body, status: 'INACTIVE' }, { status: 'INACTIVE' }), /Controlled lost mutation acknowledgement/)
-  const mutationRecovered = await recovered.change('verify:inactive', 'LIBRARY_ADMIN', detail, { ...body, status: 'INACTIVE' }, { status: 'INACTIVE' })
+  if (firstMutation) await assert.rejects(mutator.change('verify:inactive', 'CAMPUS_SERVICES', detail, { ...body, status: 'INACTIVE' }, { status: 'INACTIVE' }), /Controlled lost mutation acknowledgement/)
+  const mutationRecovered = await recovered.change('verify:inactive', 'CAMPUS_SERVICES', detail, { ...body, status: 'INACTIVE' }, { status: 'INACTIVE' })
   if (firstMutation) assert.equal(mutationRecovered.status, 'INACTIVE')
   assert.equal(puts, firstMutation ? 1 : 0)
   const restore = new DemoClient(config, accounts, state, directory)
-  assert.equal((await restore.change('verify:active', 'LIBRARY_ADMIN', detail, { ...body, status: 'ACTIVE' }, { status: 'ACTIVE' })).status, 'ACTIVE')
+  assert.equal((await restore.change('verify:active', 'CAMPUS_SERVICES', detail, { ...body, status: 'ACTIVE' }, { status: 'ACTIVE' })).status, 'ACTIVE')
   let wrongTargetWrites = 0
   const wrongTarget = new DemoClient({ ...config, jwtSecret: randomBytes(32).toString('base64') }, accounts, { operations: {} }, directory, async (url, options) => {
     if (options.method !== 'GET' && new URL(url).pathname !== '/api/v1/auth/login') wrongTargetWrites++
     return fetch(url, options)
   })
-  await assert.rejects(wrongTarget.create('wrong:target', 'LIBRARY_ADMIN', path, body), /Target does not match/)
+  await assert.rejects(wrongTarget.create('wrong:target', 'CAMPUS_SERVICES', path, body), /Target does not match/)
   assert.equal(wrongTargetWrites, 0)
   const result = { committedBeforeLostAcknowledgement: first ? 1 : 0, duplicatePostsDuringRecovery: recovered.writes,
     persistedMatchingTitles: 1, reconciledWithOwnerAudit: true, lostMutationReconciledWithoutReplay: true,
