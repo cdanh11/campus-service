@@ -1,6 +1,6 @@
 # Reporting API — Phase 6 in progress
 
-All routes require a current JWT with ADMIN authority. Missing authentication returns 401; a regular account returns 403. No report writes or domain mutations are exposed.
+All routes require a current JWT with `AUDITOR` or `ADMIN` authority ([Permissions](../permissions.md)). Missing authentication returns 401; a regular account returns 403. No report writes or domain mutations are exposed.
 
 ## Dashboard
 

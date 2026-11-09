@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted and verified PASS (Phase 8A2); whole Phase 8 remains incomplete.
+Superseded by [ADR 0018](0018-department-functional-roles.md). The eleven-role model below is retained as decision history; current grants are in the [permission matrix](../permissions.md).
 
 ## Context
 

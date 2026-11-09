@@ -1,6 +1,6 @@
-# ADMIN audit viewing — Phase 5D
+# Audit viewing — Phase 5D
 
-Phase 5D reviewed PASS on 2026-10-04: final focused 17 tests (1m10s), full clean verify 393 tests/67 suites (7m36s), zero failures/errors/skips. Bearer authentication and ROLE_ADMIN are required for both read routes. No audit mutation/delete/export, automatic expiry or cross-source merged page.
+Phase 5D reviewed PASS on 2026-10-04: final focused 17 tests (1m10s), full clean verify 393 tests/67 suites (7m36s), zero failures/errors/skips. Bearer authentication and an `AUDITOR` or `ADMIN` grant are required for both read routes ([Permissions](../permissions.md)). No audit mutation/delete/export, automatic expiry or cross-source merged page.
 
 | Route | Contract |
 | --- | --- |
@@ -26,4 +26,4 @@ page defaults 0 (≥0), size defaults 20 (1–100), offset must fit an integer. 
 
 Events expose id/source/resource/targetId/actorId/action/resourceVersion/occurredAt/metadata. Identity and People never recorded resourceVersion, so it is null; metadata is always {} because the writers only recorded {} and no historic private text is approved for exposure. Other sources expose only status values actually recorded by that resource's owner. PostgreSQL projects the single string status key; unsupported/nested/null/unrecognized values become {}. Arbitrary body/reason/password/token/nested metadata is not returned; underlying history remains untouched. No JSONB length limit is added. Versions and times come from stored history, never current resource rows.
 
-401 missing/invalid authentication; 403 non-ADMIN; 404 AUDIT_EVENT_NOT_FOUND for a missing event within the selected source. Errors use timestamp/status/code/message/path/traceId without raw SQL or metadata. Existing target-prefixed audit indexes serve selective target/resource queries; no global history latency or indexed unfiltered page guarantee is claimed.
+401 missing/invalid authentication; 403 without an AUDITOR or ADMIN grant; 404 AUDIT_EVENT_NOT_FOUND for a missing event within the selected source. Errors use timestamp/status/code/message/path/traceId without raw SQL or metadata. Existing target-prefixed audit indexes serve selective target/resource queries; no global history latency or indexed unfiltered page guarantee is claimed.

@@ -1,6 +1,6 @@
 # Finance API — Obligations and Manual Payments (4B1/4B2)
 
-All operations require Bearer authentication and ROLE_ADMIN. Base /api/v1/admin/finance. Payments are manual records; no gateway or real-money transfer.
+All operations require Bearer authentication and a `FINANCE` or `ADMIN` grant; Student reference reads are open to the other department roles as documented in [Permissions](../permissions.md). Base /api/v1/admin/finance. Payments are manual records; no gateway or real-money transfer.
 
 | Operation | Contract |
 | --- | --- |

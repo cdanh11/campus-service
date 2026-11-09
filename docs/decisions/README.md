@@ -43,4 +43,5 @@ Create an ADR when a decision changes module boundaries, persistence strategy, s
 - [0014: Owner-scoped Retained Audit Viewing](0014-owner-scoped-audit-viewing.md)
 - [0015: Owner-scoped Current-state Reporting](0015-owner-scoped-current-state-reporting.md)
 - [ADR 0016 — Explicit administrator bootstrap](0016-explicit-administrator-bootstrap.md): portable non-web first-account provisioning and audit/guard invariants.
-- [0017: Functional administration permissions](0017-functional-administration-permissions.md)
+- [0017: Functional administration permissions](0017-functional-administration-permissions.md) — superseded by 0018.
+- [0018: Department-based functional roles](0018-department-functional-roles.md) — current six-role model and V28 consolidation.

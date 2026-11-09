@@ -1,6 +1,6 @@
 # Dormitory API — Inventory and Accommodation (4A1/4A2)
 
-All operations require Bearer authentication and ROLE_ADMIN. Base path: /api/v1/admin/dormitory. The inventory resource parameter accepts only buildings, rooms or beds; unknown resources have no matching endpoint. Assignments have separate fixed routes. There is no DELETE endpoint.
+All operations require Bearer authentication and a `CAMPUS_SERVICES` or `ADMIN` grant; the current matrix is in [Permissions](../permissions.md). Base path: /api/v1/admin/dormitory. The inventory resource parameter accepts only buildings, rooms or beds; unknown resources have no matching endpoint. Assignments have separate fixed routes. There is no DELETE endpoint.
 
 | Operation | Contract |
 | --- | --- |

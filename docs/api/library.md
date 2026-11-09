@@ -1,6 +1,6 @@
 # Library API — Phase 5C
 
-Phase 5C reviewed PASS on 2026-10-04: genuine V24→V25 exact validation and full clean verify 382 tests/64 suites, zero failures/errors/skips, 7m32s. All routes below require Bearer authentication and ROLE_ADMIN. No Student self-borrow, renewal, reservation, fines or automatic Finance/Notification writes.
+Phase 5C reviewed PASS on 2026-10-04: genuine V24→V25 exact validation and full clean verify 382 tests/64 suites, zero failures/errors/skips, 7m32s. All routes below require Bearer authentication and a `CAMPUS_SERVICES` or `ADMIN` grant; `AUDITOR` may read the copy list/UUID detail ([Permissions](../permissions.md)). No Student self-borrow, renewal, reservation, fines or automatic Finance/Notification writes.
 
 Base: `/api/v1/admin/library`.
 

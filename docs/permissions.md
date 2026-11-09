@@ -1,47 +1,60 @@
 # Administration permission matrix
 
-Phase 8A2 implementation: functional roles across existing owner APIs. This is not a complete university HR/approval hierarchy. Verification is [PASS for 8A2](reviews/phase-8a2-permissions-review.md); whole Phase 8 subsequently passed its [local acceptance/regression review](reviews/phase-8-acceptance-review.md).
+The current model is six roles: two platform roles plus four department roles. It replaced the eleven function-specific roles of Phase 8A2; see [ADR 0018](decisions/0018-department-functional-roles.md) and the historical [ADR 0017](decisions/0017-functional-administration-permissions.md). Organization, data flows and Mermaid diagrams are in [Organization and data flow](architecture/organization-and-data-flow.md).
 
-| Role | Own operations | Additional read references |
-| --- | --- | --- |
-| ADMIN | All owner APIs, account/password/status/role management | All |
-| ORGANIZATION_ADMIN | Organization units | None |
-| STUDENT_ADMIN | Student profiles | Organization units; account list/detail |
-| PERSONNEL_ADMIN | Faculty/staff profiles | Organization units; account list/detail |
-| ACADEMIC_ADMIN | Programs, courses, terms, offerings, sections, enrollments | Organization units, Students, faculty/staff |
-| DORMITORY_ADMIN | Buildings, rooms, beds, assignments/releases | Students |
-| FINANCE_ADMIN | Fees, charges, receipts/reversals | Students |
-| NOTIFICATION_ADMIN | Templates, notices, publication/deliveries | Account list/detail |
-| EVENT_ADMIN | Events, memberships, cancellation/restoration, attendance | Students |
-| LIBRARY_ADMIN | Titles, copies, borrowing/returns | Students |
-| AUDIT_VIEWER | GET/HEAD retained audit APIs only | None |
-| REPORTING_VIEWER | GET/HEAD dashboard/reports/CSV only | Students; section, bed, copy and event list/UUID detail |
-| USER | Own inbox and Event portal | No administrator APIs |
+| Role | Real-world counterpart | Own writes | Additional reads |
+| --- | --- | --- | --- |
+| ADMIN | Quản trị hệ thống | All owner APIs; accounts, passwords, statuses and role assignment; organization units | All |
+| ACADEMIC_AFFAIRS | Phòng Đào tạo | Organization units; Student profiles; Faculty/Staff profiles; programs, courses, terms, offerings, sections, enrollments and timetable | Account list/detail/lookup |
+| CAMPUS_SERVICES | Phòng Công tác sinh viên và dịch vụ | Dormitory buildings/rooms/beds/assignments; notification templates/notices/publication; events, memberships and attendance; library titles/copies/loans | Student profiles; account list/detail/lookup |
+| FINANCE | Phòng Tài chính | Fees, Student charges, manual receipts, reversals and cancellations | Student profiles |
+| AUDITOR | Kiểm soát nội bộ | None | Retained audits; dashboard/reports/CSV; Student profiles; section, bed, copy and event list/UUID detail |
+| USER | Sinh viên / người dùng | Own inbox acknowledgement; own Event registration and cancellation | Own timetable, enrollments and tuition charges through `/api/v1/me` |
 
-Reference grants never authorize writes. Account references exclude password/role/status mutations and future non-UUID subroutes. Report references do not grant access to raw loans, Event registration management, notifications or audit. Existing reference DTOs are unchanged; operators can read their exposed fields across all units. Multiple assigned roles combine access. Only global ADMIN assigns roles; scoped administrators cannot elevate themselves or others.
+Reference grants never authorize writes. Account references expose list/detail/lookup only, never password, role or status mutation and never future non-UUID subroutes. Auditor references stop at list/UUID detail: no loans, Event registrations, notification deliveries, accounts or finance rows. Report grants do not expose raw owner records.
 
-The frontend hides unrelated menus and blocks direct routes before fetching owner data. Reference permissions do not expose the owner's management UI. Backend authorization remains authoritative for direct HTTP clients.
+Every department role operates all records of its domain. There is no per-building, per-program or per-fee row isolation, and no field-level redaction; existing owner DTOs are unchanged. Multiple assigned roles combine grants. Only global ADMIN assigns roles, so a department operator cannot elevate itself or another account.
 
-Role changes retain the documented stateless JWT lifetime; session/refresh invalidation does not revoke already issued access JWTs immediately. See [ADR 0017](decisions/0017-functional-administration-permissions.md).
+## What one workday covers
 
-## Mapping university responsibilities
-
-Roles represent capabilities, not organization-unit membership. Assign only the capabilities needed by each operator; do not grant ADMIN just because someone manages a department. Typical combinations are:
-
-| Responsibility | Suggested roles |
+| Department | A normal day |
 | --- | --- |
-| Organization/reference-data administration | ORGANIZATION_ADMIN |
-| Student affairs and student communication | STUDENT_ADMIN, NOTIFICATION_ADMIN |
-| Personnel/HR administration | PERSONNEL_ADMIN |
-| Training/Academic administration | ACADEMIC_ADMIN |
-| Accommodation administration | DORMITORY_ADMIN |
-| Finance office | FINANCE_ADMIN |
-| Event coordination | EVENT_ADMIN, optionally NOTIFICATION_ADMIN |
-| Library circulation | LIBRARY_ADMIN |
-| Internal audit | AUDIT_VIEWER |
-| Management reporting | REPORTING_VIEWER |
-| Platform account administration | ADMIN |
+| Phòng Đào tạo | Maintain units and staff, admit/update Student profiles, open a term, publish offerings and sections, place the timetable, enroll or withdraw students, answer cohort questions |
+| Phòng Công tác sinh viên và dịch vụ | Allocate and release beds, publish a notice, open an event and take attendance, check out and return library copies, handle student requests across those services |
+| Phòng Tài chính | Define fees, issue charges, record manual receipts, reverse a wrong receipt, cancel an obsolete charge and reconcile a Student balance |
+| Kiểm soát nội bộ | Review retained mutations, inspect the dashboard and reports, export CSV, cross-check approved reference lists, raise findings without changing data |
+| Quản trị hệ thống | Provision accounts, reset credentials, activate/deactivate accounts, assign department roles, maintain organization units, handle break-glass recovery |
 
-These are assignment examples, not automatic department-to-role grants. Event coordination does not imply Finance access; assign FINANCE_ADMIN separately only when that person is authorized to record charges/receipts. A Student affairs operator does not gain Academic or account-management writes through Student reference permissions.
+This is an assignment model, not an approval chain. Event coordination does not imply Finance access: a person who needs both receives both department roles explicitly.
 
-This covers the implemented campus capabilities. Procurement, payroll, admissions, approval chains, per-department data isolation and event budgets are not implemented, so no role claims access to those workflows. The two global administrators are demo inventory, not a hard-coded limit on ADMIN accounts.
+## Enforcement
+
+Spring Security evaluates `/api/v1/admin/**` before controllers. GET/HEAD uses reader grants; other methods use writer grants. Any administrator path without a matching grant stays ADMIN-only. The filter returns 403 for an authenticated role without a grant and 401 without a token; controllers validate the payload only after the grant passes.
+
+The React client hides unrelated menus and blocks direct routes before owner requests, but this is convenience only. Backend authorization is authoritative for direct HTTP clients and scripts.
+
+## Migrating existing data
+
+V28 maps memberships forward and then deletes the eleven released role rows:
+
+| Released role | Replacement |
+| --- | --- |
+| ORGANIZATION_ADMIN, STUDENT_ADMIN, PERSONNEL_ADMIN, ACADEMIC_ADMIN | ACADEMIC_AFFAIRS |
+| DORMITORY_ADMIN, NOTIFICATION_ADMIN, EVENT_ADMIN, LIBRARY_ADMIN | CAMPUS_SERVICES |
+| FINANCE_ADMIN | FINANCE |
+| AUDIT_VIEWER, REPORTING_VIEWER | AUDITOR |
+
+USER and ADMIN memberships, accounts, passwords, sessions, business tables and audit history are unchanged. Duplicate memberships collapse, and the migration runs once through Flyway. Access JWTs issued before the upgrade may still name removed roles until they expire (maximum 15 minutes); they match no rule, and refresh/logout invalidation follows the existing session revocation. An existing demo database keeps any pre-existing demo accounts after migration, now attached to department roles; reseeding adds the four department accounts.
+
+## Demo accounts
+
+The portable demo creates two global administrators, one account per department and 200 linked Student users. Every administrator/department account uses the standard demo administrator password; Students use the Student password. The exact private email manifest is `.demo/docker/accounts.json`. Department emails are:
+
+- `demo.academic_affairs@example.test`
+- `demo.campus_services@example.test`
+- `demo.finance@example.test`
+- `demo.auditor@example.test`
+
+## Not implemented
+
+Procurement, payroll, admissions pipelines, approval chains, per-department row isolation, event budgets and delegated role administration are outside the implemented campus capabilities, so no role claims access to them. The two global administrators are demo inventory, not a hard-coded limit on ADMIN accounts.

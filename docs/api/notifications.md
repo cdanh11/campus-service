@@ -1,6 +1,6 @@
 # Notification API
 
-Phase 5A reviewed PASS; actual verification evidence is recorded in the Phase 5A review. Bearer JWT required. All `/api/v1/admin/notifications/**` operations require ADMIN; `/api/v1/notifications` serves only the authenticated principal's own inbox.
+Phase 5A reviewed PASS; actual verification evidence is recorded in the Phase 5A review. Bearer JWT required. All `/api/v1/admin/notifications/**` operations require a `CAMPUS_SERVICES` or `ADMIN` grant ([Permissions](../permissions.md)); `/api/v1/notifications` serves only the authenticated principal's own inbox.
 
 | Operation | Request/response |
 | --- | --- |

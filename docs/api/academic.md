@@ -1,6 +1,6 @@
 # Academic API Contract
 
-All data operations below require Bearer authentication and ROLE_ADMIN. Generated OpenAPI at `/v3/api-docs` and Swagger UI describe the request/response schemas; these documentation routes are public under the existing security configuration and expose no runtime records.
+All data operations below require Bearer authentication and an `ACADEMIC_AFFAIRS` or `ADMIN` grant; the current matrix is in [Permissions](../permissions.md). Generated OpenAPI at `/v3/api-docs` and Swagger UI describe the request/response schemas; these documentation routes are public under the existing security configuration and expose no runtime records.
 
 ## Resources and operations
 

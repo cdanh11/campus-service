@@ -1,6 +1,6 @@
 # Event API — Phase 5B
 
-Phase 5B review PASS; final clean verify passed 360 tests/60 suites (6m29s). Evidence is in the Phase 5B review. Bearer JWT is required. Catalog is readable by authenticated accounts, including DRAFT rows. All mutations and administrative paths require ADMIN. No deployment or runtime provisioning is included.
+Phase 5B review PASS; final clean verify passed 360 tests/60 suites (6m29s). Evidence is in the Phase 5B review. Bearer JWT is required. Catalog is readable by authenticated accounts, including DRAFT rows. All mutations and administrative paths require a `CAMPUS_SERVICES` or `ADMIN` grant, and `AUDITOR` may read the administrative event list/UUID detail ([Permissions](../permissions.md)). No deployment or runtime provisioning is included.
 
 | Operation | Current behavior |
 | --- | --- |
