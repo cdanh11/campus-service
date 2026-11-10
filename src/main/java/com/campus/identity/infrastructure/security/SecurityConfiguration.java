@@ -24,14 +24,15 @@ public class SecurityConfiguration {
     @Bean JsonAccessDeniedHandler jsonAccessDeniedHandler(SecurityErrorResponseWriter errors) { return new JsonAccessDeniedHandler(errors); }
     @Bean
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-    SecurityFilterChain securityFilterChain(HttpSecurity http, TokenService tokenService, SecurityErrorResponseWriter errors, JsonAccessDeniedHandler denied) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http, TokenService tokenService, SecurityErrorResponseWriter errors, JsonAccessDeniedHandler denied,
+                                            RateLimitProperties rateLimit, Clock clock) throws Exception {
         // Bearer access tokens are stateless; refresh endpoints validate their cookie in the controller.
         return http.csrf(csrf -> csrf.disable()).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .formLogin(form -> form.disable()).httpBasic(basic -> basic.disable())
                 .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint((request, response, exception) -> errors.write(request, response, 401, "MISSING_ACCESS_TOKEN", "Access token is required"))
                         .accessDeniedHandler(denied))
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/actuator/health", "/actuator/health/**", "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/logout", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/error").permitAll();
+                    auth.requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/prometheus", "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/logout", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/error").permitAll();
                     for (var rule : AdministrativeAccessPolicy.rules()) {
                         String[] paths = rule.paths().toArray(String[]::new);
                         String[] readers = rule.readers().toArray(String[]::new);
@@ -41,6 +42,7 @@ public class SecurityConfiguration {
                     }
                     auth.requestMatchers("/api/v1/admin/**").hasRole("ADMIN").anyRequest().authenticated();
                 })
+                .addFilterBefore(new LoginRateLimitFilter(rateLimit, errors, clock), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new OriginProtectionFilter(tokenService.properties(), errors), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new JwtAuthenticationFilter(tokenService, errors), UsernamePasswordAuthenticationFilter.class)
                 .build();
