@@ -24,6 +24,14 @@ class UserAccountTest {
     }
 
     @Test
+    void rejectsEmailsWithoutAValidDottedDomain() {
+        for (String email : Set.of("a@b", "a@b.", "a@.b", "a@@b.example", "a b@c.example", "@campus.example", "admin@campus..example"))
+            assertThatIllegalArgumentException()
+                    .isThrownBy(() -> UserAccount.create(UUID.randomUUID(), email, PASSWORD_HASH, Instant.now()))
+                    .withMessageContaining("email");
+    }
+
+    @Test
     void acceptsValidApprovedBcryptEncodedValue() {
         UserAccount account = UserAccount.create(UUID.randomUUID(), "admin@campus.example", PASSWORD_HASH, Instant.now());
 

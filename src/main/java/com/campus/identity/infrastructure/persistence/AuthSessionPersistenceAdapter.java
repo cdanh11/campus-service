@@ -42,6 +42,12 @@ class AuthSessionPersistenceAdapter implements AuthSessionRepository {
     public Optional<AuthSession> findById(UUID id) {
         return authSessionJpaRepository.findById(id).map(mapper::toDomain);
     }
+
+    @Override
+    @Transactional
+    public Optional<AuthSession> findByIdForUpdate(UUID id) {
+        return authSessionJpaRepository.findByIdForUpdate(id).map(mapper::toDomain);
+    }
     @Override @Transactional
     public void revokeActiveSessionsForUser(UUID userId, java.time.Instant revokedAt, String reason) { authSessionJpaRepository.revokeActiveForUser(userId, revokedAt, reason); }
 }

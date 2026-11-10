@@ -54,7 +54,7 @@ public class AuthenticationService {
     public AuthResult refresh(String raw) {
         Instant now = clock.instant();
         RefreshToken old = refreshTokens.findByTokenHashForUpdate(tokens.hash(raw)).orElseThrow(RefreshTokenInvalid::new);
-        AuthSession session = sessions.findById(old.sessionId()).orElseThrow(RefreshTokenInvalid::new);
+        AuthSession session = sessions.findByIdForUpdate(old.sessionId()).orElseThrow(RefreshTokenInvalid::new);
         if (old.revokedAt() != null) {
             if (old.replacedById() != null && session.revokedAt() == null) { session.revoke(now, "REFRESH_TOKEN_REUSE"); sessions.save(session); }
             if (old.replacedById() != null) throw new RefreshTokenReused();

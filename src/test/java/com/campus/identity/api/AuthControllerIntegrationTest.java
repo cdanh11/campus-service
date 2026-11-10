@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import jakarta.servlet.http.Cookie;
 import com.campus.identity.domain.AccountStatus;
+import com.campus.identity.domain.AuthSessionRepository;
 import com.campus.identity.domain.RefreshToken;
 import com.campus.identity.domain.RefreshTokenRepository;
 import com.campus.identity.domain.UserAccount;
@@ -40,6 +41,7 @@ class AuthControllerIntegrationTest {
     @Autowired UserAccountRepository users;
     @Autowired PasswordEncoder passwordEncoder;
     @Autowired RefreshTokenRepository refreshTokens;
+    @Autowired AuthSessionRepository sessions;
     @Autowired TokenService tokens;
     @Autowired EntityManager entityManager;
 
@@ -140,6 +142,18 @@ class AuthControllerIntegrationTest {
         revoked.revoke(Instant.now(), null); refreshTokens.save(revoked);
         mockMvc.perform(post("/api/v1/auth/refresh").header("Origin", "http://localhost:3000").cookie(revokedCookie))
                 .andExpect(status().isUnauthorized()).andExpect(jsonPath("$.code").value("REFRESH_TOKEN_REVOKED"));
+    }
+
+    @Test
+    void administratorSessionRevocationBlocksRefreshAndKeepsSessionRevoked() throws Exception {
+        Cookie refresh = login("session-revoked@campus.example");
+        UserAccount user = users.findByEmail("session-revoked@campus.example").orElseThrow();
+        UUID sessionId = refreshTokens.findByTokenHash(tokens.hash(refresh.getValue())).orElseThrow().sessionId();
+        sessions.revokeActiveSessionsForUser(user.id(), Instant.now(), "ACCOUNT_DISABLED");
+        mockMvc.perform(post("/api/v1/auth/refresh").header("Origin", "http://localhost:3000").cookie(refresh))
+                .andExpect(status().isUnauthorized()).andExpect(jsonPath("$.code").value("REFRESH_TOKEN_REVOKED"));
+        assertThat(refreshTokens.findByTokenHash(tokens.hash(refresh.getValue())).orElseThrow().replacedById()).isNull();
+        assertThat(sessions.findById(sessionId).orElseThrow().revokedAt()).isNotNull();
     }
 
     @Test

@@ -69,7 +69,9 @@ public class AuthSessionEntity {
     public void update(Instant issuedAt, Instant expiresAt, Instant revokedAt, String revocationReason) {
         this.issuedAt = issuedAt;
         this.expiresAt = expiresAt;
-        this.revokedAt = revokedAt;
-        this.revocationReason = revocationReason;
+        if (this.revokedAt == null && revokedAt != null) {
+            this.revokedAt = revokedAt;
+            this.revocationReason = revocationReason;
+        }
     }
 }

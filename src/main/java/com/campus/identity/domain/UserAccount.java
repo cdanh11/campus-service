@@ -11,6 +11,7 @@ public final class UserAccount {
 
     private static final Pattern BCRYPT_PASSWORD_HASH = Pattern.compile(
             "\\A\\{bcrypt}\\$2[aby]\\$(?:1[0-9]|2[0-9]|3[01])\\$[./A-Za-z0-9]{53}\\z");
+    private static final Pattern EMAIL = Pattern.compile("\\A[^@\\s]+@[^@\\s.]+(?:\\.[^@\\s.]+)+\\z");
 
     private final UUID id;
     private final String email;
@@ -145,7 +146,7 @@ public final class UserAccount {
 
     private static String normalizeEmail(String email) {
         String normalized = Objects.requireNonNull(email, "email must not be null").trim().toLowerCase(java.util.Locale.ROOT);
-        if (normalized.isBlank() || normalized.length() > 320 || !normalized.contains("@")) {
+        if (normalized.isBlank() || normalized.length() > 320 || !EMAIL.matcher(normalized).matches()) {
             throw new InvalidUserAccountException("email must be a valid institutional email address");
         }
         return normalized;
