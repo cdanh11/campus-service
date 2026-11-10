@@ -3,6 +3,7 @@ package com.campus.student.api;
 import java.time.Instant;
 import com.campus.shared.api.ApiErrors;
 import com.campus.student.application.StudentProfileNotFoundException;
+import com.campus.student.application.StudentProfileService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,14 @@ public class OwnStudentErrorHandler {
     ResponseEntity<Error> missing(HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new Error(Instant.now(), 404, "STUDENT_PROFILE_NOT_FOUND", "Not Found", request.getRequestURI(), ApiErrors.traceId(request)));
+    }
+    @ExceptionHandler(StudentProfileService.RequestValidationException.class)
+    ResponseEntity<Error> invalid(HttpServletRequest request) {
+        return error(HttpStatus.BAD_REQUEST.value(), "STUDENT_CONTACT_INVALID", request);
+    }
+    @ExceptionHandler(StudentProfileService.ConcurrentProfileModificationException.class)
+    ResponseEntity<Error> conflict(HttpServletRequest request) {
+        return error(HttpStatus.CONFLICT.value(), "PROFILE_CONCURRENT_MODIFICATION", request);
     }
     @ExceptionHandler(Exception.class)
     ResponseEntity<Error> unexpected(Exception exception, HttpServletRequest request) {
