@@ -9,11 +9,34 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+    open-in-view: false
   flyway:
     enabled: true
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
 
 server:
   shutdown: graceful
+  forward-headers-strategy: native
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  metrics:
+    tags:
+      application: campus-service
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 
 campus:
   security:
@@ -22,3 +45,7 @@ campus:
     refresh-cookie:
       secure: true
     allowed-origins: ${ALLOWED_ORIGINS}
+    rate-limit:
+      enabled: true
+      login-per-minute: 20
+      refresh-per-minute: 60

@@ -4,11 +4,17 @@ Phase 6 provides read-only ADMIN dashboard/detail/CSV contracts; see [Reporting 
 
 ## Correlation
 
-Synchronous HTTP responses include `X-Request-ID`. A canonical UUID header from the caller is accepted; malformed/oversized input is replaced with a generated UUID. Report error responses also expose that ID in `traceId`; older module error contracts may still have a null traceId, so use the response header. MDC requestId is restored/removed at request completion, including failures.
+Synchronous HTTP responses include `X-Request-ID`. A canonical UUID header from the caller is accepted; malformed/oversized input is replaced with a generated UUID. Every module error handler now returns that ID in `traceId`, including a catch-all JSON `INTERNAL_ERROR` response for unexpected failures, so the body and header agree. MDC requestId is restored/removed at request completion, including failures.
 
 The completion log message is JSON with event, requestId, method, matched route template, status and durationMs. The existing Spring console layout still prefixes the message. Requests rejected before MVC mapping use UNMATCHED. No raw URI, query string, body, account, authorization header, cookie or credential is recorded by this filter. Unexpected methods become OTHER. This is a local correlation strategy, not distributed tracing or an asynchronous-request instrumentation guarantee.
 
-Micrometer timer `campus.http.requests` records duration/count using only method, route template and status tags. Request IDs and resource UUIDs are never metric tags. Existing JVM/framework meters remain available in-process. HTTP Actuator exposure remains health only; `/actuator/metrics` is not exposed and no Prometheus/paid exporter is added. Health probes retain their existing public minimal response. Configure a telemetry sink only through a separate approved operational requirement.
+Micrometer timer `campus.http.requests` records duration/count using only method, route template and status tags. Request IDs and resource UUIDs are never metric tags. Existing JVM/framework meters remain available in-process.
+
+The production profile includes the Micrometer Prometheus registry and exposes `health` and `prometheus` beneath `/actuator`; local/test profiles expose health only, so `/actuator/prometheus` is a 404 outside production deployments. Every sample carries the application tag `campus-service`. `GET /actuator/prometheus` is permitted at the HTTP boundary because scrapers do not carry JWTs; restrict that path to the monitoring network with a reverse proxy, firewall rule or separate management port, and do not publish it through the public entry point. `/actuator/metrics` remains unexposed. Health probes retain their existing public minimal response. No paid exporter or distributed tracing backend is added.
+
+## Database backup and restore
+
+Operational snapshots use the logical `pg_dump` scripts in [Database backup and restore](database-backup-restore.md). Metrics do not replace a verified restore procedure.
 
 ## Reproduce query/workload evidence
 
