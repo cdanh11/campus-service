@@ -43,7 +43,13 @@ public class AdminClassSectionController {
     @Operation(summary = "Update section (administrative permission)", description = "Requires expectedVersion; stale version, invalid lifecycle or unavailable references return 409. Parent identifiers are immutable.")
     public ClassSection update(Authentication authentication, @PathVariable UUID id, @Valid @RequestBody UpdateRequest request) {
         return administration.updateSection((UUID) authentication.getPrincipal(), id, request.code(), request.capacity(), request.facultyId(),
-                SectionSchedule.of(request.weekday(), request.startsAt(), request.endsAt(), request.room()), request.status(), request.expectedVersion());
+                updateSchedule(request), request.status(), request.expectedVersion());
+    }
+
+    private static SectionSchedule updateSchedule(UpdateRequest request) {
+        boolean absent = request.weekday() == null && request.startsAt() == null && request.endsAt() == null
+                && (request.room() == null || request.room().isBlank());
+        return absent ? null : SectionSchedule.of(request.weekday(), request.startsAt(), request.endsAt(), request.room());
     }
 
     @GetMapping

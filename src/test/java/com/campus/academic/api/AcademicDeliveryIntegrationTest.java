@@ -271,6 +271,24 @@ class AcademicDeliveryIntegrationTest {
         error(call(post(ROOT + "sections"), body), 400, "VALIDATION_FAILED");
     }
 
+    @Test
+    void keepsExistingWeeklySlotWhenUpdateOmitsScheduleFields() throws Exception {
+        var term = create("terms", termBody());
+        var offering = create("offerings", Map.of("termId", id(term), "courseId", course));
+        var section = create("sections", sectionBody(id(offering), null));
+        var update = new LinkedHashMap<String, Object>();
+        update.put("code", "CS01");
+        update.put("capacity", 30);
+        update.put("status", "DRAFT");
+        update.put("expectedVersion", 0);
+
+        var updated = updateOk("sections", section, update);
+
+        assertThat(updated.path("schedule").path("weekday").asInt()).isEqualTo(2);
+        assertThat(updated.path("schedule").path("room").asText()).isEqualTo("A101");
+        assertThat(updated.path("schedule").path("startsAt").asText()).startsWith("07:30");
+    }
+
     private void race(String leftKind, JsonNode left, Map<String, Object> leftBody, String rightKind, JsonNode right, Map<String, Object> rightBody) throws Exception {
         long auditBefore = jdbc.queryForObject("SELECT count(*) FROM academic_audit_events WHERE target_id IN (?, ?)", Long.class, id(left), id(right));
         ExecutorService executor = Executors.newFixedThreadPool(2);

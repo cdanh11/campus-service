@@ -12,6 +12,7 @@ import com.campus.organization.application.OrganizationUnitManagementService;
 import com.campus.organization.domain.*;
 import com.campus.personnel.application.FacultyStaffManagementService;
 import com.campus.personnel.domain.*;
+import com.campus.shared.application.time.BusinessCalendar;
 import com.campus.student.application.StudentManagementService;
 import com.campus.testsupport.PostgresApplicationTest;
 import org.junit.jupiter.api.*;
@@ -96,7 +97,7 @@ class SelfServicePortalIntegrationTest {
     }
 
     @Test void summarisesChargesPaymentsAndOverdueBalance() throws Exception {
-        var today = LocalDate.now();
+        var today = LocalDate.now(BusinessCalendar.ZONE);
         var fee = finance.createFee(admin, prefix + "FEE", "Tuition", new BigDecimal("5000000"));
         var open = finance.createCharge(admin, prefix + "C1", student, fee.id(), today.minusDays(2));
         finance.createCharge(admin, prefix + "C2", student, fee.id(), today.plusDays(10));
@@ -120,7 +121,7 @@ class SelfServicePortalIntegrationTest {
     }
 
     @Test void prefersTheOngoingTermForTheDefaultTimetable() throws Exception {
-        var today = LocalDate.now();
+        var today = LocalDate.now(BusinessCalendar.ZONE);
         var ongoing = activeTerm(today.minusDays(5).toString(), today.plusDays(5).toString());
         enrol(ongoing, "NOW101", "Current course", 3, 2, LocalTime.of(7, 30), LocalTime.of(9, 30), "A101");
         var future = activeTerm("2099-01-01", "2099-06-01");

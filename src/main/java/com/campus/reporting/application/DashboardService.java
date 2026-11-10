@@ -1,6 +1,7 @@
 package com.campus.reporting.application;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.*;
 import com.campus.shared.application.reporting.DashboardContributor;
@@ -12,8 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class DashboardService {
     private final Map<Owner, DashboardContributor> owners;
+    private final Clock clock;
 
-    public DashboardService(List<DashboardContributor> contributors) {
+    public DashboardService(List<DashboardContributor> contributors, Clock clock) {
+        this.clock = clock;
         var registered = new EnumMap<Owner, DashboardContributor>(Owner.class);
         for (var contributor : contributors) {
             if (registered.put(contributor.owner(), contributor) != null) throw new IllegalStateException("Duplicate dashboard owner");
@@ -24,7 +27,7 @@ public class DashboardService {
 
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public Dashboard dashboard() {
-        Instant asOf = Instant.now();
+        Instant asOf = clock.instant();
         var groups = new LinkedHashMap<String, Map<String, BigDecimal>>();
         for (var entry : owners.entrySet()) {
             String group = switch (entry.getKey()) {

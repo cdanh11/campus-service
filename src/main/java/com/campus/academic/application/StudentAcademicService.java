@@ -1,6 +1,5 @@
 package com.campus.academic.application;
 
-import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
@@ -8,6 +7,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import com.campus.academic.domain.*;
 import com.campus.personnel.application.FacultyStaffManagementService;
+import com.campus.shared.application.time.BusinessCalendar;
 import com.campus.student.application.StudentAccountDirectory;
 import com.campus.student.application.StudentProfileNotFoundException;
 import org.springframework.stereotype.Service;
@@ -23,12 +23,12 @@ public class StudentAcademicService {
     private final AcademicCourseRepository courses;
     private final AcademicTermRepository terms;
     private final FacultyStaffManagementService faculty;
-    private final Clock clock;
+    private final BusinessCalendar calendar;
 
     public StudentAcademicService(StudentAccountDirectory accounts, EnrollmentRepository enrollments,
                                   ClassSectionRepository sections, CourseOfferingRepository offerings,
                                   AcademicCourseRepository courses, AcademicTermRepository terms,
-                                  FacultyStaffManagementService faculty, Clock clock) {
+                                  FacultyStaffManagementService faculty, BusinessCalendar calendar) {
         this.accounts = accounts;
         this.enrollments = enrollments;
         this.sections = sections;
@@ -36,7 +36,7 @@ public class StudentAcademicService {
         this.courses = courses;
         this.terms = terms;
         this.faculty = faculty;
-        this.clock = clock;
+        this.calendar = calendar;
     }
 
     public Timetable timetable(UUID account, UUID termId) {
@@ -68,7 +68,7 @@ public class StudentAcademicService {
     }
 
     private TermView current(List<EnrollmentView> values) {
-        LocalDate today = LocalDate.now(clock);
+        LocalDate today = calendar.today();
         var active = values.stream().map(EnrollmentView::term)
                 .filter(value -> value.status() == AcademicTermStatus.ACTIVE).toList();
         var ongoing = active.stream()

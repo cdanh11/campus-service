@@ -1,5 +1,6 @@
 package com.campus.reporting.application;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.*;
 import com.campus.shared.application.reporting.*;
@@ -30,7 +31,7 @@ class ReportContractTest {
         assertThat(row.title()).startsWith("=SUM");
     }
     @Test void detailServiceRejectsIncompleteRegistrations() {
-        assertThatThrownBy(()->new DetailReportService(List.of())).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(()->new DetailReportService(List.of(), Clock.systemUTC())).isInstanceOf(IllegalStateException.class);
     }
     private ReportSearch query(String status,UUID resource,boolean overdue) { return new ReportSearch(0,20,null,resource,status,null,null,overdue,true); }
 }

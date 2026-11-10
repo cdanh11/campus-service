@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 import com.campus.finance.domain.*;
+import com.campus.shared.application.time.BusinessCalendar;
 import com.campus.student.application.StudentAccountDirectory;
 import com.campus.student.application.StudentProfileNotFoundException;
 import org.springframework.stereotype.Service;
@@ -19,13 +20,15 @@ public class StudentFinanceService {
     private final FinanceRepository charges;
     private final PaymentRepository payments;
     private final Clock clock;
+    private final BusinessCalendar calendar;
 
     public StudentFinanceService(StudentAccountDirectory accounts, FinanceRepository charges,
-                                 PaymentRepository payments, Clock clock) {
+                                 PaymentRepository payments, Clock clock, BusinessCalendar calendar) {
         this.accounts = accounts;
         this.charges = charges;
         this.payments = payments;
         this.clock = clock;
+        this.calendar = calendar;
     }
 
     public FinanceSummary summary(UUID account) {
@@ -33,7 +36,7 @@ public class StudentFinanceService {
         var rows = charges(studentId);
         var byCharge = payments.findByCharges(rows.stream().map(StudentCharge::id).toList()).stream()
                 .collect(Collectors.groupingBy(ManualPayment::chargeId, LinkedHashMap::new, Collectors.toList()));
-        var today = LocalDate.now(clock);
+        var today = calendar.today();
         BigDecimal totalCharged = BigDecimal.ZERO;
         BigDecimal totalPaid = BigDecimal.ZERO;
         var views = new ArrayList<ChargeView>();
