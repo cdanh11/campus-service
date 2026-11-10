@@ -13,6 +13,11 @@ public final class FinanceValues {
         catch (ArithmeticException failure) { throw new IllegalArgumentException("VND requires integral amount"); }
     }
     public static String code(String value) { return text(text(value, 32).toUpperCase(Locale.ROOT), 32); }
+    public static String idempotencyKey(String value) {
+        String result = trim(value);
+        if (result == null || result.length() < 8 || result.length() > 100) throw new IllegalArgumentException("Invalid idempotency key");
+        return result;
+    }
     public static String text(String value, int max) {
         String result = trim(value);
         if (result == null || result.codePointCount(0, result.length()) < 2 || result.codePointCount(0, result.length()) > max)

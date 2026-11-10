@@ -84,7 +84,7 @@ class FlywayV24ToV25LibraryUpgradeIntegrationTest {
                 .run(context->{
                     assertThat(context).hasNotFailed().hasSingleBean(EntityManagerFactory.class).doesNotHaveBean(Flyway.class);
                     var factory=context.getBean(EntityManagerFactory.class);
-                    assertThat(factory.getMetamodel().getEntities()).hasSize(36);
+                    assertThat(factory.getMetamodel().getEntities()).hasSize(37);
                     assertThat(factory.getProperties().get("hibernate.hbm2ddl.auto")).isEqualTo("validate");
                     assertThat(factory.getMetamodel().getEntities().stream().map(entity->entity.getJavaType().getPackageName()).distinct().toList())
                             .contains("com.campus.library.infrastructure.persistence","com.campus.event.infrastructure.persistence");

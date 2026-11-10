@@ -41,6 +41,7 @@ class ManualPaymentIntegrationTest {
     @Autowired FinanceObligationService obligations;
     @Autowired FinanceRepository charges;
     @Autowired PaymentRepository payments;
+    @Autowired PaymentIdempotencyRepository idempotency;
     @Autowired FinanceAudit audit;
     @Autowired StudentManagementService students;
     @Autowired OrganizationUnitManagementService units;
@@ -142,7 +143,7 @@ class ManualPaymentIntegrationTest {
     }
     @Test void coincidentClockTimesStillAdvanceChargeVersionOnPaymentAndReversal() {
         Instant same=obligations.charge(charge).createdAt().plusSeconds(1);
-        var fixed=new ManualPaymentService(charges,payments,audit,Clock.fixed(same,ZoneOffset.UTC));
+        var fixed=new ManualPaymentService(charges,payments,idempotency,audit,Clock.fixed(same,ZoneOffset.UTC));
         var payment=new TransactionTemplate(transactions).execute(transaction -> fixed.record(actor,prefix+"ONE",charge,BigDecimal.ONE,0));
         new TransactionTemplate(transactions).executeWithoutResult(transaction -> fixed.reverse(actor,payment.id(),0,1,"Correction"));
         assertThat(service.balance(charge).rowVersion()).isEqualTo(2);
@@ -253,6 +254,44 @@ class ManualPaymentIntegrationTest {
         var update=spec.path("components").path("schemas").path("FinancePaymentReverse");
         assertThat(update.path("properties").has("expectedChargeVersion")).isTrue(); assertThat(update.path("properties").has("amount")).isFalse();
     }
+    @Test void idempotencyKeyReplaysTheOriginalPaymentWithoutSideEffects() throws Exception {
+        String key=prefix+"-idem-replay"; var body=createBody(prefix+"ONE",BigDecimal.TEN,0);
+        var first=read(paymentWithKey(key,body).andExpect(status().isCreated()).andExpect(header().doesNotExist("Idempotency-Replayed")));
+        var snapshot=rows(); long before=events();
+        var replay=paymentWithKey(key,body).andExpect(status().isOk()).andExpect(header().string("Idempotency-Replayed","true"));
+        assertThat(read(replay)).isEqualTo(first);
+        assertThat(rows()).isEqualTo(snapshot); assertThat(events()).isEqualTo(before);
+        balance("10","90",1);
+        assertThat(service.record(actor,key,prefix+"ONE",charge,BigDecimal.TEN,0).replayed()).isTrue();
+    }
+    @Test void reusingAKeyWithADifferentPayloadIsRejected() throws Exception {
+        String key=prefix+"-idem-conflict";
+        paymentWithKey(key,createBody(prefix+"ONE",BigDecimal.TEN,0)).andExpect(status().isCreated());
+        var snapshot=rows(); long before=events();
+        for(var body:List.of(createBody(prefix+"ONE",BigDecimal.ONE,0),createBody(prefix+"TWO",BigDecimal.TEN,0),createBody(prefix+"ONE",BigDecimal.TEN,1)))
+            paymentWithKey(key,body).andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("IDEMPOTENCY_KEY_REUSED"));
+        assertThat(rows()).isEqualTo(snapshot); assertThat(events()).isEqualTo(before);
+        assertThat(idempotency.find(actor,key)).isPresent();
+    }
+    @Test void differentKeysRecordIndependentPayments() throws Exception {
+        var one=read(paymentWithKey(prefix+"-idem-a",createBody(prefix+"ONE",BigDecimal.ONE,0)).andExpect(status().isCreated()));
+        var two=read(paymentWithKey(prefix+"-idem-b",createBody(prefix+"TWO",BigDecimal.ONE,1)).andExpect(status().isCreated()));
+        assertThat(one.get("id")).isNotEqualTo(two.get("id"));
+        balance("2","98",2);
+    }
+    @Test void invalidIdempotencyKeysAreRejectedWithoutWriting() throws Exception {
+        var snapshot=rows(); long before=events();
+        for(String key:List.of("short","x".repeat(101)," \t ")) paymentWithKey(key,createBody(prefix+"ONE",BigDecimal.ONE,0)).andExpect(status().isBadRequest());
+        assertThat(rows()).isEqualTo(snapshot); assertThat(events()).isEqualTo(before); balance("0","100",0);
+    }
+    @Test void concurrentIdenticalKeyedRequestsRecordOnePayment() throws Exception {
+        String key=prefix+"-idem-race"; long before=events();
+        var outcomes=race(() -> service.record(actor,key,prefix+"ONE",charge,BigDecimal.TEN,0),
+                () -> service.record(actor,key,prefix+"ONE",charge,BigDecimal.TEN,0));
+        assertThat(outcomes).allMatch(Objects::isNull);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM finance_manual_payments WHERE charge_id=?",Long.class,charge)).isEqualTo(1);
+        assertThat(events()).isEqualTo(before+1); balance("10","90",1);
+    }
     private Map<String,Object> createBody(String number,BigDecimal amount,long version) { return Map.of("receiptNumber",number,"chargeId",charge,"amount",amount,"expectedChargeVersion",version); }
     private Map<String,Object> reverseBody(long version,long chargeVersion,String reason) { return Map.of("status","REVERSED","expectedVersion",version,"expectedChargeVersion",chargeVersion,"reason",reason); }
     private void balance(String paid,String outstanding,long version) {
@@ -262,6 +301,7 @@ class ManualPaymentIntegrationTest {
     private long events() { return jdbc.queryForObject("SELECT count(*) FROM finance_audit_events WHERE actor_user_id=?",Long.class,actor); }
     private Map<String,List<Map<String,Object>>> rows() { return Map.of("charges",jdbc.queryForList("SELECT * FROM finance_student_charges ORDER BY id"),"payments",jdbc.queryForList("SELECT * FROM finance_manual_payments ORDER BY id")); }
     private ResultActions call(MockHttpServletRequestBuilder request,Object body) throws Exception { request.header("Authorization","Bearer "+admin).contentType("application/json"); if(body!=null) request.content(json.writeValueAsString(body)); return mvc.perform(request); }
+    private ResultActions paymentWithKey(String key,Map<String,Object> body) throws Exception { return call(post(ROOT+"/payments").header("Idempotency-Key",key),body); }
     private JsonNode read(ResultActions result) throws Exception { return json.readTree(result.andReturn().getResponse().getContentAsString()); }
     private void rejectAudit() {
         jdbc.execute("CREATE OR REPLACE FUNCTION reject_payment_audit_test() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'forced audit failure'; END $$");

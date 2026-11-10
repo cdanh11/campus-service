@@ -73,7 +73,7 @@ class FlywayV25ToV26PermissionsUpgradeIntegrationTest {
                 .run(context -> {
                     assertThat(context).hasNotFailed().doesNotHaveBean(Flyway.class).hasSingleBean(EntityManagerFactory.class);
                     var factory = context.getBean(EntityManagerFactory.class);
-                    assertThat(factory.getMetamodel().getEntities()).hasSize(36);
+                    assertThat(factory.getMetamodel().getEntities()).hasSize(37);
                     assertThat(factory.getProperties().get("hibernate.hbm2ddl.auto")).isEqualTo("validate");
                 });
         assertThat(jdbc.queryForList("SELECT * FROM flyway_schema_history ORDER BY installed_rank")).isEqualTo(before);
