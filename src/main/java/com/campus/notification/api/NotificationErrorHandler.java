@@ -3,6 +3,7 @@ package com.campus.notification.api;
 import java.sql.SQLException;
 import java.time.Instant;
 import com.campus.notification.application.*;
+import com.campus.shared.api.ApiErrors;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.*;
 import org.springframework.http.*;
@@ -28,6 +29,12 @@ public class NotificationErrorHandler {
         }
         throw failure;
     }
-    private ResponseEntity<Error> error(int status,String code,HttpServletRequest r) { return ResponseEntity.status(status).body(new Error(Instant.now(),status,code,HttpStatus.valueOf(status).getReasonPhrase(),r.getRequestURI(),null)); }
+    @ExceptionHandler(Exception.class) ResponseEntity<Error> unexpected(Exception exception,HttpServletRequest r) {
+        var framework = ApiErrors.frameworkError(exception);
+        if (framework != null) return error(framework.status(),framework.code(),r);
+        ApiErrors.logUnexpected(r,exception);
+        return error(500,"INTERNAL_ERROR",r);
+    }
+    private ResponseEntity<Error> error(int status,String code,HttpServletRequest r) { return ResponseEntity.status(status).body(new Error(Instant.now(),status,code,HttpStatus.valueOf(status).getReasonPhrase(),r.getRequestURI(),ApiErrors.traceId(r))); }
     public record Error(Instant timestamp,int status,String code,String message,String path,String traceId) { }
 }

@@ -8,9 +8,8 @@ import com.campus.identity.application.ConcurrentModificationException;
 import com.campus.identity.application.LastActiveAdministratorRequiredException;
 import com.campus.identity.application.SecurityMutationCoordinator.InvalidExpectedVersionException;
 import com.campus.identity.domain.UserAccount.InvalidAccountStatusTransitionException;
+import com.campus.shared.api.ApiErrors;
 import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -21,7 +20,6 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 @RestControllerAdvice(basePackages = "com.campus.identity.api")
 public class AuthenticationErrorHandler {
-    private static final Logger LOG = LoggerFactory.getLogger(AuthenticationErrorHandler.class);
     @ExceptionHandler(AuthenticationService.AuthenticationFailure.class)
     public org.springframework.http.ResponseEntity<ErrorResponse> authenticationFailure(HttpServletRequest request) {
         return error(HttpStatus.UNAUTHORIZED, "AUTHENTICATION_FAILED", "Authentication failed", request);
@@ -70,11 +68,13 @@ public class AuthenticationErrorHandler {
     public org.springframework.http.ResponseEntity<ErrorResponse> transition(HttpServletRequest request) { return error(HttpStatus.CONFLICT, "INVALID_STATUS_TRANSITION", "Account status transition is not allowed", request); }
     @ExceptionHandler(Exception.class)
     public org.springframework.http.ResponseEntity<ErrorResponse> internal(Exception exception, HttpServletRequest request) {
-        LOG.error("Unhandled error at {}", request.getRequestURI(), exception);
+        var framework = ApiErrors.frameworkError(exception);
+        if (framework != null) return error(HttpStatus.valueOf(framework.status()), framework.code(), "The request could not be processed", request);
+        ApiErrors.logUnexpected(request, exception);
         return error(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "An unexpected error occurred", request);
     }
     private org.springframework.http.ResponseEntity<ErrorResponse> error(HttpStatus status, String code, String message, HttpServletRequest request) {
-        String traceId = request.getAttribute("campus.requestId") instanceof String id ? id : null;
+        String traceId = ApiErrors.traceId(request);
         return org.springframework.http.ResponseEntity.status(status).body(new ErrorResponse(Instant.now(), status.value(), code, message, request.getRequestURI(), traceId));
     }
     public record ErrorResponse(Instant timestamp, int status, String code, String message, String path, String traceId) { }

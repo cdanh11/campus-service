@@ -3,6 +3,7 @@ package com.campus.dormitory.api;
 import java.sql.SQLException;
 import java.time.Instant;
 import com.campus.dormitory.application.*;
+import com.campus.shared.api.ApiErrors;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.*;
 import org.springframework.http.*;
@@ -43,8 +44,15 @@ public class DormitoryInventoryErrorHandler {
         }
         throw failure;
     }
+    @ExceptionHandler(Exception.class)
+    ResponseEntity<Error> unexpected(Exception exception, HttpServletRequest request) {
+        var framework = ApiErrors.frameworkError(exception);
+        if (framework != null) return error(framework.status(), framework.code(), request);
+        ApiErrors.logUnexpected(request, exception);
+        return error(500, "INTERNAL_ERROR", request);
+    }
     private ResponseEntity<Error> error(int status, String code, HttpServletRequest request) {
-        return ResponseEntity.status(status).body(new Error(Instant.now(), status, code, HttpStatus.valueOf(status).getReasonPhrase(), request.getRequestURI(), null));
+        return ResponseEntity.status(status).body(new Error(Instant.now(), status, code, HttpStatus.valueOf(status).getReasonPhrase(), request.getRequestURI(), ApiErrors.traceId(request)));
     }
     public record Error(Instant timestamp, int status, String code, String message, String path, String traceId) { }
 }

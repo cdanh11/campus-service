@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-@RestControllerAdvice(basePackages = {"com.campus.organization.api", "com.campus.student.api", "com.campus.personnel.api"})
+// Scoped to the admin registry controllers: a package-wide scope would also cover OwnStudentController,
+// whose own advice must answer its profile errors.
+@RestControllerAdvice(assignableTypes = {AdminOrganizationUnitController.class, AdminStudentController.class, AdminFacultyStaffController.class})
 public class PeopleRegistryErrorHandler {
     @ExceptionHandler({AdminOrganizationUnitController.InvalidQueryParameterException.class, AdminStudentController.InvalidQueryParameterException.class, AdminFacultyStaffController.InvalidQueryParameterException.class})
     ResponseEntity<ErrorResponse> invalidQuery(HttpServletRequest request) { return error(HttpStatus.BAD_REQUEST, "INVALID_QUERY_PARAMETER", "Query parameter is invalid", request); }
@@ -45,6 +47,13 @@ public class PeopleRegistryErrorHandler {
     ResponseEntity<ErrorResponse> unavailableUnit(HttpServletRequest request) { return error(HttpStatus.CONFLICT, "ORGANIZATION_UNIT_UNAVAILABLE", "Organization unit is unavailable", request); }
     @ExceptionHandler({StudentManagementService.IdentityUserUnavailableException.class, FacultyStaffManagementService.IdentityUserUnavailableException.class})
     ResponseEntity<ErrorResponse> unavailableIdentity(HttpServletRequest request) { return error(HttpStatus.CONFLICT, "IDENTITY_USER_UNAVAILABLE", "Identity user is unavailable", request); }
-    private ResponseEntity<ErrorResponse> error(HttpStatus status, String code, String message, HttpServletRequest request) { return ResponseEntity.status(status).body(new ErrorResponse(Instant.now(), status.value(), code, message, request.getRequestURI(), null)); }
+    @ExceptionHandler(Exception.class)
+    ResponseEntity<ErrorResponse> unexpected(Exception exception, HttpServletRequest request) {
+        var framework = ApiErrors.frameworkError(exception);
+        if (framework != null) return error(HttpStatus.valueOf(framework.status()), framework.code(), "The request could not be processed", request);
+        ApiErrors.logUnexpected(request, exception);
+        return error(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "An unexpected error occurred", request);
+    }
+    private ResponseEntity<ErrorResponse> error(HttpStatus status, String code, String message, HttpServletRequest request) { return ResponseEntity.status(status).body(new ErrorResponse(Instant.now(), status.value(), code, message, request.getRequestURI(), ApiErrors.traceId(request))); }
     public record ErrorResponse(Instant timestamp, int status, String code, String message, String path, String traceId) { }
 }

@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import com.campus.academic.application.AcademicDeliveryService;
 import com.campus.academic.application.EnrollmentService;
+import com.campus.shared.api.ApiErrors;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -43,9 +44,16 @@ public class EnrollmentErrorHandler {
         }
         throw exception;
     }
+    @ExceptionHandler(Exception.class)
+    ResponseEntity<Error> unexpected(Exception exception, HttpServletRequest request) {
+        var framework = ApiErrors.frameworkError(exception);
+        if (framework != null) return error(framework.status(), framework.code(), request);
+        ApiErrors.logUnexpected(request, exception);
+        return error(500, "INTERNAL_ERROR", request);
+    }
     private ResponseEntity<Error> error(int status, String code, HttpServletRequest request) {
         return ResponseEntity.status(status).body(new Error(Instant.now(), status, code,
-                HttpStatus.valueOf(status).getReasonPhrase(), request.getRequestURI(), null));
+                HttpStatus.valueOf(status).getReasonPhrase(), request.getRequestURI(), ApiErrors.traceId(request)));
     }
     public record Error(Instant timestamp, int status, String code, String message, String path, String traceId) { }
 }

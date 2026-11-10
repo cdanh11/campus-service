@@ -3,6 +3,7 @@ package com.campus.academic.api;
 import java.time.Instant;
 import org.springframework.dao.OptimisticLockingFailureException;
 import com.campus.academic.application.AcademicCatalogService;
+import com.campus.shared.api.ApiErrors;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -61,8 +62,16 @@ public class AcademicCatalogErrorHandler {
         return error(HttpStatus.CONFLICT, "ORGANIZATION_UNIT_UNAVAILABLE", request);
     }
 
+    @ExceptionHandler(Exception.class)
+    ResponseEntity<Error> unexpected(Exception exception, HttpServletRequest request) {
+        var framework = ApiErrors.frameworkError(exception);
+        if (framework != null) return error(HttpStatus.valueOf(framework.status()), framework.code(), request);
+        ApiErrors.logUnexpected(request, exception);
+        return error(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", request);
+    }
+
     private ResponseEntity<Error> error(HttpStatus status, String code, HttpServletRequest request) {
-        return ResponseEntity.status(status).body(new Error(Instant.now(), status.value(), code, status.getReasonPhrase(), request.getRequestURI(), null));
+        return ResponseEntity.status(status).body(new Error(Instant.now(), status.value(), code, status.getReasonPhrase(), request.getRequestURI(), ApiErrors.traceId(request)));
     }
 
     public record Error(Instant timestamp, int status, String code, String message, String path, String traceId) { }
