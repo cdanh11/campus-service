@@ -7,6 +7,9 @@ import com.campus.event.application.*;
 import com.campus.event.domain.*;
 import com.campus.identity.domain.*;
 import com.campus.identity.infrastructure.security.TokenService;
+import com.campus.organization.application.OrganizationUnitManagementService;
+import com.campus.organization.domain.OrganizationUnitStatus;
+import com.campus.organization.domain.OrganizationUnitType;
 import com.campus.testsupport.PostgresApplicationTest;
 import com.fasterxml.jackson.databind.*;
 import org.junit.jupiter.api.*;
@@ -36,6 +39,7 @@ class EventCatalogIntegrationTest {
     @Autowired TokenService tokens;
     @Autowired JdbcTemplate jdbc;
     @Autowired PlatformTransactionManager transactions;
+    @Autowired OrganizationUnitManagementService units;
     static final String ADMIN="/api/v1/admin/events", PUBLIC="/api/v1/events";
     final Instant start=Instant.parse("2026-12-01T08:00:00Z"), end=start.plusSeconds(7200);
     UUID actor; String admin,user,prefix; CampusEvent event;
@@ -88,6 +92,21 @@ class EventCatalogIntegrationTest {
         call(get(ADMIN+"/"+UUID.randomUUID()),null,admin).andExpect(status().isNotFound());
         call(get(PUBLIC+"/not-a-uuid"),null,user).andExpect(status().isBadRequest());
         assertThat(rows()).isEqualTo(before); assertThat(auditCount()).isEqualTo(count);
+    }
+    @Test void assignsHostFacultyFiltersCatalogAndListsDistinctHosts() throws Exception {
+        var faculty=units.create(null,prefix+"-CNTT",prefix+" Công nghệ thông tin",OrganizationUnitType.FACULTY,OrganizationUnitStatus.ACTIVE);
+        var law=units.create(null,prefix+"-LAW",prefix+" Luật",OrganizationUnitType.FACULTY,OrganizationUnitStatus.ACTIVE);
+        var body=create(prefix+"-HOST"); body.put("hostUnitId",faculty.id().toString());
+        var hosted=read(call(post(ADMIN),body,admin).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.hostUnitId").value(faculty.id().toString())));
+        service.create(actor,prefix+"-OTHER",prefix+" other","Campus event description",start,end,3,law.id());
+        call(get(PUBLIC).param("hostUnitId",faculty.id().toString()),null,user).andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].id").value(hosted.path("id").asText()));
+        var hosts=read(call(get(PUBLIC+"/hosts"),null,user).andExpect(status().isOk()));
+        assertThat(hosts.findValuesAsText("id")).contains(faculty.id().toString(),law.id().toString());
+        var invalid=create(prefix+"-BAD"); invalid.put("hostUnitId",UUID.randomUUID().toString());
+        call(post(ADMIN),invalid,admin).andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
     }
     @Test void rollsBackBothCatalogMutationsWhenAuditInsertFails() throws Exception {
         var before=rows(); var count=auditCount();

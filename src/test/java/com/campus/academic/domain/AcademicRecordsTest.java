@@ -47,6 +47,8 @@ class AcademicRecordsTest {
         assertThat(GradeScheme.of(CourseGroup.GENERAL, false)).isEqualTo(GradeScheme.GENERAL);
         assertThat(GradeScheme.of(CourseGroup.MAJOR, true)).isEqualTo(GradeScheme.MAJOR_PROJECT);
         assertThat(GradeScheme.of(CourseGroup.MAJOR, false)).isEqualTo(GradeScheme.MAJOR_FINAL);
+        assertThat(GradeScheme.of(CourseGroup.SPECIALIZED, true)).isEqualTo(GradeScheme.MAJOR_PROJECT);
+        assertThat(GradeScheme.of(CourseGroup.SPECIALIZED, false)).isEqualTo(GradeScheme.MAJOR_FINAL);
     }
 
     @Test

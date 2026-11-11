@@ -1,10 +1,14 @@
 package com.campus.event.domain;
 
 import java.util.Set;
+import java.util.UUID;
 
 public record EventSearch(int page, int size, String query, CampusEvent.Status status,
-                          String sortField, boolean ascending) {
+                          String sortField, boolean ascending, UUID hostUnitId) {
     private static final Set<String> SORTS = Set.of("code", "title", "startsAt", "endsAt", "capacity", "status", "createdAt", "updatedAt");
+    public EventSearch(int page, int size, String query, CampusEvent.Status status, String sortField, boolean ascending) {
+        this(page, size, query, status, sortField, ascending, null);
+    }
     public EventSearch {
         query = EventValues.trim(query);
         if (query != null && query.isEmpty()) query = null;

@@ -18,11 +18,12 @@ public class CampusEventEntity {
     @Version @Column(name="row_version",nullable=false) long version;
     @Column(name="created_at",nullable=false,updatable=false) Instant createdAt;
     @Column(name="updated_at",nullable=false) Instant updatedAt;
+    @Column(name="host_unit_id") UUID hostUnitId;
     protected CampusEventEntity() { }
     CampusEventEntity(CampusEvent event) { id=event.id(); createdAt=event.createdAt(); update(event); }
     void update(CampusEvent event) {
         code=event.code(); title=event.title(); description=event.description(); startsAt=event.startsAt(); endsAt=event.endsAt();
-        capacity=event.capacity(); status=event.status(); updatedAt=event.updatedAt();
+        capacity=event.capacity(); status=event.status(); updatedAt=event.updatedAt(); hostUnitId=event.hostUnitId();
     }
-    CampusEvent domain() { return new CampusEvent(id,code,title,description,startsAt,endsAt,capacity,status,version,createdAt,updatedAt); }
+    CampusEvent domain() { return new CampusEvent(id,code,title,description,startsAt,endsAt,capacity,status,version,createdAt,updatedAt,hostUnitId); }
 }

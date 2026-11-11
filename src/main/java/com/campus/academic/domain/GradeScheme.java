@@ -21,7 +21,8 @@ public enum GradeScheme {
     }
 
     public static GradeScheme of(CourseGroup group, boolean hasFinalProject) {
-        if (group == CourseGroup.MAJOR) return hasFinalProject ? MAJOR_PROJECT : MAJOR_FINAL;
+        if (group == CourseGroup.MAJOR || group == CourseGroup.SPECIALIZED)
+            return hasFinalProject ? MAJOR_PROJECT : MAJOR_FINAL;
         return GENERAL;
     }
 

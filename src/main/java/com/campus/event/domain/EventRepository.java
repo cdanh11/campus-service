@@ -13,6 +13,7 @@ public interface EventRepository {
     CampusEvent lock(UUID id);
     CampusEvent update(CampusEvent event, long expectedVersion);
     PageResult<CampusEvent> search(EventSearch search);
+    List<UUID> hostUnitIds();
     long consumedSeats(UUID eventId);
     EventRegistration createRegistration(EventRegistration registration);
     Optional<EventRegistration> registration(UUID id);

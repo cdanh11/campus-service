@@ -88,9 +88,14 @@ class EventPersistenceAdapter implements EventRepository {
         count.select(cb.count(other)).where(filters(cb,other,search));
         return new PageResult<>(content.stream().map(CampusEventEntity::domain).toList(),entities.createQuery(count).getSingleResult());
     }
+    public List<UUID> hostUnitIds() {
+        return entities.createQuery("select distinct e.hostUnitId from CampusEventEntity e where e.hostUnitId is not null",UUID.class)
+                .getResultList();
+    }
     private Predicate[] filters(CriteriaBuilder cb,Root<CampusEventEntity> root,EventSearch search) {
         var predicates=new ArrayList<Predicate>();
         if (search.status()!=null) predicates.add(cb.equal(root.get("status"),search.status()));
+        if (search.hostUnitId()!=null) predicates.add(cb.equal(root.get("hostUnitId"),search.hostUnitId()));
         if (search.query()!=null) {
             String literal="%"+search.query().toLowerCase(Locale.ROOT).replace("!","!!").replace("%","!%").replace("_","!_")+"%";
             predicates.add(cb.or(cb.like(cb.lower(root.get("code")),literal,'!'),cb.like(cb.lower(root.get("title")),literal,'!')));

@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public record CampusEvent(UUID id, String code, String title, String description, Instant startsAt,
                           Instant endsAt, int capacity, Status status, long rowVersion,
-                          Instant createdAt, Instant updatedAt) {
+                          Instant createdAt, Instant updatedAt, UUID hostUnitId) {
     public enum Status { DRAFT, OPEN, CLOSED, CANCELLED }
     public CampusEvent {
         Objects.requireNonNull(id); Objects.requireNonNull(startsAt); Objects.requireNonNull(endsAt);
@@ -17,16 +17,24 @@ public record CampusEvent(UUID id, String code, String title, String description
     }
     public static CampusEvent draft(UUID id, String code, String title, String description, Instant startsAt,
                                     Instant endsAt, int capacity, Instant now) {
-        return new CampusEvent(id, code, title, description, startsAt, endsAt, capacity, Status.DRAFT, 0, now, now);
+        return draft(id, code, title, description, startsAt, endsAt, capacity, now, null);
+    }
+    public static CampusEvent draft(UUID id, String code, String title, String description, Instant startsAt,
+                                    Instant endsAt, int capacity, Instant now, UUID hostUnitId) {
+        return new CampusEvent(id, code, title, description, startsAt, endsAt, capacity, Status.DRAFT, 0, now, now, hostUnitId);
     }
     public CampusEvent update(String code, String title, String description, Instant startsAt, Instant endsAt,
                               int capacity, Status nextStatus, long consumedSeats, Instant now) {
+        return update(code, title, description, startsAt, endsAt, capacity, nextStatus, consumedSeats, now, hostUnitId);
+    }
+    public CampusEvent update(String code, String title, String description, Instant startsAt, Instant endsAt,
+                              int capacity, Status nextStatus, long consumedSeats, Instant now, UUID hostUnitId) {
         Objects.requireNonNull(nextStatus);
         if (status == Status.CLOSED || status == Status.CANCELLED
                 || status == Status.DRAFT && nextStatus == Status.CLOSED
                 || status == Status.OPEN && nextStatus == Status.DRAFT)
             throw new IllegalStateException("Invalid event transition");
         if (consumedSeats < 0 || consumedSeats > capacity) throw new IllegalArgumentException("Invalid event capacity");
-        return new CampusEvent(id, code, title, description, startsAt, endsAt, capacity, nextStatus, rowVersion, createdAt, now);
+        return new CampusEvent(id, code, title, description, startsAt, endsAt, capacity, nextStatus, rowVersion, createdAt, now, hostUnitId);
     }
 }

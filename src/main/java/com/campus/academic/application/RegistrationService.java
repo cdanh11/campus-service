@@ -16,6 +16,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import com.campus.academic.application.StudentAcademicService.EnrollmentView;
 import com.campus.academic.domain.*;
+import com.campus.organization.application.OrganizationUnitManagementService;
 import com.campus.personnel.application.FacultyStaffManagementService;
 import com.campus.student.application.StudentProfileService;
 import com.campus.student.domain.StudentStatus;
@@ -42,15 +43,16 @@ public class RegistrationService {
     private final EnrollmentRepository enrollments;
     private final AcademicCourseRepository courses;
     private final FacultyStaffManagementService faculty;
+    private final OrganizationUnitManagementService units;
     private final Clock clock;
 
     public RegistrationService(StudentProfileService profiles, StudentRecordService records, EnrollmentViewAssembler assembler,
                                AcademicTermRepository terms, CourseOfferingRepository offerings, ClassSectionRepository sections,
                                EnrollmentRepository enrollments, AcademicCourseRepository courses,
-                               FacultyStaffManagementService faculty, Clock clock) {
+                               FacultyStaffManagementService faculty, OrganizationUnitManagementService units, Clock clock) {
         this.profiles = profiles; this.records = records; this.assembler = assembler;
         this.terms = terms; this.offerings = offerings; this.sections = sections;
-        this.enrollments = enrollments; this.courses = courses; this.faculty = faculty; this.clock = clock;
+        this.enrollments = enrollments; this.courses = courses; this.faculty = faculty; this.units = units; this.clock = clock;
     }
 
     @Transactional(readOnly = true)
@@ -77,6 +79,9 @@ public class RegistrationService {
                         .distinct().toList()).stream()
                 .collect(Collectors.toMap(member -> member.id(), member -> member.fullName()));
         var occupied = enrollments.occupiedBySectionIds(openSections.stream().map(ClassSection::id).toList());
+        var courseUnitNames = units.lookup(courseById.values().stream().map(AcademicCourse::organizationUnitId)
+                        .distinct().toList()).stream()
+                .collect(Collectors.toMap(unit -> unit.id(), unit -> unit.name()));
 
         var options = new ArrayList<SectionOption>();
         for (var section : openSections) {
@@ -96,7 +101,8 @@ public class RegistrationService {
                     course.title(), course.credits(), course.courseGroup().name(), section.facultyId(),
                     facultyNames.get(section.facultyId()), section.schedule(), capacity, used,
                     (int) Math.max(0, capacity - used), taken, reason == null, reason,
-                    entry == null ? null : entry.prerequisiteCode(), entry == null ? null : entry.prerequisiteTitle()));
+                    entry == null ? null : entry.prerequisiteCode(), entry == null ? null : entry.prerequisiteTitle(),
+                    course.organizationUnitId(), courseUnitNames.get(course.organizationUnitId())));
         }
         options.sort(Comparator.comparing(SectionOption::courseCode).thenComparing(SectionOption::sectionCode));
         return new Registration(student.id(), student.studentNumber(), student.cohort(), student.programId(),
@@ -257,7 +263,8 @@ public class RegistrationService {
                                 String courseTitle, int credits, String courseGroup, UUID facultyId, String facultyName,
                                 SectionSchedule schedule, int capacity, long occupied, int remaining, boolean enrolled,
                                 boolean eligible, String blockedReason, String prerequisiteCourseCode,
-                                String prerequisiteCourseTitle) { }
+                                String prerequisiteCourseTitle, UUID courseOrganizationUnitId,
+                                String courseOrganizationUnitName) { }
 
     public static final class WindowNotConfiguredException extends RuntimeException { }
     public static final class WindowNotOpenException extends RuntimeException { }
