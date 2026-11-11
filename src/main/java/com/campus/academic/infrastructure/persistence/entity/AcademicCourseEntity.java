@@ -3,6 +3,7 @@ package com.campus.academic.infrastructure.persistence.entity;
 import java.time.Instant;
 import java.util.UUID;
 import com.campus.academic.domain.AcademicCatalogStatus;
+import com.campus.academic.domain.CourseGroup;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -20,6 +21,11 @@ public class AcademicCourseEntity {
     private String title;
     @Column(nullable = false)
     private int credits;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "course_group", nullable = false, length = 20)
+    private CourseGroup courseGroup;
+    @Column(name = "has_final_project", nullable = false)
+    private boolean hasFinalProject;
     @Column(name = "organization_unit_id", nullable = false)
     private UUID organizationUnitId;
     @Enumerated(EnumType.STRING)
@@ -42,16 +48,21 @@ public class AcademicCourseEntity {
     public String getCode() { return code; }
     public String getTitle() { return title; }
     public int getCredits() { return credits; }
+    public CourseGroup getCourseGroup() { return courseGroup; }
+    public boolean isHasFinalProject() { return hasFinalProject; }
     public UUID getOrganizationUnitId() { return organizationUnitId; }
     public AcademicCatalogStatus getStatus() { return status; }
     public long getRowVersion() { return rowVersion; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 
-    public void update(String code, String title, int credits, UUID organizationUnitId, AcademicCatalogStatus status) {
+    public void update(String code, String title, int credits, CourseGroup courseGroup, boolean hasFinalProject,
+                       UUID organizationUnitId, AcademicCatalogStatus status) {
         this.code = code;
         this.title = title;
         this.credits = credits;
+        this.courseGroup = courseGroup;
+        this.hasFinalProject = hasFinalProject;
         this.organizationUnitId = organizationUnitId;
         this.status = status;
     }

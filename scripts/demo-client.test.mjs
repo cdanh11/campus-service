@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { createHmac, randomBytes } from 'node:crypto'
+import { createHmac, createHash, randomBytes } from 'node:crypto'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, basename, dirname, resolve } from 'node:path'
@@ -101,6 +101,17 @@ test('lost mutation response reconciles state and version without replaying PUT'
   await assert.rejects(client.change('return:0', 'ADMIN', resource + '/id-1', {}, { status: 'RETURNED' }))
   await client.change('return:0', 'ADMIN', resource + '/id-1', {}, { status: 'RETURNED' })
   assert.equal(calls.filter(([method]) => method === 'PUT').length, 1)
+})
+test('legacy department-role journals resume without rewriting or losing definition checks', async t => {
+  const row = { ...body, id: 'id-1', rowVersion: 0 }
+  const { client, state, calls } = await fixture(t, () => Response.json(row))
+  client.sessions.set('ACADEMIC_AFFAIRS', client.sessions.get('ADMIN'))
+  state.operations['title:0'] = { done: true, id: 'id-1', detail: resource + '/id-1',
+    digest: createHash('sha256').update(JSON.stringify({ role: 'ACADEMIC_ADMIN', path: resource, body })).digest('hex') }
+  assert.equal((await client.create('title:0', 'ACADEMIC_AFFAIRS', resource, body)).id, 'id-1')
+  assert.equal(calls.filter(([method]) => method === 'POST').length, 0)
+  await assert.rejects(client.create('title:0', 'ACADEMIC_AFFAIRS', resource, { ...body, title: 'Changed' }), /definition changed/)
+  assert.equal(calls.filter(([method]) => method === 'POST').length, 0)
 })
 test('unsafe version is rejected before a mutation request', async t => {
   const { client, calls } = await fixture(t, () => Response.json({ id: 'id-1', rowVersion: Number.MAX_SAFE_INTEGER + 1 }))

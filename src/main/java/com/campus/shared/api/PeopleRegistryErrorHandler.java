@@ -8,6 +8,7 @@ import com.campus.student.api.AdminStudentController;
 import com.campus.personnel.api.AdminFacultyStaffController;
 import com.campus.personnel.application.FacultyStaffManagementService;
 import com.campus.student.application.StudentManagementService;
+import com.campus.student.application.StudentProfileService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +30,12 @@ public class PeopleRegistryErrorHandler {
     ResponseEntity<ErrorResponse> malformed(HttpServletRequest request) { return error(HttpStatus.BAD_REQUEST, "MALFORMED_REQUEST", "Request is invalid", request); }
     @ExceptionHandler({OrganizationUnitManagementService.RequestValidationException.class, StudentManagementService.RequestValidationException.class, FacultyStaffManagementService.RequestValidationException.class})
     ResponseEntity<ErrorResponse> validation(HttpServletRequest request) { return error(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", "Request validation failed", request); }
+    @ExceptionHandler(StudentProfileService.RequestValidationException.class)
+    ResponseEntity<ErrorResponse> profileValidation(HttpServletRequest request) { return error(HttpStatus.BAD_REQUEST, "STUDENT_CONTACT_INVALID", "Study profile is invalid", request); }
+    @ExceptionHandler(StudentProfileService.ConcurrentProfileModificationException.class)
+    ResponseEntity<ErrorResponse> profileConcurrent(HttpServletRequest request) { return error(HttpStatus.CONFLICT, "PROFILE_CONCURRENT_MODIFICATION", "Profile was modified concurrently", request); }
+    @ExceptionHandler(StudentProfileService.ProgramUnavailableException.class)
+    ResponseEntity<ErrorResponse> profileProgram(HttpServletRequest request) { return error(HttpStatus.CONFLICT, "ACADEMIC_PROGRAM_UNAVAILABLE", "Academic program is unavailable", request); }
     @ExceptionHandler(OrganizationUnitManagementService.OrganizationUnitNotFoundException.class)
     ResponseEntity<ErrorResponse> organizationNotFound(HttpServletRequest request) { return error(HttpStatus.NOT_FOUND, "ORGANIZATION_UNIT_NOT_FOUND", "Organization unit was not found", request); }
     @ExceptionHandler(OrganizationUnitManagementService.OrganizationUnitCodeAlreadyExistsException.class)

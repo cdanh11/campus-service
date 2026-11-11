@@ -61,4 +61,9 @@ public class StudentContactProfileEntity {
         this.phone = phone;
         this.address = address;
     }
+
+    public void updateAcademicProfile(String cohort, UUID programId) {
+        this.cohort = cohort;
+        this.programId = programId;
+    }
 }

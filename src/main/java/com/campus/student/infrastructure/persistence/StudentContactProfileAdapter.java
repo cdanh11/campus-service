@@ -26,15 +26,27 @@ class StudentContactProfileAdapter implements StudentContactProfileRepository {
     @Override
     @Transactional
     public StudentContactProfile save(StudentContactProfile profile, long expectedVersion) {
-        StudentContactProfileEntity entity = repo.findForUpdate(profile.studentId()).orElse(null);
-        if (entity == null) {
-            if (expectedVersion != 0) throw new ConcurrentProfileModificationException();
-            entity = new StudentContactProfileEntity(profile.studentId());
-        } else if (entity.getRowVersion() != expectedVersion) {
-            throw new ConcurrentProfileModificationException();
-        }
+        var entity = locked(profile.studentId(), expectedVersion);
         entity.updateContact(profile.phone(), profile.address());
         return map(repo.saveAndFlush(entity));
+    }
+
+    @Override
+    @Transactional
+    public StudentContactProfile saveAcademicProfile(StudentContactProfile profile, long expectedVersion) {
+        var entity = locked(profile.studentId(), expectedVersion);
+        entity.updateAcademicProfile(profile.cohort(), profile.programId());
+        return map(repo.saveAndFlush(entity));
+    }
+
+    private StudentContactProfileEntity locked(UUID studentId, long expectedVersion) {
+        StudentContactProfileEntity entity = repo.findForUpdate(studentId).orElse(null);
+        if (entity == null) {
+            if (expectedVersion != 0) throw new ConcurrentProfileModificationException();
+            return new StudentContactProfileEntity(studentId);
+        }
+        if (entity.getRowVersion() != expectedVersion) throw new ConcurrentProfileModificationException();
+        return entity;
     }
 
     private StudentContactProfile map(StudentContactProfileEntity entity) {

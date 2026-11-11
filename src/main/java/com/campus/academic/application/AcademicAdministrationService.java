@@ -16,11 +16,15 @@ public class AcademicAdministrationService {
     private final AcademicCatalogService catalog;
     private final AcademicDeliveryService delivery;
     private final EnrollmentService enrollments;
+    private final AcademicGradeService grades;
+    private final CurriculumService curriculum;
     private final AcademicAudit audit;
     private final Clock clock;
     public AcademicAdministrationService(AcademicCatalogService catalog, AcademicDeliveryService delivery,
-                                         EnrollmentService enrollments, AcademicAudit audit, Clock clock) {
-        this.catalog = catalog; this.delivery = delivery; this.enrollments = enrollments; this.audit = audit; this.clock = clock;
+                                         EnrollmentService enrollments, AcademicGradeService grades,
+                                         CurriculumService curriculum, AcademicAudit audit, Clock clock) {
+        this.catalog = catalog; this.delivery = delivery; this.enrollments = enrollments;
+        this.grades = grades; this.curriculum = curriculum; this.audit = audit; this.clock = clock;
     }
 
     public AcademicProgram createProgram(UUID actor, String code, String name, UUID unit, AcademicCatalogStatus status) {
@@ -32,11 +36,23 @@ public class AcademicAdministrationService {
         record(actor, PROGRAM, value.id(), UPDATED, value.rowVersion(), value.status().name()); return value;
     }
     public AcademicCourse createCourse(UUID actor, String code, String title, int credits, UUID unit, AcademicCatalogStatus status) {
-        actor(actor); var value = catalog.createCourse(code, title, credits, unit, status);
+        return createCourse(actor, code, title, credits, CourseGroup.GENERAL, false, unit, status);
+    }
+    public AcademicCourse createCourse(UUID actor, String code, String title, int credits, CourseGroup group,
+                                       boolean hasFinalProject, UUID unit, AcademicCatalogStatus status) {
+        actor(actor); var value = catalog.createCourse(code, title, credits, group, hasFinalProject, unit, status);
         record(actor, COURSE, value.id(), CREATED, value.rowVersion(), value.status().name()); return value;
     }
     public AcademicCourse updateCourse(UUID actor, UUID id, String code, String title, int credits, UUID unit, AcademicCatalogStatus status, long version) {
-        actor(actor); var value = catalog.updateCourse(id, code, title, credits, unit, status, version);
+        return updateCourse(actor, id, code, title, credits, null, null, unit, status, version);
+    }
+    public AcademicCourse updateCourse(UUID actor, UUID id, String code, String title, int credits, CourseGroup group,
+                                       Boolean hasFinalProject, UUID unit, AcademicCatalogStatus status, long version) {
+        actor(actor);
+        var current = catalog.course(id);
+        var value = catalog.updateCourse(id, code, title, credits,
+                group == null ? current.courseGroup() : group,
+                hasFinalProject == null ? current.hasFinalProject() : hasFinalProject, unit, status, version);
         record(actor, COURSE, value.id(), UPDATED, value.rowVersion(), value.status().name()); return value;
     }
     public AcademicTerm createTerm(UUID actor, String code, String name, LocalDate start, LocalDate end) {
@@ -70,6 +86,22 @@ public class AcademicAdministrationService {
     public Enrollment update(UUID actor, UUID id, EnrollmentStatus status, long version) {
         actor(actor); var value = enrollments.update(id, status, version);
         record(actor, ENROLLMENT, value.id(), status == EnrollmentStatus.WITHDRAWN ? WITHDRAWN : REENROLLED, value.rowVersion(), value.status().name()); return value;
+    }
+    public AcademicGrade createGrade(UUID actor, UUID enrollmentId, AcademicGradeService.GradeScores scores) {
+        actor(actor); var value = grades.create(enrollmentId, scores, actor);
+        record(actor, GRADE, value.id(), CREATED, value.rowVersion(), value.passed() ? "PASSED" : "FAILED"); return value;
+    }
+    public AcademicGrade updateGrade(UUID actor, UUID enrollmentId, AcademicGradeService.GradeScores scores, long version) {
+        actor(actor); var value = grades.update(enrollmentId, scores, version, actor);
+        record(actor, GRADE, value.id(), UPDATED, value.rowVersion(), value.passed() ? "PASSED" : "FAILED"); return value;
+    }
+    public CurriculumCourse createCurriculum(UUID actor, UUID program, UUID course, int semester, UUID prerequisite) {
+        actor(actor); var value = curriculum.create(program, course, semester, prerequisite);
+        record(actor, CURRICULUM, value.id(), CREATED, value.rowVersion(), "SEMESTER_" + value.semesterIndex()); return value;
+    }
+    public CurriculumCourse updateCurriculum(UUID actor, UUID id, int semester, UUID prerequisite, long version) {
+        actor(actor); var value = curriculum.update(id, semester, prerequisite, version);
+        record(actor, CURRICULUM, value.id(), UPDATED, value.rowVersion(), "SEMESTER_" + value.semesterIndex()); return value;
     }
     private void actor(UUID actor) { if (actor == null) throw new IllegalArgumentException("Authenticated actor required"); }
     private void record(UUID actor, AcademicAudit.Resource resource, UUID target, AcademicAudit.Action action, long version, String status) {

@@ -77,12 +77,24 @@ export async function seedInventory(c) {
   for (let i = 0; i < 60; i++) courses.push(await c.create(`course:${i}`, 'ACADEMIC_AFFAIRS', base + 'academic/courses', {
     code: code('COURSE', i), title: `${subjects[i % 5]} ${units[Math.floor(i / 5)]}`, credits: i % 5 === 2 ? 2 : 3,
     organizationUnitId: org[Math.floor(i / 5)].id, status: 'ACTIVE',
+    courseGroup: 'MAJOR', hasFinalProject: i % 5 === 4,
   }))
+  for (let i = 0; i < 10; i++) courses.push(await c.create(`course:general:${i}`, 'ACADEMIC_AFFAIRS', base + 'academic/courses', {
+    code: code('COURSE', 60 + i), title: `${subjects[(i + 2) % 5]} đại cương ${i + 1}`, credits: i % 3 === 2 ? 2 : 3,
+    courseGroup: 'GENERAL', organizationUnitId: org[10 + i % 2].id, status: 'ACTIVE',
+  }))
+  const termDates = [['2025-09-01', '2026-01-15'], ['2026-02-01', '2026-06-15'], ['2026-09-01', '2027-01-15']]
   for (let i = 0; i < 3; i++) {
     let term = await c.create(`term:${i}`, 'ACADEMIC_AFFAIRS', base + 'academic/terms', {
-      code: code('TERM', i), name: `Học kỳ demo ${i + 1}`, startDate: `${2026 + i}-01-01`, endDate: `${2026 + i}-06-30`,
+      code: code('TERM', i), name: `Học kỳ demo ${i + 1}`, startDate: termDates[i][0], endDate: termDates[i][1],
     })
-    term = await c.change(`term:active:${i}`, 'ACADEMIC_AFFAIRS', base + `academic/terms/${term.id}`, { ...fields(term, ['code', 'name', 'startDate', 'endDate']), status: 'ACTIVE' }, { status: 'ACTIVE' }); terms.push(term)
+    term = await c.change(`term:active:${i}`, 'ACADEMIC_AFFAIRS', base + `academic/terms/${term.id}`, { ...fields(term, ['code', 'name', 'startDate', 'endDate']), status: 'ACTIVE' }, { status: 'ACTIVE' })
+    terms.push(term)
+  }
+  for (let i = 0; i < 200; i++) {
+    const cohort = i === 0 ? 'K23' : `K${21 + i % 6}`, programId = programs[i % 12].id
+    await c.change(`student:profile:${i}`, 'ACADEMIC_AFFAIRS', base + `students/${students[i].id}/profile`, { cohort, programId },
+      { cohort, programId }, { versionField: 'profileVersion' })
   }
   for (let i = 0; i < 90; i++) {
     let offering = await c.create(`offering:${i}`, 'ACADEMIC_AFFAIRS', base + 'academic/offerings', { termId: terms[Math.floor(i / 30)].id, courseId: courses[i % 60].id })
@@ -96,14 +108,85 @@ export async function seedInventory(c) {
     if (i >= 140) section = await c.change(`section:cancel:${i}`, 'ACADEMIC_AFFAIRS', base + `academic/sections/${section.id}`, { ...fields(section, ['code', 'capacity', 'facultyId']), status: 'CANCELLED' }, { status: 'CANCELLED' })
     sections.push(section)
   }
+  const enrollments = []
   for (let i = 0; i < 800; i++) {
     const student = students[Math.floor(i / 4)], section = sections[(Math.floor(i / 4) * 7 + (i % 4) * 31) % 120]
     const enrollment = await c.create(`enrollment:${i}`, 'ACADEMIC_AFFAIRS', base + 'academic/enrollments', { studentId: student.id, sectionId: section.id })
+    enrollments.push(enrollment)
     if (i % 10 === 0) await c.change(`enrollment:withdraw:${i}`, 'ACADEMIC_AFFAIRS', base + `academic/enrollments/${enrollment.id}`, { status: 'WITHDRAWN' }, { status: 'WITHDRAWN' })
     if (i % 40 === 0) await c.change(`enrollment:restore:${i}`, 'ACADEMIC_AFFAIRS', base + `academic/enrollments/${enrollment.id}`, { status: 'ENROLLED' }, { status: 'ENROLLED' })
   }
   for (let i = 120; i < 130; i++) await c.change(`section:close:${i}`, 'ACADEMIC_AFFAIRS', base + `academic/sections/${sections[i].id}`, { ...fields(sections[i], ['code', 'capacity', 'facultyId']), status: 'CLOSED' }, { status: 'CLOSED' })
-  console.log('Academic catalog, delivery and 800 retained enrollments verified.')
+
+  const retakes = new Map()
+  for (let i = 0; i < 400; i++) {
+    const q = Math.floor(i / 4), s = (q * 7 + (i % 4) * 31) % 120
+    const termIndex = Math.floor((s % 90) / 30)
+    if (termIndex > 1 || (i % 10 === 0 && i % 40 !== 0)) continue
+    const course = courses[(s % 90) % 60]
+    const failed = termIndex === 0 && i % 11 === 4
+    const low = termIndex === 0 && i % 13 === 6 && !failed
+    const scores = failed ? { attendanceScore: 6, midtermScore: 2, ...(course.hasFinalProject ? { projectScore: 3 } : { finalScore: 3 }) }
+      : low ? { attendanceScore: 6, midtermScore: 4, ...(course.hasFinalProject ? { projectScore: 4.5 } : { finalScore: 4.5 }) }
+        : { attendanceScore: 6 + (i % 5) * 0.5, midtermScore: 4.5 + ((i * 3) % 50) / 10,
+            ...(course.hasFinalProject ? { projectScore: 4.5 + ((i * 7) % 50) / 10 } : { finalScore: 4.5 + ((i * 7) % 50) / 10 }) }
+    const enrollment = enrollments[i]
+    await c.create(`grade:${i}`, 'ACADEMIC_AFFAIRS', base + `academic/enrollments/${enrollment.id}/grade`, scores,
+      { list: base + 'academic/grades?enrollmentId=' + enrollment.id, match: { enrollmentId: enrollment.id } })
+    if ((failed || low) && !retakes.has(`${q}:${course.id}`)) retakes.set(`${q}:${course.id}`, { student: students[q], course })
+  }
+
+  for (let p = 0; p < 10; p++) {
+    const course = courses[60 + (3 * p) % 10]
+    const offering = await c.create(`offering:general:${p}`, 'ACADEMIC_AFFAIRS', base + 'academic/offerings', { termId: terms[1].id, courseId: course.id })
+    const open = await c.change(`offering:general:open:${p}`, 'ACADEMIC_AFFAIRS', base + `academic/offerings/${offering.id}`, { status: 'OPEN' }, { status: 'OPEN' })
+    const section = await c.create(`section:general:${p}`, 'ACADEMIC_AFFAIRS', base + 'academic/sections', {
+      offeringId: open.id, code: code('GEN', p), capacity: 40, facultyId: personnel[p].id,
+    })
+    const opened = await c.change(`section:general:open:${p}`, 'ACADEMIC_AFFAIRS', base + `academic/sections/${section.id}`, {
+      ...fields(section, ['code', 'capacity', 'facultyId']), ...meeting(p), status: 'OPEN',
+    }, { status: 'OPEN' })
+    const enrollment = await c.create(`enrollment:general:${p}`, 'ACADEMIC_AFFAIRS', base + 'academic/enrollments', { studentId: students[p].id, sectionId: opened.id })
+    await c.create(`grade:general:${p}`, 'ACADEMIC_AFFAIRS', base + `academic/enrollments/${enrollment.id}/grade`,
+      { attendanceScore: 8, midtermScore: 7, finalScore: 8.5 },
+      { list: base + 'academic/grades?enrollmentId=' + enrollment.id, match: { enrollmentId: enrollment.id } })
+  }
+
+  for (let p = 0; p < 12; p++) {
+    const general = [0, 1, 2].map(n => courses[60 + (3 * p + n) % 10]), major = [0, 1, 2, 3].map(n => courses[5 * p + n])
+    for (const [course, semesterIndex, prerequisite] of [
+      [general[0], 1, null], [general[1], 2, general[0]], [general[2], 3, general[1]],
+      [major[0], 4, general[2]], [major[1], 5, major[0]], [major[2], 6, major[1]], [major[3], 7, major[2]],
+    ]) await c.create(`curriculum:${p}:${semesterIndex}`, 'ACADEMIC_AFFAIRS', base + 'academic/curriculum', {
+      programId: programs[p].id, courseId: course.id, semesterIndex,
+      ...(prerequisite ? { prerequisiteCourseId: prerequisite.id } : {}),
+    }, { list: base + 'academic/curriculum?programId=' + programs[p].id, match: { courseId: course.id } })
+  }
+
+  const retakeSections = new Map()
+  let retakeIndex = 0
+  for (const { student, course } of retakes.values()) {
+    let retakeSection = retakeSections.get(course.id)
+    if (!retakeSection) {
+      const k = retakeSections.size
+      const offering = await c.create(`offering:retake:${k}`, 'ACADEMIC_AFFAIRS', base + 'academic/offerings', { termId: terms[1].id, courseId: course.id })
+      const open = await c.change(`offering:retake:open:${k}`, 'ACADEMIC_AFFAIRS', base + `academic/offerings/${offering.id}`, { status: 'OPEN' }, { status: 'OPEN' })
+      const section = await c.create(`section:retake:${k}`, 'ACADEMIC_AFFAIRS', base + 'academic/sections', {
+        offeringId: open.id, code: code('RET', k), capacity: 40, facultyId: personnel[k % 60].id,
+      })
+      retakeSection = await c.change(`section:retake:open:${k}`, 'ACADEMIC_AFFAIRS', base + `academic/sections/${section.id}`, {
+        ...fields(section, ['code', 'capacity', 'facultyId']), ...meeting(k + 3), status: 'OPEN',
+      }, { status: 'OPEN' })
+      retakeSections.set(course.id, retakeSection)
+    }
+    const n = retakeIndex++
+    const enrollment = await c.create(`enrollment:retake:${n}`, 'ACADEMIC_AFFAIRS', base + 'academic/enrollments',
+      { studentId: student.id, sectionId: retakeSection.id })
+    await c.create(`grade:retake:${n}`, 'ACADEMIC_AFFAIRS', base + `academic/enrollments/${enrollment.id}/grade`,
+      { attendanceScore: 8, midtermScore: 7.5, ...(course.hasFinalProject ? { projectScore: 8 } : { finalScore: 8 }) },
+      { list: base + 'academic/grades?enrollmentId=' + enrollment.id, match: { enrollmentId: enrollment.id } })
+  }
+  console.log('Academic catalog, delivery, cohorts, curriculum and 318 grades verified.');
 
   const buildings = [], rooms = [], beds = []
   for (let i = 0; i < 4; i++) buildings.push(await c.create(`building:${i}`, 'CAMPUS_SERVICES', base + 'dormitory/buildings', { code: code('BLD', i), name: `Ký túc xá ${String.fromCharCode(65 + i)}` }))
@@ -204,11 +287,12 @@ export async function verifyInventory(c) {
     ['students', 'ACADEMIC_AFFAIRS', 'students', 'student:', 200],
     ['personnel', 'ACADEMIC_AFFAIRS', 'faculty-staff', 'personnel:', 80],
     ['programs', 'ACADEMIC_AFFAIRS', 'academic/programs', 'program:', 12],
-    ['courses', 'ACADEMIC_AFFAIRS', 'academic/courses', 'course:', 60],
+    ['courses', 'ACADEMIC_AFFAIRS', 'academic/courses', 'course:', 70],
     ['terms', 'ACADEMIC_AFFAIRS', 'academic/terms', 'term:', 3],
-    ['offerings', 'ACADEMIC_AFFAIRS', 'academic/offerings', 'offering:', 90],
-    ['sections', 'ACADEMIC_AFFAIRS', 'academic/sections', 'section:', 150],
-    ['enrollments', 'ACADEMIC_AFFAIRS', 'academic/enrollments', 'enrollment:', 800],
+    ['offerings', 'ACADEMIC_AFFAIRS', 'academic/offerings', 'offering:', 124],
+    ['sections', 'ACADEMIC_AFFAIRS', 'academic/sections', 'section:', 184],
+    ['enrollments', 'ACADEMIC_AFFAIRS', 'academic/enrollments', 'enrollment:', 840],
+    ['grades', 'ACADEMIC_AFFAIRS', 'academic/grades', 'grade:', 318],
     ['buildings', 'CAMPUS_SERVICES', 'dormitory/buildings', 'building:', 4],
     ['rooms', 'CAMPUS_SERVICES', 'dormitory/rooms', 'room:', 80],
     ['beds', 'CAMPUS_SERVICES', 'dormitory/beds', 'bed:', 240],
@@ -233,6 +317,21 @@ export async function verifyInventory(c) {
     if (name === 'assignments') {
       for (const [key, op] of Object.entries(c.state.operations)) if (/^stay:(history|current):\d+$/.test(key) && op.done) ids.add(op.id)
     }
+    if (name === 'courses') {
+      for (const [key, op] of Object.entries(c.state.operations)) if (/^course:general:\d+$/.test(key) && op.done) ids.add(op.id)
+    }
+    if (name === 'offerings') {
+      for (const [key, op] of Object.entries(c.state.operations)) if (/^offering:(general|retake):\d+$/.test(key) && op.done) ids.add(op.id)
+    }
+    if (name === 'sections') {
+      for (const [key, op] of Object.entries(c.state.operations)) if (/^section:(general|retake):\d+$/.test(key) && op.done) ids.add(op.id)
+    }
+    if (name === 'enrollments') {
+      for (const [key, op] of Object.entries(c.state.operations)) if (/^enrollment:(general|retake):\d+$/.test(key) && op.done) ids.add(op.id)
+    }
+    if (name === 'grades') {
+      for (const [key, op] of Object.entries(c.state.operations)) if (/^grade:(general|retake):\d+$/.test(key) && op.done) ids.add(op.id)
+    }
     const allRows = await c.list(role, base + path, true)
     const rows = allRows.filter(row => ids.has(row.id))
     if (rows.length !== expected || ids.size !== expected) throw new DemoError(`Persisted ${name} inventory does not match the approved target ${expected}.`)
@@ -250,7 +349,7 @@ export async function verifyInventory(c) {
   if (accounts.filter(a => linked.has(a.id) && a.roles.length === 1 && a.roles[0] === 'USER').length !== 200) throw new DemoError('Student accounts have unexpected roles.')
   report.accounts = { globalAdministrators: 2, departmentAccounts: 4, linkedStudentUsers: 200 }
   for (const [name, expected] of Object.entries({
-    sections: { OPEN: 120, CLOSED: 10, DRAFT: 10, CANCELLED: 10 }, enrollments: { ENROLLED: 740, WITHDRAWN: 60 },
+    sections: { OPEN: 154, CLOSED: 10, DRAFT: 10, CANCELLED: 10 }, enrollments: { ENROLLED: 780, WITHDRAWN: 60 },
     assignments: { ASSIGNED: 100, RELEASED: 20 }, charges: { OPEN: 580, CANCELLED: 20 }, payments: { RECORDED: 420, REVERSED: 30 },
     notices: { PUBLISHED: 24 }, events: { OPEN: 12, CLOSED: 4 }, memberships: { REGISTERED: 256, CANCELLED: 64, ATTENDED: 80 },
     loans: { OPEN: 120, RETURNED: 80 },
@@ -268,6 +367,7 @@ export async function verifyInventory(c) {
   refs(records.rooms, 'parentId', records.buildings); refs(records.beds, 'parentId', records.rooms)
   refs(records.assignments, 'studentId', records.students); refs(records.assignments, 'bedId', records.beds)
   refs(records.charges, 'studentId', records.students); refs(records.charges, 'feeId', records.fees); refs(records.payments, 'chargeId', records.charges)
+  refs(records.grades, 'enrollmentId', records.enrollments)
   refs(records.memberships, 'studentId', records.students); refs(records.memberships, 'eventId', records.events)
   refs(records.copies, 'titleId', records.titles); refs(records.loans, 'copyId', records.copies); refs(records.loans, 'studentId', records.students)
   const stays = records.assignments.filter(a => a.status === 'ASSIGNED')
@@ -278,7 +378,84 @@ export async function verifyInventory(c) {
   for (const section of records.sections) {
     if (records.enrollments.filter(e => e.sectionId === section.id && e.status === 'ENROLLED').length > section.capacity) throw new DemoError('Enrollment capacity exceeded.')
   }
-  if (new Set(records.enrollments.map(e => `${e.studentId}:${e.sectionId}`)).size !== 800) throw new DemoError('Duplicate retained enrollment pair.')
+  if (new Set(records.enrollments.map(e => `${e.studentId}:${e.sectionId}`)).size !== 840) throw new DemoError('Duplicate retained enrollment pair.')
+  const round2 = value => Math.round(value * 100) / 100
+  const cohortOf = index => index === 0 ? 'K23' : `K${21 + index % 6}`
+  const studentsByIndex = new Map(records.students.map(student => [Number(student.studentNumber.slice(6)) - 1, student]))
+  const programsByCode = new Map(records.programs.map(program => [program.code, program])), cohorts = {}
+  for (let i = 0; i < 200; i++) {
+    const student = studentsByIndex.get(i), program = programsByCode.get(code('PROG', i % 12))
+    if (!student || !program) throw new DemoError('Seeded student or program inventory is incomplete.')
+    const profile = await c.request('ACADEMIC_AFFAIRS', 'GET', base + `students/${student.id}/profile`)
+    if (profile.programId !== program.id || profile.cohort !== cohortOf(i)) {
+      throw new DemoError('Student academic profile does not match the seeded cohort and program.')
+    }
+    cohorts[profile.cohort] = (cohorts[profile.cohort] ?? 0) + 1
+  }
+  const curriculumIds = new Set(Object.entries(c.state.operations)
+    .filter(([key, op]) => key.startsWith('curriculum:') && op.done).map(([, op]) => op.id))
+  const curriculumRows = []
+  for (const program of records.programs) curriculumRows.push(...await c.list('ACADEMIC_AFFAIRS', `${base}academic/curriculum?programId=${program.id}`, true))
+  if (curriculumIds.size !== 84 || curriculumRows.length !== 84 || new Set(curriculumRows.map(row => row.id)).size !== 84
+    || curriculumRows.some(row => !curriculumIds.has(row.id) || row.semesterIndex < 1 || row.semesterIndex > 7)) {
+    throw new DemoError('Curriculum inventory does not match the approved 84 entries across 12 programs.')
+  }
+  records.curriculum = curriculumRows
+  const weights = { GENERAL: [0.1, 0.4, 0.5, 0], MAJOR_PROJECT: [0.1, 0.4, 0, 0.5], MAJOR_FINAL: [0.1, 0.3, 0.6, 0] }
+  const transcriptOf = email => c.request(email, 'GET', '/api/v1/me/transcript')
+  const first = await transcriptOf('student.001@example.test')
+  if (!first.programId || first.terms.length !== 2 || first.records.length !== 4) throw new DemoError('Expected demo transcript shape is missing.')
+  for (const record of first.records) {
+    const expected = weights[record.scheme], actual = [record.attendanceWeight, record.midtermWeight, record.finalWeight, record.projectWeight]
+    if (!expected || Math.abs(actual.reduce((sum, value) => sum + value, 0) - 1) > 1e-9
+      || actual.some((value, index) => Math.abs(value - expected[index]) > 1e-9)) {
+      throw new DemoError('Transcript grade weights do not match the recorded scheme.')
+    }
+  }
+  const best = new Map()
+  for (const record of first.records) if (!best.has(record.course.id) || record.gradePoint > best.get(record.course.id).gradePoint) best.set(record.course.id, record)
+  const totalCredits = [...best.values()].reduce((sum, record) => sum + record.course.credits, 0)
+  const totalPoints = [...best.values()].reduce((sum, record) => sum + record.gradePoint * record.course.credits, 0)
+  if (first.summary.cumulativeCredits !== totalCredits || first.summary.cumulativeGpa !== round2(totalPoints / totalCredits)) {
+    throw new DemoError('Cumulative GPA does not reconcile with the best attempt per course.')
+  }
+  for (const term of first.terms) {
+    const attempts = first.records.filter(record => record.term.id === term.termId), credits = attempts.reduce((sum, record) => sum + record.course.credits, 0)
+    if (term.credits !== credits || term.gradedCourses !== attempts.length
+      || term.gpa !== round2(attempts.reduce((sum, record) => sum + record.gradePoint * record.course.credits, 0) / credits)) {
+      throw new DemoError('Semester GPA does not reconcile with retained attempts.')
+    }
+  }
+  const retakeTranscript = await transcriptOf('student.002@example.test')
+  const retaken = retakeTranscript.records.filter(record => record.course.code === 'CD-COURSE-008')
+    .sort((left, right) => left.term.startDate.localeCompare(right.term.startDate))
+  if (retaken.length !== 2 || retaken[0].passed || !retaken[1].passed || !retaken[1].retake || retaken[1].improvement) {
+    throw new DemoError('Failed-course retake does not preserve both attempts with correct flags.')
+  }
+  const improvementTranscript = await transcriptOf('student.005@example.test')
+  const improved = improvementTranscript.records.filter(record => record.course.code === 'CD-COURSE-002')
+    .sort((left, right) => left.term.startDate.localeCompare(right.term.startDate))
+  if (improved.length !== 2 || !improved[0].passed || !improved[1].passed || !improved[1].retake || !improved[1].improvement) {
+    throw new DemoError('Improvement retake does not preserve both passed attempts.')
+  }
+  const firstCurriculum = await c.request('student.001@example.test', 'GET', '/api/v1/me/curriculum')
+  const curriculumCourses = firstCurriculum.semesters.flatMap(semester => semester.courses)
+  const foundation = curriculumCourses.find(course => course.code === 'CD-COURSE-061')
+  const chained = curriculumCourses.find(course => course.code === 'CD-COURSE-062')
+  const firstMajor = curriculumCourses.find(course => course.code === 'CD-COURSE-001')
+  if (firstCurriculum.semesters.length !== 7 || curriculumCourses.length !== 7 || !foundation || foundation.status !== 'PASSED'
+    || !chained || !chained.prerequisiteSatisfied || !firstMajor || firstMajor.prerequisiteSatisfied) {
+    throw new DemoError('Curriculum progress or prerequisite satisfaction is incorrect for the sample student.')
+  }
+  const retakeCurriculum = await c.request('student.002@example.test', 'GET', '/api/v1/me/curriculum')
+  const retakenCourse = retakeCurriculum.semesters.flatMap(semester => semester.courses).find(course => course.code === 'CD-COURSE-008')
+  if (!retakenCourse || !retakenCourse.improvementAttempted || retakenCourse.status !== 'PASSED') {
+    throw new DemoError('Curriculum best-attempt status does not reflect the retake.')
+  }
+  report.academicRecords = {
+    profiles: records.students.length, cohorts, curriculumEntries: curriculumRows.length, grades: records.grades.length,
+    retakes: Object.entries(c.state.operations).filter(([key, op]) => /^enrollment:retake:\d+$/.test(key) && op.done).length,
+  }
   for (const event of records.events) {
     if (records.memberships.filter(m => m.eventId === event.id && m.status !== 'CANCELLED').length > event.capacity) throw new DemoError('Event capacity exceeded.')
   }
@@ -305,7 +482,7 @@ export async function verifyInventory(c) {
   report.auditCoverage = {}
   for (const [role, source, names] of [
     ['ACADEMIC_AFFAIRS', 'PEOPLE', ['units', 'students', 'personnel']],
-    ['ACADEMIC_AFFAIRS', 'ACADEMIC', ['programs', 'courses', 'terms', 'offerings', 'sections', 'enrollments']],
+    ['ACADEMIC_AFFAIRS', 'ACADEMIC', ['programs', 'courses', 'terms', 'offerings', 'sections', 'enrollments', 'grades', 'curriculum']],
     ['CAMPUS_SERVICES', 'DORMITORY', ['buildings', 'rooms', 'beds', 'assignments']],
     ['CAMPUS_SERVICES', 'NOTIFICATION', ['templates', 'notices']],
     ['CAMPUS_SERVICES', 'EVENT', ['events', 'memberships']],

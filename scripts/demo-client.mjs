@@ -23,6 +23,16 @@ export function verifyTarget(token, config) {
   return claims
 }
 const fingerprint = value => createHash('sha256').update(JSON.stringify(value)).digest('hex')
+const legacyRoles = {
+  ACADEMIC_AFFAIRS: ['ORGANIZATION_ADMIN', 'STUDENT_ADMIN', 'PERSONNEL_ADMIN', 'ACADEMIC_ADMIN'],
+  CAMPUS_SERVICES: ['DORMITORY_ADMIN', 'NOTIFICATION_ADMIN', 'EVENT_ADMIN', 'LIBRARY_ADMIN'],
+  FINANCE: ['FINANCE_ADMIN'],
+  AUDITOR: ['AUDIT_VIEWER', 'REPORTING_VIEWER'],
+}
+// Journals written before the department-role consolidation recorded the same
+// fixture bodies under the former function roles; the payload must still match.
+const digestMatches = (recorded, role, path, body) => recorded === fingerprint({ role, path, body })
+  || (legacyRoles[role] ?? []).some(legacy => fingerprint({ role: legacy, path, body }) === recorded)
 const matchesField = (row, field, expected) => {
   if (['initialPassword', 'status', 'expectedVersion', 'expectedChargeVersion'].includes(field)) return true
   if (['startsAt', 'endsAt'].includes(field)) return Date.parse(row[field]) === Date.parse(expected)
@@ -98,7 +108,7 @@ export class DemoClient {
     const digest = fingerprint({ role, path, body: definition })
     const detail = prior?.detail ?? `${list.split('?')[0]}/${prior?.id}`
     if (prior?.done) {
-      if (prior.digest !== digest) throw new DemoError(`Fixture definition changed for ${key}; do not overwrite existing data.`)
+      if (!digestMatches(prior.digest, role, path, definition)) throw new DemoError(`Fixture definition changed for ${key}; do not overwrite existing data.`)
       const value = await this.request(role, 'GET', detail)
       if (!value?.id || value.id !== prior.id) throw new DemoError(`Saved fixture ${key} is missing.`)
       return value
@@ -106,7 +116,7 @@ export class DemoClient {
     const rows = await this.list(role, list, !!prior)
     const matches = rows.filter(row => Object.entries(match).every(([field, expected]) => matchesField(row, field, expected)))
     if (prior) {
-      if (prior.digest !== digest) throw new DemoError(`Pending fixture definition changed: ${key}.`)
+      if (!digestMatches(prior.digest, role, path, definition)) throw new DemoError(`Pending fixture definition changed: ${key}.`)
       const added = matches.filter(row => !prior.before.includes(row.id))
       if (added.length === 1) {
         await this.confirmCreatedByOperator(role, path, added[0].id)
@@ -139,22 +149,22 @@ export class DemoClient {
     this.state.operations[key] = { done: true, digest, id: value.id, detail: `${list.split('?')[0]}/${value.id}` }
     await this.save(); return value
   }
-  async change(key, role, path, body, desired, { method = 'PUT', detail = path, unwrap = value => value } = {}) {
+  async change(key, role, path, body, desired, { method = 'PUT', detail = path, unwrap = value => value, versionField = 'rowVersion' } = {}) {
     if ('expectedChargeVersion' in body && (!Number.isSafeInteger(body.expectedChargeVersion) || body.expectedChargeVersion < 0)) throw new DemoError('Unsafe charge version; loading stopped.')
     const prior = this.state.operations[key]
     if (prior?.done) return unwrap(await this.request(role, 'GET', detail))
     const current = unwrap(await this.request(role, 'GET', detail))
     if (prior) {
       if (JSON.stringify(prior.desired) !== JSON.stringify(desired)) throw new DemoError(`Pending mutation definition changed for ${key}.`)
-      if (Object.entries(desired).every(([k, v]) => current[k] === v) && current.rowVersion > prior.version) {
+      if (Object.entries(desired).every(([k, v]) => current[k] === v) && current[versionField] > prior.version) {
         this.state.operations[key] = { done: true, id: current.id, detail }
         await this.save(); return current
       }
       throw new DemoError(`Uncertain previous mutation for ${key}; no mutation was replayed.`)
     }
-    if (!Number.isSafeInteger(current.rowVersion) || current.rowVersion < 0) throw new DemoError('Unsafe row version; loading stopped.')
-    const request = { ...body, expectedVersion: current.rowVersion }
-    this.state.operations[key] = { pending: true, version: current.rowVersion, desired }
+    if (!Number.isSafeInteger(current[versionField]) || current[versionField] < 0) throw new DemoError('Unsafe row version; loading stopped.')
+    const request = { ...body, expectedVersion: current[versionField] }
+    this.state.operations[key] = { pending: true, version: current[versionField], desired }
     await this.save()
     let value
     try { value = await this.request(role, method, path, request) }
@@ -165,7 +175,7 @@ export class DemoClient {
       throw failure
     }
     this.writes++
-    if (value?.id !== current.id || !Number.isSafeInteger(value.rowVersion)
+    if (value?.id !== current.id || !Number.isSafeInteger(value[versionField])
       || Object.entries(desired).some(([field, expected]) => value[field] !== expected)) {
       throw new DemoError(`Unexpected mutation response for ${key}; reconcile before resuming.`)
     }

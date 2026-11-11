@@ -6,4 +6,5 @@ import java.util.UUID;
 public interface StudentContactProfileRepository {
     Optional<StudentContactProfile> findByStudentId(UUID studentId);
     StudentContactProfile save(StudentContactProfile profile, long expectedVersion);
+    StudentContactProfile saveAcademicProfile(StudentContactProfile profile, long expectedVersion);
 }

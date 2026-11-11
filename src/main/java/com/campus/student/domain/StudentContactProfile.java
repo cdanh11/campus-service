@@ -41,6 +41,10 @@ public record StudentContactProfile(UUID studentId, String phone, String address
         return new StudentContactProfile(studentId, phone, address, dateOfBirth, cohort, programId, rowVersion, createdAt, now);
     }
 
+    public StudentContactProfile updateAcademicProfile(String cohort, UUID programId, Instant now) {
+        return new StudentContactProfile(studentId, phone, address, dateOfBirth, cohort, programId, rowVersion, createdAt, now);
+    }
+
     private static String normalizeOptional(String value, int maximum, String field) {
         if (value == null || value.isBlank()) return null;
         String normalized = value.trim();

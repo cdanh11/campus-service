@@ -41,7 +41,8 @@ class AcademicCoursePersistenceAdapter implements AcademicCourseRepository {
     }
 
     private AcademicCourse managed(AcademicCourseEntity entity, AcademicCourse value) {
-        entity.update(value.code(), value.title(), value.credits(), value.organizationUnitId(), value.status());
+        entity.update(value.code(), value.title(), value.credits(), value.courseGroup(), value.hasFinalProject(),
+                value.organizationUnitId(), value.status());
         return map(repository.saveAndFlush(entity));
     }
 
@@ -82,7 +83,8 @@ class AcademicCoursePersistenceAdapter implements AcademicCourseRepository {
     }
 
     private AcademicCourse map(AcademicCourseEntity entity) {
-        return new AcademicCourse(entity.getId(), entity.getCode(), entity.getTitle(), entity.getCredits(), entity.getOrganizationUnitId(),
+        return new AcademicCourse(entity.getId(), entity.getCode(), entity.getTitle(), entity.getCredits(),
+                entity.getCourseGroup(), entity.isHasFinalProject(), entity.getOrganizationUnitId(),
                 entity.getStatus(), entity.getRowVersion(), entity.getCreatedAt(), entity.getUpdatedAt());
     }
 }

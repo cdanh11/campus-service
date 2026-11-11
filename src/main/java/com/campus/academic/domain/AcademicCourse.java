@@ -5,7 +5,8 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 
-public record AcademicCourse(UUID id, String code, String title, int credits, UUID organizationUnitId, AcademicCatalogStatus status,
+public record AcademicCourse(UUID id, String code, String title, int credits, CourseGroup courseGroup,
+                             boolean hasFinalProject, UUID organizationUnitId, AcademicCatalogStatus status,
                              long rowVersion, Instant createdAt, Instant updatedAt) {
     public AcademicCourse {
         Objects.requireNonNull(id, "id must not be null");
@@ -14,6 +15,7 @@ public record AcademicCourse(UUID id, String code, String title, int credits, UU
         if (credits < 1 || credits > 30) {
             throw new InvalidAcademicCourseException("credits must be between 1 and 30");
         }
+        Objects.requireNonNull(courseGroup, "courseGroup must not be null");
         Objects.requireNonNull(organizationUnitId, "organizationUnitId must not be null");
         Objects.requireNonNull(status, "status must not be null");
         if (rowVersion < 0) {
@@ -23,8 +25,16 @@ public record AcademicCourse(UUID id, String code, String title, int credits, UU
         Objects.requireNonNull(updatedAt, "updatedAt must not be null");
     }
 
-    public static AcademicCourse create(UUID id, String code, String title, int credits, UUID organizationUnitId, AcademicCatalogStatus status, Instant now) {
-        return new AcademicCourse(id, code, title, credits, organizationUnitId, status, 0, now, now);
+    public static AcademicCourse create(UUID id, String code, String title, int credits, UUID organizationUnitId,
+                                        AcademicCatalogStatus status, Instant now) {
+        return create(id, code, title, credits, CourseGroup.GENERAL, false, organizationUnitId, status, now);
+    }
+
+    public static AcademicCourse create(UUID id, String code, String title, int credits, CourseGroup courseGroup,
+                                        boolean hasFinalProject, UUID organizationUnitId, AcademicCatalogStatus status,
+                                        Instant now) {
+        return new AcademicCourse(id, code, title, credits, courseGroup, hasFinalProject, organizationUnitId,
+                status, 0, now, now);
     }
 
     public static final class InvalidAcademicCourseException extends IllegalArgumentException {

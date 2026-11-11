@@ -78,11 +78,17 @@ public class AcademicCatalogService {
 
     @Transactional
     public AcademicCourse createCourse(String code, String title, int credits, UUID organizationUnitId, AcademicCatalogStatus status) {
+        return createCourse(code, title, credits, CourseGroup.GENERAL, false, organizationUnitId, status);
+    }
+
+    @Transactional
+    public AcademicCourse createCourse(String code, String title, int credits, CourseGroup courseGroup, boolean hasFinalProject,
+                                       UUID organizationUnitId, AcademicCatalogStatus status) {
         unit(organizationUnitId);
         AcademicCourse value;
         try {
-            value = AcademicCourse.create(UUID.randomUUID(), code, title, credits, organizationUnitId,
-                    status == null ? AcademicCatalogStatus.ACTIVE : status, clock.instant());
+            value = AcademicCourse.create(UUID.randomUUID(), code, title, credits, courseGroup, hasFinalProject,
+                    organizationUnitId, status == null ? AcademicCatalogStatus.ACTIVE : status, clock.instant());
         } catch (IllegalArgumentException exception) {
             throw new RequestValidationException();
         }
@@ -115,10 +121,19 @@ public class AcademicCatalogService {
     public AcademicCourse updateCourse(UUID id, String code, String title, int credits, UUID organizationUnitId,
                                      AcademicCatalogStatus status, long expectedVersion) {
         var old = course(id);
+        return updateCourse(id, code, title, credits, old.courseGroup(), old.hasFinalProject(),
+                organizationUnitId, status, expectedVersion);
+    }
+
+    @Transactional
+    public AcademicCourse updateCourse(UUID id, String code, String title, int credits, CourseGroup courseGroup,
+                                     boolean hasFinalProject, UUID organizationUnitId, AcademicCatalogStatus status,
+                                     long expectedVersion) {
+        var old = course(id);
         unit(organizationUnitId);
         try {
-            return courses.saveMutation(new AcademicCourse(id, code, title, credits, organizationUnitId,
-                    status, old.rowVersion(), old.createdAt(), clock.instant()), expectedVersion);
+            return courses.saveMutation(new AcademicCourse(id, code, title, credits, courseGroup, hasFinalProject,
+                    organizationUnitId, status, old.rowVersion(), old.createdAt(), clock.instant()), expectedVersion);
         } catch (IllegalArgumentException exception) {
             throw new RequestValidationException();
         } catch (DataIntegrityViolationException exception) {

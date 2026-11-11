@@ -29,7 +29,9 @@ public class AdminAcademicCourseController {
     @PostMapping
     @Operation(summary = "Create an academic course (administrative permission)")
     public ResponseEntity<Response> create(Authentication authentication, @Valid @RequestBody Request request) {
-        var value = administration.createCourse((UUID) authentication.getPrincipal(), request.code(), request.title(), request.credits(), request.organizationUnitId(), request.status());
+        var value = administration.createCourse((UUID) authentication.getPrincipal(), request.code(), request.title(),
+                request.credits(), request.courseGroup() == null ? CourseGroup.GENERAL : request.courseGroup(),
+                Boolean.TRUE.equals(request.hasFinalProject()), request.organizationUnitId(), request.status());
         return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(value.id()).toUri()).body(out(value));
     }
@@ -59,20 +61,23 @@ public class AdminAcademicCourseController {
     @PutMapping("/{id}")
     @Operation(summary = "Update an academic course (administrative permission)", description = "Requires expectedVersion from the last read; stale versions and duplicate codes return 409.")
     public Response update(Authentication authentication, @PathVariable UUID id, @Valid @RequestBody UpdateRequest request) {
-        return out(administration.updateCourse((UUID) authentication.getPrincipal(), id, request.code(), request.title(), request.credits(), request.organizationUnitId(),
-                request.status(), request.expectedVersion()));
+        return out(administration.updateCourse((UUID) authentication.getPrincipal(), id, request.code(), request.title(), request.credits(),
+                request.courseGroup(), request.hasFinalProject(), request.organizationUnitId(), request.status(), request.expectedVersion()));
     }
 
     private static Response out(AcademicCourse value) {
-        return new Response(value.id(), value.code(), value.title(), value.credits(), value.organizationUnitId(),
-                value.status().name(), value.rowVersion(), value.createdAt(), value.updatedAt());
+        return new Response(value.id(), value.code(), value.title(), value.credits(), value.courseGroup().name(),
+                value.hasFinalProject(), value.organizationUnitId(), value.status().name(), value.rowVersion(),
+                value.createdAt(), value.updatedAt());
     }
 
-    public record Request(@NotBlank String code, @NotBlank String title, @NotNull @Min(1) @Max(30) Integer credits, @NotNull UUID organizationUnitId,
+    public record Request(@NotBlank String code, @NotBlank String title, @NotNull @Min(1) @Max(30) Integer credits,
+                          CourseGroup courseGroup, Boolean hasFinalProject, @NotNull UUID organizationUnitId,
                           AcademicCatalogStatus status) { }
-    public record UpdateRequest(@NotBlank String code, @NotBlank String title, @NotNull @Min(1) @Max(30) Integer credits, @NotNull UUID organizationUnitId,
+    public record UpdateRequest(@NotBlank String code, @NotBlank String title, @NotNull @Min(1) @Max(30) Integer credits,
+                                CourseGroup courseGroup, Boolean hasFinalProject, @NotNull UUID organizationUnitId,
                                 @NotNull AcademicCatalogStatus status, @NotNull @PositiveOrZero Long expectedVersion) { }
-    public record Response(UUID id, String code, String title, int credits, UUID organizationUnitId, String status,
-                           long rowVersion, Instant createdAt, Instant updatedAt) { }
+    public record Response(UUID id, String code, String title, int credits, String courseGroup, boolean hasFinalProject,
+                           UUID organizationUnitId, String status, long rowVersion, Instant createdAt, Instant updatedAt) { }
     public record PageResponse(List<Response> content, int page, int size, long totalElements, int totalPages) { }
 }

@@ -2,6 +2,7 @@ package com.campus.academic.api.me;
 
 import java.time.Instant;
 import com.campus.academic.application.AcademicDeliveryService;
+import com.campus.academic.application.StudentRecordService;
 import com.campus.shared.api.ApiErrors;
 import com.campus.student.application.StudentProfileNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,6 +17,8 @@ public class OwnAcademicErrorHandler {
     ResponseEntity<Error> profile(HttpServletRequest request) { return error(404, "STUDENT_PROFILE_NOT_FOUND", request); }
     @ExceptionHandler(AcademicDeliveryService.ResourceNotFoundException.class)
     ResponseEntity<Error> missing(HttpServletRequest request) { return error(404, "ACADEMIC_RESOURCE_NOT_FOUND", request); }
+    @ExceptionHandler(StudentRecordService.CurriculumNotAvailableException.class)
+    ResponseEntity<Error> curriculumMissing(HttpServletRequest request) { return error(404, "ACADEMIC_CURRICULUM_NOT_AVAILABLE", request); }
     @ExceptionHandler(IllegalArgumentException.class)
     ResponseEntity<Error> validation(HttpServletRequest request) { return error(400, "INVALID_QUERY_PARAMETER", request); }
     @ExceptionHandler(Exception.class)

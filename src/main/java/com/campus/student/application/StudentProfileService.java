@@ -3,6 +3,7 @@ package com.campus.student.application;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.UUID;
+import com.campus.academic.domain.AcademicCatalogStatus;
 import com.campus.academic.domain.AcademicProgramRepository;
 import com.campus.organization.application.OrganizationUnitManagementService;
 import com.campus.shared.application.PeopleRegistryAudit;
@@ -41,6 +42,35 @@ public class StudentProfileService {
         var linked = accounts.findByAccount(account).orElseThrow(StudentProfileNotFoundException::new);
         var student = students.findById(linked.studentId()).orElseThrow(StudentProfileNotFoundException::new);
         return view(student, contacts.findByStudentId(student.id()).orElse(null));
+    }
+
+    public StudentProfile academicProfile(UUID studentId) {
+        var student = students.findById(studentId).orElseThrow(StudentManagementService.StudentNotFoundException::new);
+        return view(student, contacts.findByStudentId(student.id()).orElse(null));
+    }
+
+    @Transactional
+    public StudentProfile updateAcademicProfile(UUID actor, UUID studentId, String cohort, UUID programId, long expectedVersion) {
+        if (actor == null) throw new RequestValidationException();
+        String normalizedCohort = cohort == null || cohort.isBlank() ? null
+                : cohort.trim().toUpperCase(java.util.Locale.ROOT);
+        var student = students.findById(studentId).orElseThrow(StudentManagementService.StudentNotFoundException::new);
+        if (programId != null && programs.findById(programId)
+                .filter(program -> program.status() == AcademicCatalogStatus.ACTIVE).isEmpty()) {
+            throw new ProgramUnavailableException();
+        }
+        var current = contacts.findByStudentId(studentId).orElse(null);
+        long currentVersion = current == null ? 0 : current.rowVersion();
+        if (currentVersion != expectedVersion) throw new ConcurrentProfileModificationException();
+        StudentContactProfile base = current == null ? StudentContactProfile.empty(studentId, clock.instant()) : current;
+        StudentContactProfile saved;
+        try {
+            saved = contacts.saveAcademicProfile(base.updateAcademicProfile(normalizedCohort, programId, clock.instant()), expectedVersion);
+        } catch (StudentContactProfile.InvalidStudentContactException exception) {
+            throw new RequestValidationException();
+        }
+        audits.record(actor, "STUDENT", studentId, "UPDATED", clock.instant());
+        return view(student, saved);
     }
 
     @Transactional
@@ -92,4 +122,5 @@ public class StudentProfileService {
 
     public static final class ConcurrentProfileModificationException extends RuntimeException { }
     public static final class RequestValidationException extends RuntimeException { }
+    public static final class ProgramUnavailableException extends RuntimeException { }
 }
