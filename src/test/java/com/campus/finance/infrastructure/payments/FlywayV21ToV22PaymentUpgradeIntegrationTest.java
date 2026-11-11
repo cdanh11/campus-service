@@ -131,7 +131,7 @@ class FlywayV21ToV22PaymentUpgradeIntegrationTest {
         } finally { jdbc.update("DELETE FROM finance_audit_events WHERE id=?",event); }
         assertThat(snapshot()).isEqualTo(legacy);
     }
-    @Test void validatesAll25ProductionEntitiesOnExactUpgradeWithoutFlywayOrSchemaCreation() {
+    @Test void validatesAll28ProductionEntitiesOnExactUpgradeWithoutFlywayOrSchemaCreation() {
         var before=jdbc.queryForList("SELECT * FROM flyway_schema_history ORDER BY installed_rank");
         new ApplicationContextRunner().withConfiguration(AutoConfigurations.of(DataSourceAutoConfiguration.class,HibernateJpaAutoConfiguration.class,FlywayAutoConfiguration.class))
                 .withUserConfiguration(ValidationConfiguration.class)
@@ -139,7 +139,7 @@ class FlywayV21ToV22PaymentUpgradeIntegrationTest {
                         "spring.datasource.password="+postgres.getPassword(),"spring.flyway.enabled=false","spring.jpa.hibernate.ddl-auto=validate","spring.jpa.properties.hibernate.default_schema=public")
                 .run(context -> {
                     assertThat(context).hasNotFailed().hasSingleBean(EntityManagerFactory.class).doesNotHaveBean(Flyway.class);
-                    var model=context.getBean(EntityManagerFactory.class).getMetamodel();assertThat(model.getEntities()).hasSize(25);
+                    var model=context.getBean(EntityManagerFactory.class).getMetamodel();assertThat(model.getEntities()).hasSize(28);
                     assertThat(model.entity(ManualPaymentEntity.class)).isNotNull();
                 });
         assertThat(jdbc.queryForList("SELECT * FROM flyway_schema_history ORDER BY installed_rank")).isEqualTo(before);

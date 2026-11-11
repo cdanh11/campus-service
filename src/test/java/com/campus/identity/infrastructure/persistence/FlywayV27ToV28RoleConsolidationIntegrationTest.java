@@ -80,7 +80,7 @@ class FlywayV27ToV28RoleConsolidationIntegrationTest {
                         "spring.jpa.properties.hibernate.default_schema=public", "spring.jpa.open-in-view=false")
                 .run(context -> {
                     assertThat(context).hasNotFailed().doesNotHaveBean(Flyway.class).hasSingleBean(EntityManagerFactory.class);
-                    assertThat(context.getBean(EntityManagerFactory.class).getMetamodel().getEntities()).hasSize(37);
+                    assertThat(context.getBean(EntityManagerFactory.class).getMetamodel().getEntities()).hasSize(40);
                 });
     }
 

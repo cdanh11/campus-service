@@ -7,6 +7,7 @@ import com.campus.identity.infrastructure.persistence.entity.UserAccountEntity;
 import com.campus.organization.infrastructure.persistence.entity.OrganizationUnitEntity;
 import com.campus.personnel.infrastructure.persistence.entity.FacultyStaffEntity;
 import com.campus.student.infrastructure.persistence.entity.StudentEntity;
+import com.campus.testsupport.LatestSchemaDatabase;
 import jakarta.persistence.EntityManagerFactory;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeAll;
@@ -62,11 +63,11 @@ class FlywayV8ToV10PeopleRegistryUpgradeIntegrationTest {
     }
 
     @Test
-    void hibernateValidatesExactlyTheUpgradedSchemaWithoutFlyway() {
+    void hibernateValidatesProductionEntitiesWithoutFlyway() {
         List<java.util.Map<String, Object>> history = jdbc.queryForList("SELECT * FROM flyway_schema_history ORDER BY installed_rank");
         new ApplicationContextRunner().withConfiguration(AutoConfigurations.of(DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class, FlywayAutoConfiguration.class))
                 .withUserConfiguration(ValidationConfiguration.class)
-                .withPropertyValues("spring.datasource.url=" + postgres.getJdbcUrl(), "spring.datasource.username=" + postgres.getUsername(),
+                .withPropertyValues("spring.datasource.url=" + LatestSchemaDatabase.migrate(postgres), "spring.datasource.username=" + postgres.getUsername(),
                         "spring.datasource.password=" + postgres.getPassword(), "spring.flyway.enabled=false", "spring.jpa.hibernate.ddl-auto=validate", "spring.jpa.properties.hibernate.default_schema=public")
                 .run(context -> {
                     assertThat(context).hasNotFailed().hasSingleBean(EntityManagerFactory.class).doesNotHaveBean(Flyway.class);

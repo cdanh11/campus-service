@@ -103,7 +103,7 @@ class FlywayV17ToV18AcademicAuditUpgradeIntegrationTest {
                 .run(context -> {
                     assertThat(context).hasNotFailed().hasSingleBean(EntityManagerFactory.class).doesNotHaveBean(Flyway.class);
                     var model = context.getBean(EntityManagerFactory.class).getMetamodel();
-                    assertThat(model.entity(AcademicAuditEntity.class)).isNotNull(); assertThat(model.getEntities()).hasSize(16);
+                    assertThat(model.entity(AcademicAuditEntity.class)).isNotNull(); assertThat(model.getEntities()).hasSize(19);
                 });
         assertThat(jdbc.queryForList("SELECT * FROM flyway_schema_history ORDER BY installed_rank")).isEqualTo(before);
         assertThat(snapshot()).isEqualTo(legacy);

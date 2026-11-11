@@ -97,7 +97,7 @@ class FlywayV16ToV17EnrollmentUpgradeIntegrationTest {
                 .run(context -> {
                     assertThat(context).hasNotFailed().hasSingleBean(EntityManagerFactory.class).doesNotHaveBean(Flyway.class);
                     var model = context.getBean(EntityManagerFactory.class).getMetamodel();
-                    assertThat(model.entity(EnrollmentEntity.class)).isNotNull(); assertThat(model.getEntities()).hasSize(15);
+                    assertThat(model.entity(EnrollmentEntity.class)).isNotNull(); assertThat(model.getEntities()).hasSize(16);
                 });
         assertThat(jdbc.queryForList("SELECT * FROM flyway_schema_history ORDER BY installed_rank")).isEqualTo(before);
         assertThat(snapshot()).isEqualTo(legacy);

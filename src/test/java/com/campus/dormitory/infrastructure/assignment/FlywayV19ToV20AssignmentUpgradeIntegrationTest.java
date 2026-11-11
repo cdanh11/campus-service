@@ -118,7 +118,7 @@ class FlywayV19ToV20AssignmentUpgradeIntegrationTest {
         jdbc.update("DELETE FROM dormitory_audit_events WHERE id = ?", event);
     }
 
-    @Test void validatesAll21ProductionEntitiesAgainstExactUpgradeWithoutFlyway() {
+    @Test void validatesAll24ProductionEntitiesAgainstExactUpgradeWithoutFlyway() {
         var before = jdbc.queryForList("SELECT * FROM flyway_schema_history ORDER BY installed_rank");
         new ApplicationContextRunner().withConfiguration(AutoConfigurations.of(DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class, FlywayAutoConfiguration.class))
                 .withUserConfiguration(ValidationConfiguration.class)
@@ -127,7 +127,7 @@ class FlywayV19ToV20AssignmentUpgradeIntegrationTest {
                 .run(context -> {
                     assertThat(context).hasNotFailed().hasSingleBean(EntityManagerFactory.class).doesNotHaveBean(Flyway.class);
                     var model = context.getBean(EntityManagerFactory.class).getMetamodel();
-                    assertThat(model.getEntities()).hasSize(21); assertThat(model.entity(AccommodationAssignmentEntity.class)).isNotNull();
+                    assertThat(model.getEntities()).hasSize(24); assertThat(model.entity(AccommodationAssignmentEntity.class)).isNotNull();
                 });
         assertThat(jdbc.queryForList("SELECT * FROM flyway_schema_history ORDER BY installed_rank")).isEqualTo(before);
         assertThat(snapshot()).isEqualTo(legacy);

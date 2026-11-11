@@ -145,7 +145,7 @@ class FlywayV20ToV21FinanceUpgradeIntegrationTest {
         state("23514",() -> jdbc.update("UPDATE finance_audit_events SET action='UPDATED' WHERE id=?",event));
         state("23514",() -> jdbc.update("UPDATE finance_audit_events SET resource_type='UNKNOWN' WHERE id=?",event));
     }
-    @Test void validatesAll24ProductionEntitiesOnExactV21SchemaWithFlywayDisabled() {
+    @Test void validatesAll27ProductionEntitiesOnExactV21SchemaWithFlywayDisabled() {
         var before=jdbc.queryForList("SELECT * FROM flyway_schema_history ORDER BY installed_rank");
         new ApplicationContextRunner().withConfiguration(AutoConfigurations.of(DataSourceAutoConfiguration.class,HibernateJpaAutoConfiguration.class,FlywayAutoConfiguration.class))
                 .withUserConfiguration(ValidationConfiguration.class)
@@ -153,7 +153,7 @@ class FlywayV20ToV21FinanceUpgradeIntegrationTest {
                         "spring.datasource.password="+postgres.getPassword(),"spring.flyway.enabled=false","spring.jpa.hibernate.ddl-auto=validate","spring.jpa.properties.hibernate.default_schema=public")
                 .run(context -> {
                     assertThat(context).hasNotFailed().hasSingleBean(EntityManagerFactory.class).doesNotHaveBean(Flyway.class);
-                    var model=context.getBean(EntityManagerFactory.class).getMetamodel(); assertThat(model.getEntities()).hasSize(24);
+                    var model=context.getBean(EntityManagerFactory.class).getMetamodel(); assertThat(model.getEntities()).hasSize(27);
                     assertThat(model.entity(StudentChargeEntity.class)).isNotNull();
                 });
         assertThat(jdbc.queryForList("SELECT * FROM flyway_schema_history ORDER BY installed_rank")).isEqualTo(before);

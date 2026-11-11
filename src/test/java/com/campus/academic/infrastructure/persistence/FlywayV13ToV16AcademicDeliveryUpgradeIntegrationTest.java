@@ -153,7 +153,7 @@ class FlywayV13ToV16AcademicDeliveryUpgradeIntegrationTest {
                     assertThat(model.entity(AcademicTermEntity.class)).isNotNull();
                     assertThat(model.entity(CourseOfferingEntity.class)).isNotNull();
                     assertThat(model.entity(ClassSectionEntity.class)).isNotNull();
-                    assertThat(model.getEntities()).hasSize(14);
+                    assertThat(model.getEntities()).hasSize(15);
                 });
         assertThat(jdbc.queryForList("SELECT * FROM flyway_schema_history ORDER BY installed_rank")).isEqualTo(before);
         assertThat(snapshot()).isEqualTo(legacy);

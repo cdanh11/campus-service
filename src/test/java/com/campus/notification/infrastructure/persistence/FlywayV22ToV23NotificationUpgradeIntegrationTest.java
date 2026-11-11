@@ -139,7 +139,7 @@ class FlywayV22ToV23NotificationUpgradeIntegrationTest {
     private List<String> constraints(String table,String type) {
         return jdbc.queryForList("SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conrelid=CAST(? AS regclass) AND contype=CAST(? AS char)",String.class,table,type);
     }
-    @Test void validatesAll29ProductionEntitiesOnExactV23SchemaWithFlywayDisabled() {
+    @Test void validatesAll32ProductionEntitiesOnExactV23SchemaWithFlywayDisabled() {
         var before=jdbc.queryForList("SELECT * FROM flyway_schema_history ORDER BY installed_rank");
         new ApplicationContextRunner().withConfiguration(AutoConfigurations.of(DataSourceAutoConfiguration.class,HibernateJpaAutoConfiguration.class,FlywayAutoConfiguration.class))
                 .withUserConfiguration(ValidationConfiguration.class)
@@ -147,7 +147,7 @@ class FlywayV22ToV23NotificationUpgradeIntegrationTest {
                         "spring.datasource.password="+postgres.getPassword(),"spring.flyway.enabled=false","spring.jpa.hibernate.ddl-auto=validate","spring.jpa.properties.hibernate.default_schema=public")
                 .run(context -> {
                     assertThat(context).hasNotFailed().hasSingleBean(EntityManagerFactory.class).doesNotHaveBean(Flyway.class);
-                    assertThat(context.getBean(EntityManagerFactory.class).getMetamodel().getEntities()).hasSize(29);
+                    assertThat(context.getBean(EntityManagerFactory.class).getMetamodel().getEntities()).hasSize(32);
                     assertThat(context.getBean(EntityManagerFactory.class).getMetamodel().entity(NotificationDeliveryEntity.class)).isNotNull();
                 });
         assertThat(jdbc.queryForList("SELECT * FROM flyway_schema_history ORDER BY installed_rank")).isEqualTo(before);

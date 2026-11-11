@@ -152,7 +152,7 @@ class FlywayV18ToV19DormitoryUpgradeIntegrationTest {
                         "spring.datasource.password=" + postgres.getPassword(), "spring.flyway.enabled=false", "spring.jpa.hibernate.ddl-auto=validate", "spring.jpa.properties.hibernate.default_schema=public")
                 .run(context -> {
                     assertThat(context).hasNotFailed().hasSingleBean(EntityManagerFactory.class).doesNotHaveBean(Flyway.class);
-                    assertThat(context.getBean(EntityManagerFactory.class).getMetamodel().getEntities()).hasSize(20);
+                    assertThat(context.getBean(EntityManagerFactory.class).getMetamodel().getEntities()).hasSize(23);
                     assertThat(context.getBean(EntityManagerFactory.class).getMetamodel().entity(ResidenceBedEntity.class)).isNotNull();
                 });
         assertThat(jdbc.queryForList("SELECT * FROM flyway_schema_history ORDER BY installed_rank")).isEqualTo(before);
