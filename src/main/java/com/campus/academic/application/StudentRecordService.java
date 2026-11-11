@@ -122,7 +122,7 @@ public class StudentRecordService {
                     attempts.size() > 1, inProgress.contains(course.id()),
                     prerequisite == null ? null : prerequisite.id(), prerequisite == null ? null : prerequisite.code(),
                     prerequisite == null ? null : prerequisite.title(),
-                    prerequisiteBest != null && prerequisiteBest.grade().passed()));
+                    prerequisiteBest != null));
         }
         var semesters = semesterMap.entrySet().stream().map(entry -> new CurriculumSemester(entry.getKey(),
                 entry.getValue().stream().sorted(Comparator.comparing(CurriculumCourseStatus::code)).toList())).toList();

@@ -15,6 +15,8 @@ import java.util.concurrent.TimeUnit;
 import com.campus.academic.application.AcademicAdministrationService;
 import com.campus.academic.application.AcademicCatalogService;
 import com.campus.academic.application.AcademicDeliveryService;
+import com.campus.academic.application.AcademicGradeService;
+import com.campus.academic.application.EnrollmentService;
 import com.campus.academic.application.RegistrationService;
 import com.campus.academic.domain.AcademicCatalogStatus;
 import com.campus.academic.domain.AcademicDeliveryStatus;
@@ -64,6 +66,7 @@ class SelfServiceRegistrationIntegrationTest {
 
     @Autowired MockMvc mvc;
     @Autowired RegistrationService registrations;
+    @Autowired EnrollmentService enrollments;
     @Autowired AcademicDeliveryService delivery;
     @Autowired AcademicCatalogService catalog;
     @Autowired AcademicAdministrationService administration;
@@ -221,6 +224,33 @@ class SelfServiceRegistrationIntegrationTest {
                 .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("REGISTRATION_PREREQUISITE_NOT_MET"));
         mvc.perform(post(ROOT).header("Authorization", learner.authorization()).contentType("application/json")
                 .content(json.writeValueAsString(Map.of("sectionId", section))))
+                .andExpect(status().isCreated());
+    }
+
+    @Test void unlocksTheNextCourseAfterStudyingAFailedPrerequisite() throws Exception {
+        var program = catalog.createProgram(prefix + "PROG2", "Registration program 2", unit, AcademicCatalogStatus.ACTIVE);
+        var prerequisite = catalog.createCourse(prefix + "PRE201", "Prerequisite course 2", 3, unit, AcademicCatalogStatus.ACTIVE);
+        var target = catalog.createCourse(prefix + "TGT201", "Target course 2", 3, unit, AcademicCatalogStatus.ACTIVE);
+        administration.createCurriculum(admin, program.id(), prerequisite.id(), 1, null);
+        administration.createCurriculum(admin, program.id(), target.id(), 2, prerequisite.id());
+        var learner = learner("K21", program.id());
+
+        var past = term(Instant.now().minus(Duration.ofDays(30)), Instant.now().minus(Duration.ofDays(20)));
+        var prerequisiteOffering = delivery.createOffering(past.id(), prerequisite.id());
+        delivery.updateOffering(prerequisiteOffering.id(), AcademicDeliveryStatus.OPEN, 0);
+        var prerequisiteSection = openSection(prerequisiteOffering.id(), "PRE-A", 2, schedule(2, LocalTime.of(7, 30), LocalTime.of(9, 30)));
+        var attempt = enrollments.create(learner.student(), prerequisiteSection);
+        administration.createGrade(admin, attempt.id(), new AcademicGradeService.GradeScores(3.0, 3.0, 0.0, null));
+
+        var term = term(Instant.now().minusSeconds(30), Instant.now().plus(Duration.ofDays(7)));
+        var targetOffering = delivery.createOffering(term.id(), target.id());
+        delivery.updateOffering(targetOffering.id(), AcademicDeliveryStatus.OPEN, 0);
+        var targetSection = openSection(targetOffering.id(), "TGT-B", 2, schedule(3, LocalTime.of(7, 30), LocalTime.of(9, 30)));
+
+        assertThat(registrations.registration(learner.account()).sections()).filteredOn(option -> option.sectionId().equals(targetSection))
+                .singleElement().satisfies(option -> assertThat(option.eligible()).isTrue());
+        mvc.perform(post(ROOT).header("Authorization", learner.authorization()).contentType("application/json")
+                .content(json.writeValueAsString(Map.of("sectionId", targetSection))))
                 .andExpect(status().isCreated());
     }
 
