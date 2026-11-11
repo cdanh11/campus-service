@@ -10,6 +10,7 @@ public interface CourseOfferingRepository {
     CourseOffering create(CourseOffering value);
     CourseOffering update(CourseOffering value, long expectedVersion);
     List<CourseOffering> findAllById(Collection<UUID> ids);
+    List<CourseOffering> findByTermIdAndStatus(UUID termId, AcademicDeliveryStatus status);
     Optional<CourseOffering> findById(UUID id);
     CourseOffering lock(UUID id);
     PageResult<CourseOffering> search(AcademicDeliverySearch query);

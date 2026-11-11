@@ -4,6 +4,7 @@ import com.campus.academic.application.AcademicAdministrationService;
 import org.springframework.security.core.Authentication;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -27,7 +28,7 @@ public class AdminAcademicTermController {
     @PostMapping
     @Operation(summary = "Create term (administrative permission)", description = "New resources start in PLANNED; lifecycle transitions require PUT and expectedVersion.")
     public ResponseEntity<AcademicTerm> create(Authentication authentication, @Valid @RequestBody CreateRequest request) {
-        var value = administration.createTerm((UUID) authentication.getPrincipal(), request.code(), request.name(), request.startDate(), request.endDate());
+        var value = administration.createTerm((UUID) authentication.getPrincipal(), request.code(), request.name(), request.startDate(), request.endDate(), request.registrationOpensAt(), request.registrationClosesAt());
         return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(value.id()).toUri()).body(value);
     }
@@ -40,7 +41,7 @@ public class AdminAcademicTermController {
     @PutMapping("/{id}")
     @Operation(summary = "Update term (administrative permission)", description = "Requires expectedVersion; stale version, invalid lifecycle or unavailable references return 409. Parent identifiers are immutable.")
     public AcademicTerm update(Authentication authentication, @PathVariable UUID id, @Valid @RequestBody UpdateRequest request) {
-        return administration.updateTerm((UUID) authentication.getPrincipal(), id, request.code(), request.name(), request.startDate(), request.endDate(), request.status(), request.expectedVersion());
+        return administration.updateTerm((UUID) authentication.getPrincipal(), id, request.code(), request.name(), request.startDate(), request.endDate(), request.status(), request.registrationOpensAt(), request.registrationClosesAt(), request.expectedVersion());
     }
 
     @GetMapping
@@ -57,6 +58,9 @@ public class AdminAcademicTermController {
         return PageResponse.from(result, page, size);
     }
 
-    public record CreateRequest(@NotBlank String code, @NotBlank String name, @NotNull LocalDate startDate, @NotNull LocalDate endDate) { }
-    public record UpdateRequest(@NotBlank String code, @NotBlank String name, @NotNull LocalDate startDate, @NotNull LocalDate endDate, @NotNull AcademicTermStatus status, @NotNull @PositiveOrZero Long expectedVersion) { }
+    public record CreateRequest(@NotBlank String code, @NotBlank String name, @NotNull LocalDate startDate, @NotNull LocalDate endDate,
+                                Instant registrationOpensAt, Instant registrationClosesAt) { }
+    public record UpdateRequest(@NotBlank String code, @NotBlank String name, @NotNull LocalDate startDate, @NotNull LocalDate endDate,
+                                @NotNull AcademicTermStatus status, Instant registrationOpensAt, Instant registrationClosesAt,
+                                @NotNull @PositiveOrZero Long expectedVersion) { }
 }

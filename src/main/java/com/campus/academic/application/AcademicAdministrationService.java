@@ -1,6 +1,7 @@
 package com.campus.academic.application;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 import com.campus.academic.domain.*;
@@ -55,12 +56,14 @@ public class AcademicAdministrationService {
                 hasFinalProject == null ? current.hasFinalProject() : hasFinalProject, unit, status, version);
         record(actor, COURSE, value.id(), UPDATED, value.rowVersion(), value.status().name()); return value;
     }
-    public AcademicTerm createTerm(UUID actor, String code, String name, LocalDate start, LocalDate end) {
-        actor(actor); var value = delivery.createTerm(code, name, start, end);
+    public AcademicTerm createTerm(UUID actor, String code, String name, LocalDate start, LocalDate end,
+                                   Instant registrationOpensAt, Instant registrationClosesAt) {
+        actor(actor); var value = delivery.createTerm(code, name, start, end, registrationOpensAt, registrationClosesAt);
         record(actor, TERM, value.id(), CREATED, value.rowVersion(), value.status().name()); return value;
     }
-    public AcademicTerm updateTerm(UUID actor, UUID id, String code, String name, LocalDate start, LocalDate end, AcademicTermStatus status, long version) {
-        actor(actor); var value = delivery.updateTerm(id, code, name, start, end, status, version);
+    public AcademicTerm updateTerm(UUID actor, UUID id, String code, String name, LocalDate start, LocalDate end,
+                                   AcademicTermStatus status, Instant registrationOpensAt, Instant registrationClosesAt, long version) {
+        actor(actor); var value = delivery.updateTerm(id, code, name, start, end, status, registrationOpensAt, registrationClosesAt, version);
         record(actor, TERM, value.id(), UPDATED, value.rowVersion(), value.status().name()); return value;
     }
     public CourseOffering createOffering(UUID actor, UUID term, UUID course) {

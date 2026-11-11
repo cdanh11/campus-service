@@ -1,5 +1,7 @@
 package com.campus.academic.infrastructure.persistence.enrollment;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 import com.campus.academic.domain.EnrollmentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,4 +22,13 @@ interface EnrollmentJpaRepository extends JpaRepository<EnrollmentEntity, UUID>,
             @org.springframework.data.repository.query.Param("offeringId") UUID offeringId);
 
     long countBySectionIdAndStatus(UUID sectionId, EnrollmentStatus status);
+
+    @org.springframework.data.jpa.repository.Query("""
+            select enrollment.sectionId, count(enrollment) from EnrollmentEntity enrollment
+            where enrollment.status = com.campus.academic.domain.EnrollmentStatus.ENROLLED
+              and enrollment.sectionId in :sectionIds
+            group by enrollment.sectionId
+            """)
+    List<Object[]> countActiveBySectionIds(
+            @org.springframework.data.repository.query.Param("sectionIds") Collection<UUID> sectionIds);
 }

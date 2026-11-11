@@ -10,6 +10,7 @@ public interface AcademicTermRepository {
     AcademicTerm create(AcademicTerm value);
     AcademicTerm update(AcademicTerm value, long expectedVersion);
     List<AcademicTerm> findAllById(Collection<UUID> ids);
+    List<AcademicTerm> findAllByStatus(AcademicTermStatus status);
     Optional<AcademicTerm> findById(UUID id);
     AcademicTerm lock(UUID id);
     PageResult<AcademicTerm> search(AcademicDeliverySearch query);

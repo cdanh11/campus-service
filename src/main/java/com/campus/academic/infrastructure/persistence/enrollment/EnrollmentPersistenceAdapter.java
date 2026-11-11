@@ -1,8 +1,11 @@
 package com.campus.academic.infrastructure.persistence.enrollment;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import com.campus.academic.application.EnrollmentService;
 import com.campus.academic.domain.*;
 import com.campus.shared.application.PageResult;
@@ -44,6 +47,11 @@ class EnrollmentPersistenceAdapter implements EnrollmentRepository {
         return repository.countActiveByStudentIdAndOfferingId(studentId, offeringId) > 0;
     }
     public long occupied(UUID sectionId) { return repository.countBySectionIdAndStatus(sectionId, EnrollmentStatus.ENROLLED); }
+    public Map<UUID, Long> occupiedBySectionIds(Collection<UUID> sectionIds) {
+        if (sectionIds.isEmpty()) return Map.of();
+        return repository.countActiveBySectionIds(sectionIds.stream().distinct().toList()).stream()
+                .collect(Collectors.toMap(row -> (UUID) row[0], row -> (Long) row[1]));
+    }
 
     public PageResult<Enrollment> search(EnrollmentSearch search) {
         Specification<EnrollmentEntity> specification = (root, query, builder) -> {

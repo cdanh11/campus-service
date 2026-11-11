@@ -1,6 +1,7 @@
 package com.campus.academic.application;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
@@ -37,12 +38,25 @@ public class AcademicDeliveryService {
     }
 
     public AcademicTerm createTerm(String code, String name, LocalDate start, LocalDate end) {
+        return createTerm(code, name, start, end, null, null);
+    }
+
+    public AcademicTerm createTerm(String code, String name, LocalDate start, LocalDate end,
+                                   Instant registrationOpensAt, Instant registrationClosesAt) {
         var now = clock.instant();
-        return terms.create(new AcademicTerm(UUID.randomUUID(), code, name, start, end, AcademicTermStatus.PLANNED, 0, now, now));
+        return terms.create(new AcademicTerm(UUID.randomUUID(), code, name, start, end, AcademicTermStatus.PLANNED,
+                registrationOpensAt, registrationClosesAt, 0, now, now));
     }
 
     public AcademicTerm updateTerm(UUID id, String code, String name, LocalDate start, LocalDate end,
                                    AcademicTermStatus status, long version) {
+        var current = terms.findById(id).orElseThrow(ResourceNotFoundException::new);
+        return updateTerm(id, code, name, start, end, status, current.registrationOpensAt(), current.registrationClosesAt(), version);
+    }
+
+    public AcademicTerm updateTerm(UUID id, String code, String name, LocalDate start, LocalDate end,
+                                   AcademicTermStatus status, Instant registrationOpensAt,
+                                   Instant registrationClosesAt, long version) {
         var old = terms.lock(id);
         version(old.rowVersion(), version);
         AcademicLifecycle.term(old.status(), status);
@@ -50,7 +64,8 @@ public class AcademicDeliveryService {
             throw new InvalidStateException();
         }
         if (status == AcademicTermStatus.CLOSED && offerings.hasOpenOfferings(id)) throw new InvalidStateException();
-        return terms.update(new AcademicTerm(id, code, name, start, end, status, old.rowVersion(), old.createdAt(), clock.instant()), version);
+        return terms.update(new AcademicTerm(id, code, name, start, end, status, registrationOpensAt, registrationClosesAt,
+                old.rowVersion(), old.createdAt(), clock.instant()), version);
     }
 
     public CourseOffering createOffering(UUID termId, UUID courseId) {

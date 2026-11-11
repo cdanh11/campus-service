@@ -44,6 +44,11 @@ class AcademicTermPersistenceAdapter implements AcademicTermRepository {
     @Transactional(readOnly = true)
     public List<AcademicTerm> findAllById(Collection<UUID> ids) { return repository.findAllById(ids).stream().map(this::map).toList(); }
 
+    @Transactional(readOnly = true)
+    public List<AcademicTerm> findAllByStatus(AcademicTermStatus status) {
+        return repository.findAllByStatus(status).stream().map(this::map).toList();
+    }
+
     @Transactional
     public AcademicTerm lock(UUID id) { return map(locked(id)); }
 
@@ -71,6 +76,8 @@ class AcademicTermPersistenceAdapter implements AcademicTermRepository {
     }
 
     private AcademicTerm map(AcademicTermEntity entity) {
-        return new AcademicTerm(entity.getId(), entity.getCode(), entity.getName(), entity.getStartDate(), entity.getEndDate(), entity.getStatus(), entity.getRowVersion(), entity.getCreatedAt(), entity.getUpdatedAt());
+        return new AcademicTerm(entity.getId(), entity.getCode(), entity.getName(), entity.getStartDate(), entity.getEndDate(),
+                entity.getStatus(), entity.getRegistrationOpensAt(), entity.getRegistrationClosesAt(),
+                entity.getRowVersion(), entity.getCreatedAt(), entity.getUpdatedAt());
     }
 }

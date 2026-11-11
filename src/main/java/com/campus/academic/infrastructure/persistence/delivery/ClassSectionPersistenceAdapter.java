@@ -44,6 +44,12 @@ class ClassSectionPersistenceAdapter implements ClassSectionRepository {
     @Transactional(readOnly = true)
     public List<ClassSection> findAllById(Collection<UUID> ids) { return repository.findAllById(ids).stream().map(this::map).toList(); }
 
+    @Transactional(readOnly = true)
+    public List<ClassSection> findByOfferingIdsAndStatus(Collection<UUID> offeringIds, AcademicDeliveryStatus status) {
+        if (offeringIds.isEmpty()) return List.of();
+        return repository.findAllByOfferingIdInAndStatus(offeringIds, status).stream().map(this::map).toList();
+    }
+
     @Transactional
     public ClassSection lock(UUID id) { return map(locked(id)); }
 

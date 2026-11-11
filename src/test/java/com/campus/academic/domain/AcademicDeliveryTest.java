@@ -63,7 +63,7 @@ class AcademicDeliveryTest {
     }
     private AcademicTerm term(String code, LocalDate start, LocalDate end) {
         var now = Instant.now();
-        return new AcademicTerm(UUID.randomUUID(), code, "Term", start, end, AcademicTermStatus.PLANNED, 0, now, now);
+        return new AcademicTerm(UUID.randomUUID(), code, "Term", start, end, AcademicTermStatus.PLANNED, null, null, 0, now, now);
     }
     private ClassSection section(String code, int capacity, UUID faculty, AcademicDeliveryStatus status) {
         return section(code, capacity, faculty, SectionSchedule.empty(), status);

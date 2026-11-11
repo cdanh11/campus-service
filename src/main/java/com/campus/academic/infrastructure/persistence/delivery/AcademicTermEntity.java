@@ -27,6 +27,10 @@ public class AcademicTermEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     private AcademicTermStatus status;
+    @Column(name = "registration_opens_at")
+    private Instant registrationOpensAt;
+    @Column(name = "registration_closes_at")
+    private Instant registrationClosesAt;
     @Version
     @Column(name = "row_version", nullable = false)
     private long rowVersion;
@@ -45,6 +49,8 @@ public class AcademicTermEntity {
     public LocalDate getStartDate() { return startDate; }
     public LocalDate getEndDate() { return endDate; }
     public AcademicTermStatus getStatus() { return status; }
+    public Instant getRegistrationOpensAt() { return registrationOpensAt; }
+    public Instant getRegistrationClosesAt() { return registrationClosesAt; }
     public long getRowVersion() { return rowVersion; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
@@ -55,5 +61,7 @@ public class AcademicTermEntity {
         this.startDate = value.startDate();
         this.endDate = value.endDate();
         this.status = value.status();
+        this.registrationOpensAt = value.registrationOpensAt();
+        this.registrationClosesAt = value.registrationClosesAt();
     }
 }

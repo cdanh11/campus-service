@@ -6,7 +6,8 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 
-public record AcademicTerm(UUID id, String code, String name, LocalDate startDate, LocalDate endDate, AcademicTermStatus status, long rowVersion, Instant createdAt, Instant updatedAt) {
+public record AcademicTerm(UUID id, String code, String name, LocalDate startDate, LocalDate endDate, AcademicTermStatus status,
+                           Instant registrationOpensAt, Instant registrationClosesAt, long rowVersion, Instant createdAt, Instant updatedAt) {
     public AcademicTerm {
         Objects.requireNonNull(id, "id");
         code = AcademicProgram.normalize(AcademicProgram.normalize(code, 32, "code").toUpperCase(Locale.ROOT), 32, "code");
@@ -18,5 +19,8 @@ public record AcademicTerm(UUID id, String code, String name, LocalDate startDat
         Objects.requireNonNull(updatedAt, "updatedAt");
         if (rowVersion < 0) throw new IllegalArgumentException("rowVersion must be nonnegative");
         if (startDate.isAfter(endDate)) throw new IllegalArgumentException("term date order");
+        if ((registrationOpensAt == null) != (registrationClosesAt == null)) throw new IllegalArgumentException("registration window requires both bounds");
+        if (registrationOpensAt != null && !registrationClosesAt.isAfter(registrationOpensAt))
+            throw new IllegalArgumentException("registration window order");
     }
 }
