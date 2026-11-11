@@ -91,6 +91,18 @@ export async function seedInventory(c) {
     term = await c.change(`term:active:${i}`, 'ACADEMIC_AFFAIRS', base + `academic/terms/${term.id}`, { ...fields(term, ['code', 'name', 'startDate', 'endDate']), status: 'ACTIVE' }, { status: 'ACTIVE' })
     terms.push(term)
   }
+  const instant = value => new Date(value).toISOString().replace(/\.\d{3}Z$/, 'Z')
+  const registrationWindows = [
+    ['2025-08-01T00:00:00Z', '2025-08-21T00:00:00Z'],
+    ['2026-01-02T00:00:00Z', '2026-01-22T00:00:00Z'],
+    [instant(Date.now() - 4 * 86400000), instant(Date.now() + 14 * 86400000)],
+  ]
+  for (let i = 0; i < 3; i++) {
+    const registrationOpensAt = registrationWindows[i][0], registrationClosesAt = registrationWindows[i][1]
+    terms[i] = await c.change(`term:registration:${i}`, 'ACADEMIC_AFFAIRS', base + `academic/terms/${terms[i].id}`, {
+      ...fields(terms[i], ['code', 'name', 'startDate', 'endDate']), status: 'ACTIVE', registrationOpensAt, registrationClosesAt,
+    }, { registrationOpensAt, registrationClosesAt })
+  }
   for (let i = 0; i < 200; i++) {
     const cohort = i === 0 ? 'K23' : `K${21 + i % 6}`, programId = programs[i % 12].id
     await c.change(`student:profile:${i}`, 'ACADEMIC_AFFAIRS', base + `students/${students[i].id}/profile`, { cohort, programId },
