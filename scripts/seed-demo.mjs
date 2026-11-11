@@ -14,6 +14,68 @@ const names = ['Nguyễn Minh An', 'Trần Ngọc Anh', 'Lê Hoàng Bảo', 'Ph�
 const units = ['Công nghệ thông tin', 'Kinh tế', 'Ngoại ngữ', 'Kỹ thuật điện', 'Cơ khí', 'Xây dựng', 'Môi trường', 'Luật', 'Truyền thông', 'Du lịch', 'Khoa học cơ bản', 'Quản trị kinh doanh', 'Đào tạo', 'Công tác sinh viên', 'Tài chính', 'Hành chính nhân sự']
 const subjects = ['Nhập môn ngành', 'Phương pháp nghiên cứu', 'Thực hành chuyên ngành', 'Ứng dụng dữ liệu', 'Đồ án cơ sở']
 const events = ['Ngày hội việc làm', 'Tuần lễ định hướng', 'Cuộc thi lập trình', 'Hội thảo khởi nghiệp', 'Hiến máu tình nguyện', 'Ngày hội văn hóa', 'Giải chạy sinh viên', 'Tọa đàm doanh nghiệp', 'Triển lãm đồ án', 'Kỹ năng phỏng vấn', 'Ngày hội đọc sách', 'Bảo vệ môi trường', 'Sinh viên nghiên cứu khoa học', 'Giao lưu câu lạc bộ', 'Hội thảo học bổng', 'Kết nối cựu sinh viên']
+const instant = value => new Date(value).toISOString().replace(/\.\d{3}Z$/, 'Z')
+// Chương trình Cử nhân Công nghệ thông tin, 8 học kỳ, 150 tín chỉ.
+const cnttCurriculum = [
+  { key: 'triet', code: '861301', title: 'Triết học Mác - Lênin', credits: 3, group: 'GENERAL', semester: 1, existing: 60 },
+  { key: 'ta1', code: '866101', title: 'Tiếng Anh I', credits: 2, group: 'GENERAL', semester: 1, existing: 61 },
+  { key: 'giai1', code: '841401', title: 'Giải tích 1', credits: 3, group: 'MAJOR', semester: 1, existing: 62 },
+  { key: 'daiso', code: '841402', title: 'Đại số tuyến tính', credits: 3, group: 'MAJOR', semester: 1, existing: 31 },
+  { key: 'cslt', code: '841020', title: 'Cơ sở lập trình', credits: 3, group: 'MAJOR', semester: 1, existing: 0 },
+  { key: 'ktct', code: '861302', title: 'Kinh tế chính trị Mác - Lênin', credits: 2, group: 'GENERAL', semester: 2, prereq: 'triet' },
+  { key: 'ta2', code: '866102', title: 'Tiếng Anh II', credits: 2, group: 'GENERAL', semester: 2, prereq: 'ta1' },
+  { key: 'giai2', code: '841406', title: 'Giải tích 2', credits: 3, group: 'MAJOR', semester: 2, prereq: 'giai1' },
+  { key: 'roirac', code: '841403', title: 'Cấu trúc rời rạc', credits: 4, group: 'MAJOR', semester: 2, prereq: 'daiso' },
+  { key: 'ktlaptrinh', code: '841303', title: 'Kỹ thuật lập trình', credits: 4, group: 'MAJOR', semester: 2, prereq: 'cslt', existing: 1 },
+  { key: 'kientruc', code: '841021', title: 'Kiến trúc máy tính', credits: 3, group: 'MAJOR', semester: 2, prereq: 'cslt' },
+  { key: 'cnxhkh', code: '861303', title: 'Chủ nghĩa xã hội khoa học', credits: 2, group: 'GENERAL', semester: 3, prereq: 'ktct' },
+  { key: 'ta3', code: '866103', title: 'Tiếng Anh III', credits: 3, group: 'GENERAL', semester: 3, prereq: 'ta2' },
+  { key: 'xacsuat', code: '841405', title: 'Xác suất thống kê', credits: 3, group: 'MAJOR', semester: 3, prereq: 'giai2' },
+  { key: 'ctdl', code: '841108', title: 'Cấu trúc dữ liệu và giải thuật', credits: 4, group: 'MAJOR', semester: 3, prereq: 'roirac', existing: 2 },
+  { key: 'oop', code: '841044', title: 'Lập trình hướng đối tượng', credits: 4, group: 'MAJOR', semester: 3, prereq: 'ktlaptrinh' },
+  { key: 'mang', code: '841404', title: 'Mạng máy tính', credits: 3, group: 'MAJOR', semester: 3, prereq: 'kientruc' },
+  { key: 'tutuong', code: '861304', title: 'Tư tưởng Hồ Chí Minh', credits: 2, group: 'GENERAL', semester: 4, prereq: 'cnxhkh' },
+  { key: 'lichsu', code: '861305', title: 'Lịch sử Đảng Cộng sản Việt Nam', credits: 2, group: 'GENERAL', semester: 4, prereq: 'cnxhkh' },
+  { key: 'phapluat', code: '865006', title: 'Pháp luật đại cương', credits: 2, group: 'GENERAL', semester: 4 },
+  { key: 'csdl', code: '841109', title: 'Cơ sở dữ liệu', credits: 4, group: 'MAJOR', semester: 4, prereq: 'ctdl', existing: 3 },
+  { key: 'ai', code: '841110', title: 'Cơ sở trí tuệ nhân tạo', credits: 4, group: 'MAJOR', semester: 4, prereq: 'xacsuat' },
+  { key: 'dothi', code: '841310', title: 'Lý thuyết đồ thị', credits: 3, group: 'MAJOR', semester: 4, prereq: 'ctdl' },
+  { key: 'cnpm', code: '841047', title: 'Công nghệ phần mềm', credits: 4, group: 'MAJOR', semester: 5, prereq: 'oop' },
+  { key: 'tkptgt', code: '841414', title: 'Thiết kế và phân tích giải thuật', credits: 3, group: 'MAJOR', semester: 5, prereq: 'ctdl' },
+  { key: 'ptthtk', code: '841048', title: 'Phân tích và thiết kế hệ thống thông tin', credits: 4, group: 'MAJOR', semester: 5, prereq: 'csdl' },
+  { key: 'phanlop', code: '841052', title: 'Xây dựng phần mềm phân lớp', credits: 4, group: 'SPECIALIZED', semester: 5, prereq: 'oop' },
+  { key: 'web', code: '841419', title: 'Lập trình web', credits: 4, group: 'SPECIALIZED', semester: 5, prereq: 'oop' },
+  { key: 'mythuat', code: '841417', title: 'Mỹ thuật ứng dụng', credits: 2, group: 'SPECIALIZED', semester: 5 },
+  { key: 'thuctap', code: '841070', title: 'Thực tập tốt nghiệp', credits: 6, group: 'MAJOR', semester: 6, prereq: 'cnpm' },
+  { key: 'kiemthu', code: '841408', title: 'Kiểm thử phần mềm', credits: 4, group: 'SPECIALIZED', semester: 6, prereq: 'cnpm' },
+  { key: 'giaodien', code: '841481', title: 'Thiết kế giao diện', credits: 4, group: 'SPECIALIZED', semester: 6, prereq: 'web' },
+  { key: 'j2ee', code: '841468', title: 'Chuyên đề J2EE', credits: 4, group: 'SPECIALIZED', semester: 6, prereq: 'web' },
+  { key: 'qlda', code: '841431', title: 'Quản lý dự án phần mềm', credits: 4, group: 'SPECIALIZED', semester: 6, prereq: 'cnpm' },
+  { key: 'hiendai', code: '841072', title: 'Công nghệ lập trình hiện đại', credits: 3, group: 'MAJOR', semester: 7, prereq: 'j2ee' },
+  { key: 'doan', code: '841476', title: 'Đồ án chuyên ngành', credits: 4, group: 'MAJOR', semester: 7, prereq: 'cnpm' },
+  { key: 'seminar', code: '841073', title: 'Seminar chuyên ngành', credits: 3, group: 'MAJOR', semester: 7, prereq: 'thuctap' },
+  { key: 'webnc', code: '841464', title: 'Lập trình web nâng cao', credits: 4, group: 'SPECIALIZED', semester: 7, prereq: 'web' },
+  { key: 'cloud', code: '841323', title: 'Điện toán đám mây', credits: 3, group: 'SPECIALIZED', semester: 7, prereq: 'mang' },
+  { key: 'security', code: '841120', title: 'An toàn và bảo mật dữ liệu', credits: 3, group: 'SPECIALIZED', semester: 7, prereq: 'mang' },
+  { key: 'khoaluan', code: '841099', title: 'Khóa luận tốt nghiệp', credits: 10, group: 'MAJOR', semester: 8, prereq: 'doan' },
+  { key: 'mobile', code: '841461', title: 'Phát triển ứng dụng di động', credits: 4, group: 'SPECIALIZED', semester: 8, prereq: 'web' },
+  { key: 'iot', code: '841320', title: 'Công nghệ IoT', credits: 3, group: 'SPECIALIZED', semester: 8, prereq: 'mang' },
+  { key: 'luat', code: '841415', title: 'Luật pháp và công nghệ thông tin', credits: 2, group: 'MAJOR', semester: 8, prereq: 'phapluat' },
+]
+const facultyEvents = [
+  ['Hackathon Công nghệ thông tin 2026', 'Khoa Công nghệ thông tin tổ chức Hackathon 36 giờ cho sinh viên xây dựng sản phẩm số.'],
+  ['Cuộc thi Phân tích kinh doanh', 'Khoa Kinh tế tổ chức cuộc thi phân tích dữ liệu và hoạch định chiến lược kinh doanh.'],
+  ['Olympic Tiếng Anh sinh viên', 'Khoa Ngoại ngữ tổ chức vòng thi hùng biện và xử lý tình huống bằng tiếng Anh.'],
+  ['Robocon Kỹ thuật điện', 'Khoa Kỹ thuật điện tổ chức cuộc thi thiết kế và điều khiển robot.'],
+  ['Cuộc thi Thiết kế cơ khí', 'Khoa Cơ khí tổ chức cuộc thi thiết kế, chế tạo mô hình cơ khí ứng dụng.'],
+  ['Cuộc thi Kết cấu xây dựng', 'Khoa Xây dựng tổ chức cuộc thi tính toán và mô phỏng kết cấu công trình.'],
+  ['Ngày hội Môi trường xanh', 'Khoa Môi trường tổ chức chuỗi hoạt động tái chế và bảo vệ hệ sinh thái.'],
+  ['Law Challenger 2026', 'Khoa Luật tổ chức phiên tòa giả định và cuộc thi tranh biện pháp lý.'],
+  ['Liên hoan Truyền thông sinh viên', 'Khoa Truyền thông tổ chức liên hoan sản phẩm báo chí và truyền thông đa phương tiện.'],
+  ['Cuộc thi Hướng dẫn viên du lịch', 'Khoa Du lịch tổ chức cuộc thi thuyết minh và thiết kế tour du lịch.'],
+  ['Olympic Toán - Lý - Hóa', 'Khoa Khoa học cơ bản tổ chức Olympic các môn khoa học nền tảng.'],
+  ['Khởi nghiệp sinh viên', 'Khoa Quản trị kinh doanh tổ chức cuộc thi xây dựng mô hình kinh doanh.'],
+]
 const scoped = ['ACADEMIC_AFFAIRS', 'CAMPUS_SERVICES', 'FINANCE', 'AUDITOR']
 const meetings = [[2, '07:30', '09:30'], [2, '09:45', '11:45'], [3, '13:00', '15:00'], [4, '07:30', '09:30'], [5, '15:15', '17:15'], [6, '09:45', '11:45'], [7, '13:00', '15:00']]
 const meeting = (i) => {
@@ -42,6 +104,105 @@ async function account(client, email, displayName, roles) {
   return client.create(`account:${email}`, 'ADMIN', base + 'users', {
     email, displayName: value.displayName ?? displayName, initialPassword: value.password, roles: value.roles, status: 'ACTIVE',
   })
+}
+
+async function seedCnttOverlay(c, { org, programs, courses, terms, students, personnel, eventRows }) {
+  const program = programs[0], generalUnit = org[10]
+  const byKey = new Map(cnttCurriculum.filter(spec => spec.existing !== undefined).map(spec => [spec.key, courses[spec.existing]]))
+  for (const spec of cnttCurriculum) {
+    const unit = spec.group === 'GENERAL' ? generalUnit : org[0]
+    if (spec.existing !== undefined) {
+      const current = courses[spec.existing]
+      const changed = await c.change(`course:cntt:rename:${spec.key}`, 'ACADEMIC_AFFAIRS', base + `academic/courses/${current.id}`, {
+        ...fields(current, ['code', 'title', 'credits', 'courseGroup', 'hasFinalProject', 'organizationUnitId']),
+        code: spec.code, title: spec.title, credits: spec.credits, courseGroup: spec.group,
+        hasFinalProject: false, organizationUnitId: unit.id, status: 'ACTIVE',
+      }, {
+        code: spec.code, title: spec.title, credits: spec.credits, courseGroup: spec.group,
+        hasFinalProject: false, organizationUnitId: unit.id,
+      })
+      byKey.set(spec.key, changed)
+    } else {
+      const created = await c.create(`course:cntt:${spec.code}`, 'ACADEMIC_AFFAIRS', base + 'academic/courses', {
+        code: spec.code, title: spec.title, credits: spec.credits, courseGroup: spec.group,
+        hasFinalProject: false, organizationUnitId: unit.id, status: 'ACTIVE',
+      })
+      byKey.set(spec.key, created); courses.push(created)
+    }
+  }
+  const existingEntries = await c.list('ACADEMIC_AFFAIRS', base + `academic/curriculum?programId=${program.id}`, true)
+  const entryByCourse = new Map(existingEntries.map(entry => [entry.courseId, entry]))
+  for (const spec of cnttCurriculum) {
+    const course = byKey.get(spec.key), prerequisite = spec.prereq ? byKey.get(spec.prereq) : null
+    const current = entryByCourse.get(course.id)
+    const changes = { semesterIndex: spec.semester, prerequisiteCourseId: prerequisite?.id ?? null }
+    if (current) {
+      await c.change(`cntt-curriculum:update:${spec.key}`, 'ACADEMIC_AFFAIRS', base + `academic/curriculum/${current.id}`, changes, changes)
+    } else {
+      await c.create(`curriculum:cntt:${spec.code}`, 'ACADEMIC_AFFAIRS', base + 'academic/curriculum', {
+        programId: program.id, courseId: course.id, ...changes,
+      }, { list: base + `academic/curriculum?programId=${program.id}`, match: { courseId: course.id } })
+    }
+  }
+
+  // Active terms reject date changes, so the labels follow the dates created by the base seed.
+  const termLabels = [
+    ['HK1-2025-2026', 'Học kỳ 1 năm học 2025-2026'],
+    ['HK2-2025-2026', 'Học kỳ 2 năm học 2025-2026'],
+    ['HK1-2026-2027', 'Học kỳ 1 năm học 2026-2027'],
+  ]
+  for (let index = 0; index < 3; index++) {
+    const current = terms[index], [termCode, name] = termLabels[index]
+    terms[index] = await c.change(`term:cntt:label:${index}`, 'ACADEMIC_AFFAIRS', base + `academic/terms/${current.id}`, {
+      ...fields(current, ['code', 'name', 'startDate', 'endDate', 'status', 'registrationOpensAt', 'registrationClosesAt']),
+      code: termCode, name,
+    }, { code: termCode, name })
+  }
+  const today = new Date().toISOString().slice(0, 10)
+  const registrationOpensAt = instant(Date.now() - 4 * 86400000), registrationClosesAt = instant(Date.now() + 14 * 86400000)
+  terms[2] = await c.change(`term:cntt:window:${today}`, 'ACADEMIC_AFFAIRS', base + `academic/terms/${terms[2].id}`, {
+    ...fields(terms[2], ['code', 'name', 'startDate', 'endDate', 'status', 'registrationOpensAt', 'registrationClosesAt']),
+    registrationOpensAt, registrationClosesAt,
+  }, { registrationOpensAt, registrationClosesAt })
+
+  // The base inventory already opens offerings for the first 60 courses in every term;
+  // new sections attach to that offering instead of duplicating the term/course pair.
+  const offeringsByKey = new Map((await c.list('ACADEMIC_AFFAIRS', base + 'academic/offerings'))
+    .map(offering => [`${offering.termId}:${offering.courseId}`, offering]))
+  const addSection = async (key, term, course, index, enrollment = null, scores = null) => {
+    const pair = `${term.id}:${course.id}`
+    let offering = offeringsByKey.get(pair)
+      ?? await c.create(`offering:cntt:${key}`, 'ACADEMIC_AFFAIRS', base + 'academic/offerings', { termId: term.id, courseId: course.id })
+    offeringsByKey.set(pair, offering)
+    offering = await c.change(`offering:cntt:open:${key}`, 'ACADEMIC_AFFAIRS', base + `academic/offerings/${offering.id}`, { status: 'OPEN' }, { status: 'OPEN' })
+    let section = await c.create(`section:cntt:${key}`, 'ACADEMIC_AFFAIRS', base + 'academic/sections', {
+      offeringId: offering.id, code: `CNTT-${key.toUpperCase()}`, capacity: 40, facultyId: personnel[index % 60].id,
+    })
+    section = await c.change(`section:cntt:open:${key}`, 'ACADEMIC_AFFAIRS', base + `academic/sections/${section.id}`, {
+      ...fields(section, ['code', 'capacity', 'facultyId']), ...meeting(index), status: 'OPEN',
+    }, { status: 'OPEN' })
+    if (enrollment) {
+      const saved = await c.create(`enrollment:cntt:${key}`, 'ACADEMIC_AFFAIRS', base + 'academic/enrollments',
+        { studentId: enrollment.id, sectionId: section.id })
+      await c.create(`grade:cntt:${key}`, 'ACADEMIC_AFFAIRS', base + `academic/enrollments/${saved.id}/grade`, scores,
+        { list: base + 'academic/grades?enrollmentId=' + saved.id, match: { enrollmentId: saved.id } })
+    }
+    return section
+  }
+  await addSection('grade-ta1', terms[1], byKey.get('ta1'), 0, students[0], { attendanceScore: 8, midtermScore: 7, finalScore: 8 })
+  await addSection('grade-ktlaptrinh', terms[1], byKey.get('ktlaptrinh'), 1, students[0], { attendanceScore: 8, midtermScore: 7.5, finalScore: 8.5 })
+  await addSection('grade-roirac', terms[1], byKey.get('roirac'), 2, students[0], { attendanceScore: 7.5, midtermScore: 8, finalScore: 8.5 })
+  for (const [index, key] of ['kientruc', 'roirac', 'mang', 'web'].entries())
+    await addSection(`register-${key}`, terms[2], byKey.get(key), index + 3)
+
+  for (let index = 0; index < 12; index++) {
+    const [title, description] = facultyEvents[index], current = eventRows[index]
+    eventRows[index] = await c.change(`event:cntt:faculty:${index}`, 'CAMPUS_SERVICES', base + `events/${current.id}`, {
+      ...fields(current, ['code', 'title', 'description', 'startsAt', 'endsAt', 'capacity']),
+      title, description, status: 'OPEN', hostUnitId: org[index].id,
+    }, { title, description, hostUnitId: org[index].id })
+  }
+  console.log('CNTT curriculum, 150-credit roadmap, faculty-hosted events and HK1 2026-2027 registration data verified.')
 }
 
 export async function seedInventory(c) {
@@ -91,7 +252,6 @@ export async function seedInventory(c) {
     term = await c.change(`term:active:${i}`, 'ACADEMIC_AFFAIRS', base + `academic/terms/${term.id}`, { ...fields(term, ['code', 'name', 'startDate', 'endDate']), status: 'ACTIVE' }, { status: 'ACTIVE' })
     terms.push(term)
   }
-  const instant = value => new Date(value).toISOString().replace(/\.\d{3}Z$/, 'Z')
   const registrationWindows = [
     ['2025-08-01T00:00:00Z', '2025-08-21T00:00:00Z'],
     ['2026-01-02T00:00:00Z', '2026-01-22T00:00:00Z'],
@@ -278,6 +438,7 @@ export async function seedInventory(c) {
     }
   }
   for (let i = 12; i < 16; i++) await c.change(`event:close:${i}`, 'CAMPUS_SERVICES', base + `events/${eventRows[i].id}`, { ...fields(eventRows[i], ['code', 'title', 'description', 'startsAt', 'endsAt', 'capacity']), status: 'CLOSED' }, { status: 'CLOSED' })
+  await seedCnttOverlay(c, { org, programs, courses, terms, students, personnel, eventRows })
   console.log('24 publications/1200 deliveries and 16 events/400 retained memberships verified.')
 
   const titles = [], copies = []
@@ -408,15 +569,20 @@ export async function verifyInventory(c) {
     .filter(([key, op]) => key.startsWith('curriculum:') && op.done).map(([, op]) => op.id))
   const curriculumRows = []
   for (const program of records.programs) curriculumRows.push(...await c.list('ACADEMIC_AFFAIRS', `${base}academic/curriculum?programId=${program.id}`, true))
-  if (curriculumIds.size !== 84 || curriculumRows.length !== 84 || new Set(curriculumRows.map(row => row.id)).size !== 84
-    || curriculumRows.some(row => !curriculumIds.has(row.id) || row.semesterIndex < 1 || row.semesterIndex > 7)) {
-    throw new DemoError('Curriculum inventory does not match the approved 84 entries across 12 programs.')
+  if (curriculumIds.size !== 121 || curriculumRows.length !== 121 || new Set(curriculumRows.map(row => row.id)).size !== 121
+    || curriculumRows.some(row => !curriculumIds.has(row.id) || row.semesterIndex < 1 || row.semesterIndex > 8)) {
+    throw new DemoError('Curriculum inventory does not match the approved 121 entries across 12 programs.')
+  }
+  const cnttEntries = curriculumRows.filter(row => row.programId === records.programs[0].id)
+  if (cnttEntries.length !== 44 || new Set(cnttEntries.map(row => row.semesterIndex)).size !== 8) {
+    throw new DemoError('CNTT curriculum does not cover the approved 44 courses across 8 semesters.')
   }
   records.curriculum = curriculumRows
   const weights = { GENERAL: [0.1, 0.4, 0.5, 0], MAJOR_PROJECT: [0.1, 0.4, 0, 0.5], MAJOR_FINAL: [0.1, 0.3, 0.6, 0] }
   const transcriptOf = email => c.request(email, 'GET', '/api/v1/me/transcript')
   const first = await transcriptOf('student.001@example.test')
-  if (!first.programId || first.terms.length !== 2 || first.records.length !== 4) throw new DemoError('Expected demo transcript shape is missing.')
+  // Four base attempts plus the three CNTT semester-2 grades added by the overlay.
+  if (!first.programId || first.terms.length !== 2 || first.records.length !== 7) throw new DemoError('Expected demo transcript shape is missing.')
   for (const record of first.records) {
     const expected = weights[record.scheme], actual = [record.attendanceWeight, record.midtermWeight, record.finalWeight, record.projectWeight]
     if (!expected || Math.abs(actual.reduce((sum, value) => sum + value, 0) - 1) > 1e-9
@@ -445,18 +611,19 @@ export async function verifyInventory(c) {
     throw new DemoError('Failed-course retake does not preserve both attempts with correct flags.')
   }
   const improvementTranscript = await transcriptOf('student.005@example.test')
-  const improved = improvementTranscript.records.filter(record => record.course.code === 'CD-COURSE-002')
+  const improved = improvementTranscript.records.filter(record => record.course.code === '841303')
     .sort((left, right) => left.term.startDate.localeCompare(right.term.startDate))
   if (improved.length !== 2 || !improved[0].passed || !improved[1].passed || !improved[1].retake || !improved[1].improvement) {
     throw new DemoError('Improvement retake does not preserve both passed attempts.')
   }
   const firstCurriculum = await c.request('student.001@example.test', 'GET', '/api/v1/me/curriculum')
   const curriculumCourses = firstCurriculum.semesters.flatMap(semester => semester.courses)
-  const foundation = curriculumCourses.find(course => course.code === 'CD-COURSE-061')
-  const chained = curriculumCourses.find(course => course.code === 'CD-COURSE-062')
-  const firstMajor = curriculumCourses.find(course => course.code === 'CD-COURSE-001')
-  if (firstCurriculum.semesters.length !== 7 || curriculumCourses.length !== 7 || !foundation || foundation.status !== 'PASSED'
-    || !chained || !chained.prerequisiteSatisfied || !firstMajor || firstMajor.prerequisiteSatisfied) {
+  const foundation = curriculumCourses.find(course => course.code === '841020')
+  const chained = curriculumCourses.find(course => course.code === '841303')
+  const firstMajor = curriculumCourses.find(course => course.code === '861301')
+  if (firstCurriculum.semesters.length !== 8 || curriculumCourses.length !== 44 || !foundation || foundation.status !== 'PASSED'
+    || !chained || !chained.prerequisiteSatisfied || !firstMajor || firstMajor.status !== 'PASSED'
+    || curriculumCourses.filter(course => course.courseGroup === 'SPECIALIZED').length < 10) {
     throw new DemoError('Curriculum progress or prerequisite satisfaction is incorrect for the sample student.')
   }
   const retakeCurriculum = await c.request('student.002@example.test', 'GET', '/api/v1/me/curriculum')
@@ -470,6 +637,22 @@ export async function verifyInventory(c) {
   }
   for (const event of records.events) {
     if (records.memberships.filter(m => m.eventId === event.id && m.status !== 'CANCELLED').length > event.capacity) throw new DemoError('Event capacity exceeded.')
+  }
+  const openEvents = records.events.filter(event => event.status === 'OPEN')
+  const eventHosts = new Set(openEvents.map(event => event.hostUnitId))
+  if (openEvents.length !== 12 || eventHosts.size !== 12 || eventHosts.has(null)
+    || [...eventHosts].some(id => !records.units.some(unit => unit.id === id))
+    || !openEvents.some(event => event.title === 'Hackathon Công nghệ thông tin 2026')
+    || !openEvents.some(event => event.title === 'Law Challenger 2026')) {
+    throw new DemoError('Faculty-hosted event catalog is incomplete.')
+  }
+  const cnttUnit = records.units.find(unit => unit.name === 'Khoa Công nghệ thông tin')
+  const registration = await c.request('student.001@example.test', 'GET', '/api/v1/me/registration')
+  const architecture = registration.sections.find(section => section.courseCode === '841021')
+  if (!cnttUnit || registration.window.state !== 'OPEN' || !architecture
+    || architecture.courseOrganizationUnitId !== cnttUnit.id || architecture.courseOrganizationUnitName !== cnttUnit.name
+    || registration.sections.filter(section => section.courseOrganizationUnitId === cnttUnit.id).length < 4) {
+    throw new DemoError('Registration catalog does not expose the open cohort window and CNTT course ownership.')
   }
   for (const charge of records.charges) {
     const balance = await c.request('FINANCE', 'GET', base + `finance/charges/${charge.id}/balance`)
